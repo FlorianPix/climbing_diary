@@ -15,7 +15,7 @@ client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
 db = client.climbing
 
 
-@router.post("/spots", response_description="Add new spot", response_model=SpotModel)
+@router.post("/spot", response_description="Add new spot", response_model=SpotModel)
 async def create_spot(spot: SpotModel = Body(...)):
     spot = jsonable_encoder(spot)
     new_spot = await db["spots"].insert_one(spot)
@@ -29,14 +29,14 @@ async def list_spots():
     return spots
 
 
-@router.get("/spots-{id}", response_description="Get a single spot", response_model=SpotModel)
+@router.get("/spot-{id}", response_description="Get a single spot", response_model=SpotModel)
 async def show_spot(id: str):
     if (spot := await db["spots"].find_one({"_id": id})) is not None:
         return spot
     raise HTTPException(status_code=404, detail=f"Spot {id} not found")
 
 
-@router.put("/spots-{id}", response_description="Update a spot", response_model=SpotModel)
+@router.put("/spot-{id}", response_description="Update a spot", response_model=SpotModel)
 async def update_spot(id: str, spot: UpdateSpotModel = Body(...)):
     spot = {k: v for k, v in spot.dict().items() if v is not None}
 
@@ -55,7 +55,7 @@ async def update_spot(id: str, spot: UpdateSpotModel = Body(...)):
     raise HTTPException(status_code=404, detail=f"Spot {id} not found")
 
 
-@router.delete("/spots-{id}", response_description="Delete a spot")
+@router.delete("/spot-{id}", response_description="Delete a spot")
 async def delete_spot(id: str):
     delete_result = await db["spots"].delete_one({"_id": id})
 

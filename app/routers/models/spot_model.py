@@ -1,23 +1,25 @@
 from datetime import date
 from pydantic import BaseModel, Field
 from bson import ObjectId
+from typing import List
 
 from .py_object_id import PyObjectId
+from .route_model import RouteModel
 
 
 class SpotModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     date: date
     name: str = Field(...)
-    coordinates: tuple = Field(...)
+    coordinates: List[float] = []
     country: str = Field(...)
-    location: tuple = Field(...)
-    routes: tuple = Field(...)
+    location: List[str] = []
+    routes: List[str] = []
     rating: int = Field(..., ge=0, le=5)
-    description: str = Field(...)
-    children_friendly: bool = Field(...)
-    close_parking: bool = Field(...)
-    camping_nearby: bool = Field(...)
+    comments: List[str] = []
+    family_friendly: int = Field(..., ge=0, le=5)
+    distance_parking: int = Field(...)
+    distance_public_transport: int = Field(...)
 
     class Config:
         allow_population_by_field_name = True
@@ -27,14 +29,14 @@ class SpotModel(BaseModel):
             "example": {
                 "date": "2022-10-08",
                 "name": "Falkenstein",
-                "coordinates": [-73.856077, 40.848447],
+                "coordinates": [50.746036, 10.642666],
                 "country": "Germany",
                 "location": ["Thüringen", "Thüringer_Wald"],
-                "routes": ["Falkensteiner_Riss-Germany-Thüringen-Thüringer_Wald"],
-                "rating": 4,
-                "description": "Great spot close to a lake with solid holds but kindof hard to reach.",
-                "children_friendly": True,
-                "close_parking": False,
-                "camping_nearby": True,
+                "routes": [],
+                "rating": 0,
+                "comments": [],
+                "family_friendly": 4,
+                "distance_parking": 120,
+                "distance_public_transport": 120
             }
         }

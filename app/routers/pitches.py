@@ -20,6 +20,8 @@ async def create_pitch(pitch: PitchModel = Body(...)):
     pitch = jsonable_encoder(pitch)
     new_pitch = await db["pitches"].insert_one(pitch)
     created_pitch = await db["pitches"].find_one({"_id": new_pitch.inserted_id})
+    # add pitch to route
+    update_result = await db["routes"].update_one({"_id": created_pitch["route_id"]}, {"$push": {"pitches": pitch}})
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_pitch)
 
 

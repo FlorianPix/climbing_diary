@@ -15,11 +15,13 @@ client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
 db = client.climbing
 
 
-@router.post("/route", response_description="Add new route", response_model=RouteModel)
-async def create_route(route: RouteModel = Body(...)):
+@router.post("/route-{id}", response_description="Add new route", response_model=RouteModel)
+async def create_route(id: str, route: RouteModel = Body(...)):
     route = jsonable_encoder(route)
     new_route = await db["routes"].insert_one(route)
     created_route = await db["routes"].find_one({"_id": new_route.inserted_id})
+    # add route id to spot
+    update_result = await db["spots"].update_one({"_id": id}, {"$push": {"routes": created_route["_id"]}})
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_route)
 
 
@@ -55,9 +57,12 @@ async def update_route(id: str, route: UpdateRouteModel = Body(...)):
     raise HTTPException(status_code=404, detail=f"Route {id} not found")
 
 
-@router.delete("/route-{id}", response_description="Delete a route")
-async def delete_route(id: str):
-    delete_result = await db["routes"].delete_one({"_id": id})
+@router.delete("/route-{spot_id}-{route_id}", response_description="Delete a route")
+async def delete_route(spot_id: str, route_id: str):
+    delete_result = await db["routes"].delete_one({"_id": route_id})
+
+    # remove route id from spot
+    update_result = await db["spots"].update_one({"_id": spot_id}, {"$pull": {"routes": route_id}})
 
     if delete_result.deleted_count == 1:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
