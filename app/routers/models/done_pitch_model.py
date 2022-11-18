@@ -9,8 +9,6 @@ class PitchModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     date: date
     name: str = Field(...)
-    route_id: str = Field(...)
-    route_name: str = Field(...)
     total_pitch_number: int = Field(...)
     pitch_number: int = Field(...)
     grade: str = Field(...)
@@ -26,8 +24,6 @@ class PitchModel(BaseModel):
             "example": {
                 "date": "2022-10-08",
                 "name": "Pitch 1",
-                "route_id": "636bb10741073418ee4d0885",
-                "route_name": "Falkensteiner Riss",
                 "total_pitch_number": 3,
                 "pitch_number": 1,
                 "grade": "3",

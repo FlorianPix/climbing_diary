@@ -29,37 +29,37 @@ async def list_spots():
     return spots
 
 
-@router.get("/spot-{id}", response_description="Get a single spot", response_model=SpotModel)
-async def show_spot(id: str):
-    if (spot := await db["spots"].find_one({"_id": id})) is not None:
+@router.get("/spot-{spot_id}", response_description="Get a single spot", response_model=SpotModel)
+async def show_spot(spot_id: str):
+    if (spot := await db["spots"].find_one({"_id": spot_id})) is not None:
         return spot
-    raise HTTPException(status_code=404, detail=f"Spot {id} not found")
+    raise HTTPException(status_code=404, detail=f"Spot {spot_id} not found")
 
 
-@router.put("/spot-{id}", response_description="Update a spot", response_model=SpotModel)
-async def update_spot(id: str, spot: UpdateSpotModel = Body(...)):
+@router.put("/spot-{spot_id}", response_description="Update a spot", response_model=SpotModel)
+async def update_spot(spot_id: str, spot: UpdateSpotModel = Body(...)):
     spot = {k: v for k, v in spot.dict().items() if v is not None}
 
     if len(spot) >= 1:
-        update_result = await db["spots"].update_one({"_id": id}, {"$set": spot})
+        update_result = await db["spots"].update_one({"_id": spot_id}, {"$set": spot})
 
         if update_result.modified_count == 1:
             if (
-                updated_spot := await db["spots"].find_one({"_id": id})
+                updated_spot := await db["spots"].find_one({"_id": spot_id})
             ) is not None:
                 return updated_spot
 
-    if (existing_spot := await db["spots"].find_one({"_id": id})) is not None:
+    if (existing_spot := await db["spots"].find_one({"_id": spot_id})) is not None:
         return existing_spot
 
-    raise HTTPException(status_code=404, detail=f"Spot {id} not found")
+    raise HTTPException(status_code=404, detail=f"Spot {spot_id} not found")
 
 
-@router.delete("/spot-{id}", response_description="Delete a spot")
-async def delete_spot(id: str):
-    delete_result = await db["spots"].delete_one({"_id": id})
+@router.delete("/spot-{spot_id}", response_description="Delete a spot")
+async def delete_spot(spot_id: str):
+    delete_result = await db["spots"].delete_one({"_id": spot_id})
 
     if delete_result.deleted_count == 1:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-    raise HTTPException(status_code=404, detail=f"Spot {id} not found")
+    raise HTTPException(status_code=404, detail=f"Spot {spot_id} not found")
