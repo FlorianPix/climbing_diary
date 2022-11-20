@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map/plugin_api.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,10 +16,16 @@ class MyApp extends StatelessWidget {
       title: 'Climbing Diary',
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Welcome to Flutter'),
+          title: const Text('Climbing Diary'),
+          backgroundColor: Colors.orange,
         ),
-        body: const Center(
-          child: Text('Hello World'),
+        body: FlutterMap(
+          options:  MapOptions(minZoom: 10.0),
+          children: [
+             TitleLayer(
+              urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              subdomains: ['a', 'b', 'c']),
+          ],
         ),
       ),
     );
