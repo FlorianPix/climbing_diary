@@ -16,7 +16,7 @@ class RouteModel(BaseModel):
     rating: int = Field(..., ge=0, le=5)
     length: int = Field(...)  # m
     rappel_length: int = Field(...)  # m
-    pitches: List[PitchModel] = []
+    pitches: List[str] = []
     comments: List[str] = []
 
     class Config:
