@@ -67,12 +67,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  late Future<Spot> futureSpot;
+  late Future<List<Spot>> futureSpots;
 
   @override
   void initState(){
     super.initState();
-    futureSpot = fetchSpot();
+    futureSpots = fetchSpots();
   }
 
   @override
@@ -92,14 +92,14 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: FutureBuilder<Spot>(
-          future: futureSpot,
+        child: FutureBuilder<List<Spot>>(
+          future: futureSpots,
           builder: (context, snapshot) {
             if(snapshot.hasData) {
-              var spot = snapshot.data!;
+              var spots = snapshot.data!;
               return FlutterMap(
                 options: MapOptions(
-                  center: LatLng(spot.coordinates[0], spot.coordinates[1]),
+                  center: LatLng(spots[0].coordinates[0], spots[0].coordinates[1]),
                   zoom: 5,
                 ),
                 nonRotatedChildren: [
@@ -114,20 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     userAgentPackageName: 'com.example.app',
                   ),
                   MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: LatLng(spot.coordinates[0], spot.coordinates[1]),
-                        width: 80,
-                        height: 80,
-                        builder: (context) => IconButton(
-                          icon: const Icon(Icons.place, size: 50.0, color: Colors.pink),
-                          tooltip: spot.name,
-                          onPressed: () {
-                            // TODO open spot details dialog
-                          },
-                        ),
-                      ),
-                    ],
+                    markers: getMarkers(spots)
                   ),
                 ],
               );
@@ -144,5 +131,25 @@ class _MyHomePageState extends State<MyHomePage> {
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  getMarkers(List<Spot> spots){
+    List<Marker> markers = [];
+    for (var spot in spots) {
+      markers.add(Marker(
+        point: LatLng(spot.coordinates[0], spot.coordinates[1]),
+        width: 80,
+        height: 80,
+        builder: (context) => IconButton(
+          icon: const Icon(Icons.place, size: 30.0, color: Colors.pink),
+          tooltip: spot.name,
+          onPressed: () {
+            // TODO open spot details dialog
+            print(spot.name);
+          },
+        ),
+      ));
+    }
+    return markers;
   }
 }
