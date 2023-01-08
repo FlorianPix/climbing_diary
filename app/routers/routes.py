@@ -35,7 +35,7 @@ async def list_routes():
 async def show_route(route_id: str):
     if (route := await db["routes"].find_one({"_id": route_id})) is not None:
         return route
-    raise HTTPException(status_code=404, detail=f"Route {route_id} not found")
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")
 
 
 @router.put("/route-{route_id}", response_description="Update a route", response_model=RouteModel)
@@ -54,7 +54,7 @@ async def update_route(route_id: str, route: UpdateRouteModel = Body(...)):
     if (existing_route := await db["routes"].find_one({"_id": route_id})) is not None:
         return existing_route
 
-    raise HTTPException(status_code=404, detail=f"Route {route_id} not found")
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")
 
 
 @router.delete("/route-{spot_id}-{route_id}", response_description="Delete a route")
@@ -67,4 +67,4 @@ async def delete_route(spot_id: str, route_id: str):
     if delete_result.deleted_count == 1:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-    raise HTTPException(status_code=404, detail=f"Route {route_id} not found")
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")

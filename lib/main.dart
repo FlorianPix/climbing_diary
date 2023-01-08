@@ -1,9 +1,7 @@
+import 'package:climbing_diary/pages/diary_page.dart';
 import 'package:climbing_diary/pages/map_page.dart';
 import 'package:climbing_diary/pages/statistic_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart'; // Suitable for most situations
-import 'package:flutter_map/plugin_api.dart'; // Only import if required functionality is not exposed by default
-import 'package:latlong2/latlong.dart';
 
 void main() {
   runApp(const MyApp());
@@ -57,6 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int currentIndex = 0;
   final screens = [
     MapPage(),
+    DiaryPage(),
     StatisticPage()
   ];
 
@@ -93,12 +92,14 @@ class _MyHomePageState extends State<MyHomePage> {
           BottomNavigationBarItem(
               icon: Icon(Icons.map),
               label: 'Map',
-              backgroundColor: Colors.orange
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book),
+            label: 'Diary',
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.graphic_eq),
               label: 'Statistic',
-              backgroundColor: Colors.orange
           )
         ],
 
