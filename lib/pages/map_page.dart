@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:climbing_diary/components/spot_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -101,15 +103,15 @@ class _MapPageState extends State<MapPage>{
           onPressed: () => showDialog(
             context: context,
             builder: (BuildContext context) => Dialog(
-              child: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-                  return SpotDetails(spot: spot);
-                },
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: spotDetails(context, spot)
               ),
             ),
           ),
         ),
-      ));
+      );
     }
     return markers;
   }
