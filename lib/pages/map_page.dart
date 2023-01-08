@@ -3,6 +3,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 class MapPage extends StatelessWidget {
+  const MapPage({super.key});
+
   @override
   Widget build(BuildContext context) => Scaffold(
     body: Center(
