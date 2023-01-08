@@ -4,7 +4,6 @@ from bson import ObjectId
 from typing import List
 
 from .py_object_id import PyObjectId
-from .route_model import RouteModel
 
 
 class SpotModel(BaseModel):
