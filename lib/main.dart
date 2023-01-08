@@ -1,7 +1,10 @@
+import 'package:climbing_diary/services/spot_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart'; // Suitable for most situations
 import 'package:flutter_map/plugin_api.dart'; // Only import if required functionality is not exposed by default
 import 'package:latlong2/latlong.dart';
+
+import 'interfaces/spot.dart';
 
 void main() {
   runApp(const MyApp());
@@ -64,6 +67,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  late Future<Spot> futureSpot;
+
+  @override
+  void initState(){
+    super.initState();
+    futureSpot = fetchSpot();
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -81,24 +92,51 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: FlutterMap(
-          options: MapOptions(
-            center: LatLng(51.509364, -0.128928),
-            zoom: 9.2,
-          ),
-          nonRotatedChildren: [
-            AttributionWidget.defaultWidget(
-              source: 'OpenStreetMap contributors',
-              onSourceTapped: null,
-            ),
-          ],
-          children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.example.app',
-            ),
-          ],
-        ),
+        child: FutureBuilder<Spot>(
+          future: futureSpot,
+          builder: (context, snapshot) {
+            if(snapshot.hasData) {
+              var spot = snapshot.data!;
+              return FlutterMap(
+                options: MapOptions(
+                  center: LatLng(spot.coordinates[0], spot.coordinates[1]),
+                  zoom: 5,
+                ),
+                nonRotatedChildren: [
+                  AttributionWidget.defaultWidget(
+                    source: 'OpenStreetMap contributors',
+                    onSourceTapped: null,
+                  ),
+                ],
+                children: [
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.app',
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: LatLng(spot.coordinates[0], spot.coordinates[1]),
+                        width: 80,
+                        height: 80,
+                        builder: (context) => IconButton(
+                          icon: const Icon(Icons.place, size: 50.0, color: Colors.pink),
+                          tooltip: spot.name,
+                          onPressed: () {
+                            // TODO open spot details dialog
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            } else if (snapshot.hasError) {
+              return Text('${snapshot.error}');
+            }
+            return const CircularProgressIndicator();
+          }
+        )
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
