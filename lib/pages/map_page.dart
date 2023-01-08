@@ -1,3 +1,4 @@
+import 'package:climbing_diary/components/spot_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -98,32 +99,14 @@ class _MapPageState extends State<MapPage>{
           icon: const Icon(Icons.place, size: 30.0, color: Colors.pink),
           tooltip: spot.name,
           onPressed: () => showDialog(
-              context: context,
-              builder: (BuildContext context) => Dialog(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text('Name: ${spot.name}'),
-                    Text('Date: ${spot.date}'),
-                    Text('Coordinates: ${spot.coordinates}'),
-                    Text('Country: ${spot.country}'),
-                    Text('Location: ${spot.location}'),
-                    Text('Routes: ${spot.routes}'),
-                    Text('Rating: ${spot.rating}'),
-                    Text('Comments: ${spot.comments}'),
-                    Text('Family friendly: ${spot.familyFriendly}'),
-                    Text('Distance to parking: ${spot.distanceParking} min'),
-                    Text('Distance to public transport: ${spot.distancePublicTransport} min'),
-                    TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text('Close'),
-                    ),
-                  ],
-                ),
+            context: context,
+            builder: (BuildContext context) => Dialog(
+              child: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  return SpotDetails(spot: spot);
+                },
               ),
+            ),
           ),
         ),
       ));

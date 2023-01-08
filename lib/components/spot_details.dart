@@ -5,34 +5,10 @@ import 'package:latlong2/latlong.dart';
 import '../interfaces/spot.dart';
 import '../services/spot_service.dart';
 
-class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+class SpotDetails extends StatelessWidget {
+  final Spot spot;
 
-  @override
-  State<MapPage> createState() => _MapPageState();
-}
-
-class _MapPageState extends State<MapPage>{
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  late Future<List<Spot>> futureSpots;
-
-  @override
-  void initState(){
-    super.initState();
-    futureSpots = fetchSpots();
-  }
+  const SpotDetails({super.key, required this.spot});
 
   @override
   Widget build(BuildContext context) {
@@ -46,23 +22,30 @@ class _MapPageState extends State<MapPage>{
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-          child: FutureBuilder<List<Spot>>(
-              future: futureSpots,
-              builder: (context, snapshot) {
-                if(snapshot.hasData) {
-                  var spots = snapshot.data!;
-                } else if (snapshot.hasError) {
-                  return Text('${snapshot.error}');
-                }
-                return const CircularProgressIndicator();
-              }
-          )
+        child: SingleChildScrollView(child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Name: ${spot.name}'),
+            Text('Date: ${spot.date}'),
+            Text('Coordinates: ${spot.coordinates}'),
+            Text('Country: ${spot.country}'),
+            Text('Location: ${spot.location}'),
+            Text('Routes: ${spot.routes}'),
+            Text('Rating: ${spot.rating}'),
+            Text('Comments: ${spot.comments}'),
+            Text('Family friendly: ${spot.familyFriendly}'),
+            Text('Distance to parking: ${spot.distanceParking} min'),
+            Text('Distance to public transport: ${spot.distancePublicTransport} min'),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        )),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
