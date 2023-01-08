@@ -1,3 +1,5 @@
+import 'package:climbing_diary/pages/map_page.dart';
+import 'package:climbing_diary/pages/statistic_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart'; // Suitable for most situations
 import 'package:flutter_map/plugin_api.dart'; // Only import if required functionality is not exposed by default
@@ -25,9 +27,9 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.orange,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'ClimbingDiary'),
     );
   }
 }
@@ -52,6 +54,11 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  int currentIndex = 0;
+  final screens = [
+    MapPage(),
+    StatisticPage()
+  ];
 
   void _incrementCounter() {
     setState(() {
@@ -78,32 +85,23 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: FlutterMap(
-          options: MapOptions(
-            center: LatLng(51.509364, -0.128928),
-            zoom: 9.2,
+      body: screens[currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: (index) => setState(() => currentIndex = index),
+        items: const [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.map),
+              label: 'Map',
+              backgroundColor: Colors.orange
           ),
-          nonRotatedChildren: [
-            AttributionWidget.defaultWidget(
-              source: 'OpenStreetMap contributors',
-              onSourceTapped: null,
-            ),
-          ],
-          children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.example.app',
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.graphic_eq),
+              label: 'Statistic',
+              backgroundColor: Colors.orange
+          )
+        ],
+
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
