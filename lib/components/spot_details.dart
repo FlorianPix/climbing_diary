@@ -12,6 +12,7 @@ Widget spotDetails(context, Spot spot){
 
   List<Widget> elements = [];
 
+  // general info
   elements.addAll([
     Text(
       spot.name,
@@ -49,6 +50,7 @@ Widget spotDetails(context, Spot spot){
       ),
     )]);
 
+  // rating
   List<Widget> ratingRowElements = [];
 
   for (var i = 0; i < 5; i++){
@@ -67,6 +69,23 @@ Widget spotDetails(context, Spot spot){
     )
   )));
 
+  var comment = "";
+
+  if (spot.comments.isNotEmpty) {
+    elements.add(Container(
+        margin: const EdgeInsets.all(15.0),
+        padding: const EdgeInsets.all(5.0),
+        decoration: BoxDecoration(
+            border: Border.all(color: Colors.blueAccent),
+            borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          spot.comments[0],
+        )
+    ));
+  }
+
+  // time to walk from public transport
   elements.add(Center(child: Padding(
       padding: const EdgeInsets.all(5),
       child:Row(
@@ -84,6 +103,7 @@ Widget spotDetails(context, Spot spot){
       )
   )));
 
+  // time to walk from closest parking
   elements.add(Center(child: Padding(
       padding: const EdgeInsets.all(5),
       child:Row(
@@ -101,6 +121,7 @@ Widget spotDetails(context, Spot spot){
       )
   )));
 
+  // close button
   elements.add(
     Align(
       alignment: Alignment.bottomRight,
