@@ -12,7 +12,7 @@ Future<List<Spot>> fetchSpots() async {
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response, then parse the JSON.
     List<Spot> spots = [];
-    jsonDecode(response.body).forEach((s) => {
+    jsonDecode(utf8.decode(response.bodyBytes)).forEach((s) => {
       spots.add(Spot.fromJson(s))
     });
     return spots;
@@ -29,7 +29,7 @@ Future<Spot> fetchSpot(String spotId) async {
 
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response, then parse the JSON.
-    return Spot.fromJson(jsonDecode(response.body));
+    return Spot.fromJson(jsonDecode(utf8.decode(response.bodyBytes)));
   } else {
     // If the server did not return a 200 OK response,
     // then throw an exception.
