@@ -7,7 +7,9 @@ Widget spotDetails(context, Spot spot){
   String location = "";
   for (var i = 0; i < spot.location.length; i++){
     location += spot.location[i];
-    location += ", ";
+    if (i < spot.location.length - 1) {
+      location += ", ";
+    }
   }
 
   List<Widget> elements = [];
@@ -68,8 +70,6 @@ Widget spotDetails(context, Spot spot){
       children: ratingRowElements,
     )
   )));
-
-  var comment = "";
 
   if (spot.comments.isNotEmpty) {
     elements.add(Container(
