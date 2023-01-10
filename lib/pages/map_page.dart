@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:climbing_diary/components/spot_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -97,12 +100,18 @@ class _MapPageState extends State<MapPage>{
         builder: (context) => IconButton(
           icon: const Icon(Icons.place, size: 30.0, color: Colors.pink),
           tooltip: spot.name,
-          onPressed: () {
-            // TODO open spot details dialog
-            print(spot.name);
-          },
+          onPressed: () => showDialog(
+            context: context,
+            builder: (BuildContext context) => Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: spotDetails(context, spot)
+              ),
+            ),
+          ),
         ),
-      ));
+      );
     }
     return markers;
   }
