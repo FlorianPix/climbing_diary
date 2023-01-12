@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class StatisticPage extends StatelessWidget {
+  const StatisticPage({super.key});
+
   @override
   //Just a test case for "Save spot" - feature
   Widget build(BuildContext context) => Scaffold(
