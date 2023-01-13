@@ -1,22 +1,22 @@
 from typing import List
 
-from fastapi import APIRouter, Body, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Security, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response, JSONResponse
+from fastapi_auth0 import Auth0User
+from bson import ObjectId
 
-from .models.route_model import RouteModel
-from .models.update_route_model import UpdateRouteModel
-
-import os
-import motor.motor_asyncio
+from app.models.route_model import RouteModel
+from app.models.update_route_model import UpdateRouteModel
+from app.core.db import get_db
+from app.core.auth import auth
 
 router = APIRouter()
-client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
-db = client.climbing
 
 
-@router.post("/route-{spot_id}", response_description="Add new route", response_model=RouteModel)
-async def create_route(spot_id: str, route: RouteModel = Body(...)):
+@router.post('/{spot_id}', response_description="Add new route", response_model=RouteModel, dependencies=[Depends(auth.implicit_scheme)])
+async def create_route(spot_id: str, route: RouteModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    db = await get_db()
     route = jsonable_encoder(route)
     new_route = await db["routes"].insert_one(route)
     created_route = await db["routes"].find_one({"_id": new_route.inserted_id})
@@ -25,21 +25,24 @@ async def create_route(spot_id: str, route: RouteModel = Body(...)):
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_route)
 
 
-@router.get("/routes", response_description="List all routes", response_model=List[RouteModel])
-async def list_routes():
+@router.get('', response_description="List all routes", response_model=List[RouteModel], dependencies=[Depends(auth.implicit_scheme)])
+async def list_routes(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
     routes = await db["routes"].find().to_list(1000)
     return routes
 
 
-@router.get("/route-{route_id}", response_description="Get a single route", response_model=RouteModel)
-async def show_route(route_id: str):
+@router.get('/{route_id}', response_description="Get a single route", response_model=RouteModel, dependencies=[Depends(auth.implicit_scheme)])
+async def show_route(route_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
     if (route := await db["routes"].find_one({"_id": route_id})) is not None:
         return route
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")
 
 
-@router.put("/route-{route_id}", response_description="Update a route", response_model=RouteModel)
-async def update_route(route_id: str, route: UpdateRouteModel = Body(...)):
+@router.put('/{route_id}', response_description="Update a route", response_model=RouteModel, dependencies=[Depends(auth.implicit_scheme)])
+async def update_route(route_id: str, route: UpdateRouteModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    db = await get_db()
     route = {k: v for k, v in route.dict().items() if v is not None}
 
     if len(route) >= 1:
@@ -57,8 +60,9 @@ async def update_route(route_id: str, route: UpdateRouteModel = Body(...)):
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")
 
 
-@router.delete("/route-{spot_id}-{route_id}", response_description="Delete a route")
-async def delete_route(spot_id: str, route_id: str):
+@router.delete('/{spot_id}/{route_id}', response_description="Delete a route", dependencies=[Depends(auth.implicit_scheme)])
+async def delete_route(spot_id: str, route_id: str, user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    db = await get_db()
     delete_result = await db["routes"].delete_one({"_id": route_id})
 
     # remove route id from spot
