@@ -6,8 +6,7 @@ import 'package:http/http.dart' as http;
 import '../interfaces/spot.dart';
 
 Future<List<Spot>> fetchSpots() async {
-  final response = await http
-      .get(Uri.parse('http://10.0.2.2:8000/spots'));
+  final response = await http.get(Uri.parse('http://10.0.2.2:8000/spots'));
 
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response, then parse the JSON.

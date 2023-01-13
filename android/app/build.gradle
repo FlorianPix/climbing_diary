@@ -39,10 +39,12 @@ android {
         applicationId "com.example.climbing_diary"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
-        minSdkVersion flutter.minSdkVersion
+        minSdkVersion 21 // auth0 requires 21; old: flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        manifestPlaceholders['auth0Domain'] = "climbing-diary.eu.auth0.com"
+        manifestPlaceholders['auth0Scheme'] = "demo"
     }
 
     buildTypes {

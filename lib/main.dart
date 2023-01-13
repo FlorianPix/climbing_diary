@@ -1,7 +1,10 @@
 import 'package:climbing_diary/pages/diary_page.dart';
 import 'package:climbing_diary/pages/map_page.dart';
 import 'package:climbing_diary/pages/statistic_page.dart';
+import 'package:climbing_diary/pages/user.dart';
 import 'package:flutter/material.dart';
+import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() {
   runApp(const MyApp());
@@ -51,6 +54,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  Credentials? _credentials;
+  UserProfile? _user;
+
+  late Auth0 auth0;
+
   int _counter = 0;
   int currentIndex = 0;
   final screens = [
@@ -58,6 +66,12 @@ class _MyHomePageState extends State<MyHomePage> {
     DiaryPage(),
     StatisticPage()
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    auth0 = Auth0('climbing-diary.eu.auth0.com', 'FnK5PkMpjuoH5uJ64X70dlNBuBzPVynE');
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -70,6 +84,27 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<void> login() async {
+    var credentials = await auth0
+        .webAuthentication(scheme: 'demo')
+        .login();
+
+    setState(() {
+      _user = credentials.user;
+      _credentials = credentials;
+    });
+  }
+
+  Future<void> logout() async {
+    await auth0
+        .webAuthentication(scheme: 'demo')
+        .logout();
+
+    setState(() {
+      _user = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -78,32 +113,82 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: screens[currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: (index) => setState(() => currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(
+    if (_user != null) {
+      return Scaffold(
+        appBar: AppBar(
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: Text(widget.title),
+          actions: <Widget>[
+            IconButton(
+              onPressed: logout,
+              icon: const Icon(
+                Icons.logout,
+                color: Colors.black,
+                size: 30.0,
+                semanticLabel: 'logout',
+              ),
+            )],
+        ),
+        body: screens[currentIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: currentIndex,
+          onTap: (index) => setState(() => currentIndex = index),
+          items: const [
+            BottomNavigationBarItem(
               icon: Icon(Icons.map),
               label: 'Map',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Diary',
-          ),
-          BottomNavigationBarItem(
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.menu_book),
+              label: 'Diary',
+            ),
+            BottomNavigationBarItem(
               icon: Icon(Icons.graphic_eq),
               label: 'Statistic',
+            )
+          ],
+        ),
+      );
+    } else {
+      return Scaffold(
+          appBar: AppBar(
+            // Here we take the value from the MyHomePage object that was created by
+            // the App.build method, and use it to set our appbar title.
+            title: Text(widget.title),
+          ),
+          body:
+          Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(children: [
+                    Expanded(child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(child: Column(
+                          children: [
+                            const Icon(
+                              Icons.face,
+                              color: Colors.orange,
+                              size: 240.0,
+                              semanticLabel: 'Text to announce in accessibility modes',
+                            ),
+                            ElevatedButton(
+                              onPressed: login,
+                              style: ButtonStyle(
+                                backgroundColor:
+                                MaterialStateProperty.all<Color>(Colors.green),
+                              ),
+                              child: const Text('Login'),
+                            ),
+                          ]
+                      )),
+                    ))
+                  ]),
+                )
+              ]
           )
-        ],
-
-      ), // This trailing comma makes auto-formatting nicer for build methods.
-    );
+      );
+    }
   }
 }

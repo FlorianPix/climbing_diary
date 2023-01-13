@@ -40,6 +40,9 @@ dependencies:
   timelines: ^0.1.0
 
   http: ^0.13.5
+  auth0_flutter: ^1.0.2
+  flutter_dotenv: ^5.0.2
+  get_it: ^7.2.0
 
 dev_dependencies:
   flutter_test:
