@@ -1,0 +1,41 @@
+volumes:
+  db:
+
+services:
+
+  app:
+    image: cd-media
+    build: .
+    ports:
+      - 80:80
+    depends_on:
+      - db
+    environment:
+      - PROJECT_NAME=media-api
+      - BACKEND_CORS_ORIGINS=[<...YOUR_BACKEND_CORS_ORIGINS>]
+      - POSTGRES_SERVER=db
+      - POSTGRES_USER=cd-media
+      - POSTGRES_PASSWORD=<password>
+      - POSTGRES_DB=cd-media
+      - AUTH0_DOMAIN=<YOUR_AUTH0_DOMAIN>
+      - AUTH0_API_AUDIENCE=<YOUR_AUTH0_API_AUDIENCE>
+      - S3_ENDPOINT_URL=<your-s3-endpoint-url>
+      - S3_ACCESS_KEY_ID=<your-s3-access-key-id>
+      - S3_SECRET_ACCESS_KEY=<your-s3-secret-access-key>
+      - S3_BUCKET_NAME=<your-s3-bucket-name>
+      - S3_SIGNATURE_VERSION=s3v4
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=cd-media
+      - POSTGRES_PASSWORD=<password>
+      - POSTGRES_DB=cd-media
+    volumes: 
+      - db:/var/lib/postgresql/data
+
+# Copy into a file called docker-compose.yml, replace <variables> and run `docker compose up` or `docker compose up -d` to run in the background.
+# You can also run `docker compose down` to stop the containers.
+
+# Use `docker build -t lc-media .` to build the image.
