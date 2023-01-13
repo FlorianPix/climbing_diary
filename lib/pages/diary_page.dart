@@ -68,10 +68,12 @@ class _InnerTimeline extends StatelessWidget {
 class _DiaryPageState extends State<DiaryPage> {
   late Future<List<Spot>> futureSpots;
 
+  final SpotService spotService = SpotService();
+
   @override
   void initState(){
     super.initState();
-    futureSpots = fetchSpots();
+    futureSpots = spotService.fetchSpots();
   }
 
   @override

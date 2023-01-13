@@ -17,6 +17,7 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage>{
   int _counter = 0;
+  final SpotService spotService = SpotService();
 
   void _incrementCounter() {
     setState(() {
@@ -34,7 +35,7 @@ class _MapPageState extends State<MapPage>{
   @override
   void initState(){
     super.initState();
-    futureSpots = fetchSpots();
+    futureSpots = spotService.fetchSpots();
   }
 
   @override

@@ -43,6 +43,8 @@ dependencies:
   auth0_flutter: ^1.0.2
   flutter_dotenv: ^5.0.2
   get_it: ^7.2.0
+  shared_preferences: ^2.0.16
+  dio: ^4.0.6
 
 dev_dependencies:
   flutter_test:

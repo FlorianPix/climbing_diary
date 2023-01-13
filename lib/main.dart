@@ -2,11 +2,16 @@ import 'package:climbing_diary/pages/diary_page.dart';
 import 'package:climbing_diary/pages/map_page.dart';
 import 'package:climbing_diary/pages/statistic_page.dart';
 import 'package:climbing_diary/pages/user.dart';
+import 'package:climbing_diary/services/locator.dart';
 import 'package:flutter/material.dart';
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+import 'data/sharedprefs/shared_preference_helper.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await setup();
   runApp(const MyApp());
 }
 
@@ -57,6 +62,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Credentials? _credentials;
   UserProfile? _user;
 
+  final _prefsLocator = getIt.get<SharedPreferenceHelper>();
+
   late Auth0 auth0;
 
   int _counter = 0;
@@ -87,11 +94,15 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> login() async {
     var credentials = await auth0
         .webAuthentication(scheme: 'demo')
-        .login();
+        .login(
+          audience: 'climbing-diary-API',
+          scopes: {'profile', 'email', 'read:diary', 'write:diary', 'read:media', 'write:media'}
+        );
 
     setState(() {
       _user = credentials.user;
       _credentials = credentials;
+      _prefsLocator.setUserToken(userToken: 'Bearer ${credentials.accessToken}');
     });
   }
 
