@@ -107,7 +107,7 @@ class _MapPageState extends State<MapPage>{
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: spotDetails(context, spot)
+              child: SpotDetails(spot: spot)
               ),
             ),
           ),

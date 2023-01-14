@@ -4,10 +4,9 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Security, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response, JSONResponse
 from fastapi_auth0 import Auth0User
-from bson import ObjectId
 
-from app.models.pitch_model import PitchModel
-from app.models.update_pitch_model import UpdatePitchModel
+from app.models.pitch.pitch_model import PitchModel
+from app.models.pitch.update_pitch_model import UpdatePitchModel
 from app.core.db import get_db
 from app.core.auth import auth
 

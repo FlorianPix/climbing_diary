@@ -7,10 +7,10 @@ class Spot {
   final List<String> location;
   final List<String> routes;
   final int rating;
-  final List<String> comments;
-  final int familyFriendly;
+  final String comment;
   final int distanceParking;
   final int distancePublicTransport;
+  final List<String> mediaIds;
 
   const Spot({
     required this.id,
@@ -21,10 +21,10 @@ class Spot {
     required this.location,
     required this.routes,
     required this.rating,
-    required this.comments,
-    required this.familyFriendly,
+    required this.comment,
     required this.distanceParking,
-    required this.distancePublicTransport
+    required this.distancePublicTransport,
+    required this.mediaIds
   });
 
   factory Spot.fromJson(Map<String, dynamic> json) {
@@ -37,10 +37,10 @@ class Spot {
       location: List<String>.from(json['location']),
       routes: List<String>.from(json['routes']),
       rating: json['rating'],
-      comments: List<String>.from(json['comments']),
-      familyFriendly: json['family_friendly'],
+      comment: json['comment'],
       distanceParking: json['distance_parking'],
-      distancePublicTransport: json['distance_public_transport']
+      distancePublicTransport: json['distance_public_transport'],
+      mediaIds: List<String>.from(json['media_ids'])
     );
   }
 }

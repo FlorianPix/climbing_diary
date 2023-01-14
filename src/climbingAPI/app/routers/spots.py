@@ -4,10 +4,9 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Security, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response, JSONResponse
 from fastapi_auth0 import Auth0User
-from bson import ObjectId
 
-from app.models.spot_model import SpotModel
-from app.models.update_spot_model import UpdateSpotModel
+from app.models.spot.spot_model import SpotModel
+from app.models.spot.update_spot_model import UpdateSpotModel
 from app.core.db import get_db
 from app.core.auth import auth
 
@@ -67,3 +66,9 @@ async def delete_spot(spot_id: str, user: Auth0User = Security(auth.get_user, sc
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     raise HTTPException(status_code=404, detail=f"Spot {spot_id} not found")
+
+
+@router.delete('', response_description="Delete all spots", dependencies=[Depends(auth.implicit_scheme)])
+async def delete_spots(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    db = await get_db()
+    delete_result = await db["spots"].delete_many({})

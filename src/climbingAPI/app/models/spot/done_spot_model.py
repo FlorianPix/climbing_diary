@@ -1,19 +1,21 @@
 from datetime import date
-from pydantic import BaseModel, Field
-from bson import ObjectId
 from typing import List
 
-from .py_object_id import PyObjectId
-from .route_model import RouteModel
+from pydantic import BaseModel, Field
+from bson import ObjectId
+
+from app.models.py_object_id import PyObjectId
 
 
 class DoneSpotModel(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    _id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     date: date
     spot_id: str = Field(...)
     spot_name: str = Field(...)
+    done_routes: List[str] = []
     rating: int = Field(..., ge=0, le=5)
     comment: str = Field(...)
+    media_ids: List[str] = []
 
     class Config:
         allow_population_by_field_name = True
@@ -23,7 +25,9 @@ class DoneSpotModel(BaseModel):
             "example": {
                 "date": "2022-10-08",
                 "name": "Falkenstein",
-                "rating": 4,
-                "comment": "Great spot close to a lake with solid holds but kindof hard to reach.",
+                "done_routes": [],
+                "rating": 5,
+                "comment": "We had very good conditions that day.",
+                "media_ids": []
             }
         }

@@ -2,7 +2,7 @@ from datetime import date
 from pydantic import BaseModel, Field
 from bson import ObjectId
 
-from .py_object_id import PyObjectId
+from app.models.py_object_id import PyObjectId
 
 
 class PitchModel(BaseModel):

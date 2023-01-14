@@ -69,9 +69,9 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   int currentIndex = 0;
   final screens = [
-    MapPage(),
-    DiaryPage(),
-    StatisticPage()
+    const MapPage(),
+    const DiaryPage(),
+    const StatisticPage()
   ];
 
   @override

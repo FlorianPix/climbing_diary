@@ -3,11 +3,11 @@ from pydantic import BaseModel, Field
 from bson import ObjectId
 from typing import List
 
-from .py_object_id import PyObjectId
+from app.models.py_object_id import PyObjectId
 
 
 class SpotModel(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    _id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     date: date
     name: str = Field(...)
     coordinates: List[float] = []
@@ -15,10 +15,10 @@ class SpotModel(BaseModel):
     location: List[str] = []
     routes: List[str] = []
     rating: int = Field(..., ge=0, le=5)
-    comments: List[str] = []
-    family_friendly: int = Field(..., ge=0, le=5)
+    comment: str = Field(...)
     distance_parking: int = Field(...)
     distance_public_transport: int = Field(...)
+    media_ids: List[str] = []
 
     class Config:
         allow_population_by_field_name = True
@@ -29,13 +29,13 @@ class SpotModel(BaseModel):
                 "date": "2022-10-08",
                 "name": "Falkenstein",
                 "coordinates": [50.746036, 10.642666],
-                "country": "Germany",
+                "country": "Deutschland",
                 "location": ["Thüringen", "Thüringer Wald"],
                 "routes": [],
                 "rating": 5,
-                "comments": [],
-                "family_friendly": 4,
+                "comment": "Great spot close to a lake with solid holds but kinda hard to reach.",
                 "distance_parking": 120,
-                "distance_public_transport": 120
+                "distance_public_transport": 120,
+                "media_ids": []
             }
         }

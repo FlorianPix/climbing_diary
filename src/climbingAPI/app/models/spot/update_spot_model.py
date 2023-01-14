@@ -12,10 +12,10 @@ class UpdateSpotModel(BaseModel):
     location: Optional[tuple]
     routes: Optional[tuple]
     rating: Optional[int]
-    comments: Optional[List[str]]
-    family_friendly: Optional[int]
+    comment: Optional[str]
     distance_parking: Optional[int]
     distance_public_transport: Optional[int]
+    media_ids: Optional[tuple]
 
     class Config:
         arbitrary_types_allowed = True
@@ -25,13 +25,13 @@ class UpdateSpotModel(BaseModel):
                 "date": "2022-10-08",
                 "name": "Falkenstein",
                 "coordinates": [50.746036, 10.642666],
-                "country": "Germany",
-                "location": ["Thüringen", "Thüringer_Wald"],
+                "country": "Deutschland",
+                "location": ["Thüringen", "Thüringer Wald"],
                 "routes": [],
-                "rating": 0,
-                "comments": [],
-                "family_friendly": 4,
+                "rating": 5,
+                "comment": "Great spot close to a lake with solid holds but kinda hard to reach.",
                 "distance_parking": 120,
-                "distance_public_transport": 120
+                "distance_public_transport": 120,
+                "media_ids": []
             }
         }
