@@ -212,6 +212,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
+  open_street_map_search_and_pick:
+    dependency: "direct dev"
+    description:
+      name: open_street_map_search_and_pick
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.15"
   path:
     dependency: transitive
     description:

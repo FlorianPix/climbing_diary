@@ -52,6 +52,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   flutter_native_splash: ^2.0.1+1
+  open_street_map_search_and_pick: ^0.0.15
 
 flutter_native_splash:
   color: "f5cb42"
