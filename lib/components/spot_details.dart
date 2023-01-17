@@ -71,7 +71,7 @@ Widget spotDetails(context, Spot spot){
     )
   )));
 
-  if (spot.comments.isNotEmpty) {
+  if (spot.comments!.isNotEmpty) {
     elements.add(Container(
         margin: const EdgeInsets.all(15.0),
         padding: const EdgeInsets.all(5.0),

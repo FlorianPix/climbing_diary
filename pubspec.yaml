@@ -38,6 +38,7 @@ dependencies:
   flutter_map: ^3.0.0
   latlong2: ^0.8.1
   timelines: ^0.1.0
+  intl: ^0.17.0
 
   http: ^0.13.5
 

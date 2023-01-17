@@ -89,7 +89,8 @@ class _MapPageState extends State<MapPage>{
               context,
               MaterialPageRoute(builder: (context) => const NavigationScreenPage()),
             );
-          }// Comes pick destination icon
+          },
+          child: const Icon(Icons.add)// Comes pick destination icon
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
