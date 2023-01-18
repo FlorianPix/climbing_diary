@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:skeletons/skeletons.dart';
 
-import '../interfaces/media.dart';
 import '../interfaces/spot.dart';
 import '../services/media_service.dart';
 
@@ -14,8 +14,16 @@ class SpotDetails extends StatefulWidget {
   State<StatefulWidget> createState() => _SpotDetailsState();
 }
 
-class _SpotDetailsState extends State<SpotDetails> {
+class _SpotDetailsState extends State<SpotDetails>{
   final MediaService mediaService = MediaService();
+
+  Future<List<String>> fetchURLs() {
+    List<Future<String>> futures = [];
+    for (var mediaId in widget.spot.mediaIds) {
+      futures.add(mediaService.fetchMediumUrl(mediaId));
+    }
+    return Future.wait(futures);
+  }
 
   @override
   void initState(){
@@ -132,38 +140,76 @@ class _SpotDetailsState extends State<SpotDetails> {
 
     // images
     if (widget.spot.mediaIds.isNotEmpty) {
-      List<Widget> images = [];
-      for (var mediaId in widget.spot.mediaIds) {
-        Future<String> futureMediaUrl = mediaService.fetchMediumUrl(mediaId);
-        images.add(
-          FutureBuilder<String>(
-            future: futureMediaUrl,
-            builder: (context, snapshot) {
-              String url = snapshot.data!;
-              return Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Image.network(url)
-                ),
+      List<Widget> imageWidgets = [];
+      Future<List<String>> futureMediaUrls = fetchURLs();
+
+      imageWidgets.add(
+        FutureBuilder<List<String>>(
+          future: futureMediaUrls,
+          builder: (context, snapshot) {
+            Widget skeleton = const Padding(
+                padding: EdgeInsets.all(5),
+                child: SkeletonAvatar(
+                  style: SkeletonAvatarStyle(
+                      shape: BoxShape.rectangle, width: 150, height: 250
+                  ),
+                )
+            );
+
+            if (snapshot.data != null){
+              List<String> urls = snapshot.data!;
+              List<Widget> images = [];
+              for (var url in urls){
+                images.add(
+                  Padding(
+                    padding: const EdgeInsets.all(5.0),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Image.network(
+                        url,
+                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) {
+                            return child;
+                          }
+                          return skeleton;
+                        },
+                      )
+                    ),
+                  )
+                );
+              }
+              return Container(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: images
+                  )
               );
             }
-          )
-        );
-      }
+            List<Widget> skeletons = [];
+            for (var i = 0; i < widget.spot.mediaIds.length; i++){
+              skeletons.add(skeleton);
+            }
+            return Container(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: skeletons
+                )
+            );
+          }
+        )
+      );
       elements.add(
         Container(
             height: 300,
             child: ListView(
                 scrollDirection: Axis.horizontal,
-                children: images
+                children: imageWidgets
             )
         ),
       );
     }
-
-
-
     // close button
     elements.add(
         Align(
