@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../interfaces/spot.dart';
 import '../services/media_service.dart';
+import '../services/spot_service.dart';
 
 class SpotDetails extends StatefulWidget {
   const SpotDetails({super.key, required this.spot});
@@ -16,14 +18,78 @@ class SpotDetails extends StatefulWidget {
 
 class _SpotDetailsState extends State<SpotDetails>{
   final MediaService mediaService = MediaService();
+  final SpotService spotService = SpotService();
 
   Future<List<String>> fetchURLs() {
     List<Future<String>> futures = [];
     for (var mediaId in widget.spot.mediaIds) {
-      futures.add(mediaService.fetchMediumUrl(mediaId));
+      futures.add(mediaService.getMediumUrl(mediaId));
     }
     return Future.wait(futures);
   }
+
+  XFile? image;
+  final ImagePicker picker = ImagePicker();
+
+  Future getImage(ImageSource media) async {
+    var img = await picker.pickImage(source: media);
+    if (img != null){
+      var mediaId = await mediaService.uploadMedia(img);
+      Spot spot = widget.spot;
+      spot.mediaIds.add(mediaId);
+      spotService.updateSpot(spot);
+    }
+
+    setState(() {
+      image = img;
+    });
+  }
+
+  void myAlert() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            title: const Text('Please choose media to select'),
+            content: SizedBox(
+              height: MediaQuery.of(context).size.height / 6,
+              child: Column(
+                children: [
+                  ElevatedButton(
+                    //if user click this button, user can upload image from gallery
+                    onPressed: () {
+                      Navigator.pop(context);
+                      getImage(ImageSource.gallery);
+                    },
+                    child: Row(
+                      children: const [
+                        Icon(Icons.image),
+                        Text('From Gallery'),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton(
+                    //if user click this button. user can upload image from camera
+                    onPressed: () {
+                      Navigator.pop(context);
+                      getImage(ImageSource.camera);
+                    },
+                    child: Row(
+                      children: const [
+                        Icon(Icons.camera),
+                        Text('From Camera'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
 
   @override
   void initState(){
@@ -203,6 +269,16 @@ class _SpotDetailsState extends State<SpotDetails>{
         ),
       );
     }
+    elements.add(
+      Padding(
+        padding: const EdgeInsets.all(5.0),
+        child: IconButton(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          tooltip: 'add image',
+          onPressed: () => myAlert()
+        ),
+      )
+    );
     // close button
     elements.add(
         Align(
