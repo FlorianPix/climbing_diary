@@ -7,11 +7,10 @@ from app.models.py_object_id import PyObjectId
 
 
 class SpotModel(BaseModel):
-    _id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    spot_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     date: date
     name: str = Field(...)
     coordinates: List[float] = []
-    country: str = Field(...)
     location: List[str] = []
     routes: List[str] = []
     rating: int = Field(..., ge=0, le=5)
@@ -26,11 +25,11 @@ class SpotModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
+                "spot_id": "6381f5cd63407a7f6e6fa820",
                 "date": "2022-10-08",
                 "name": "Falkenstein",
                 "coordinates": [50.746036, 10.642666],
-                "country": "Deutschland",
-                "location": ["Thüringen", "Thüringer Wald"],
+                "location": ["Deutschland", "Thüringen", "Thüringer Wald"],
                 "routes": [],
                 "rating": 5,
                 "comment": "Great spot close to a lake with solid holds but kinda hard to reach.",

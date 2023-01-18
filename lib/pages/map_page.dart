@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:climbing_diary/components/spot_details.dart';
 import 'package:climbing_diary/pages/navigation_screen_page.dart';
 import 'package:flutter/material.dart';
@@ -17,26 +15,14 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage>{
-  int _counter = 0;
   final SpotService spotService = SpotService();
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
 
   late Future<List<Spot>> futureSpots;
 
   @override
   void initState(){
     super.initState();
-    futureSpots = spotService.fetchSpots();
+    futureSpots = spotService.getSpots();
   }
 
   @override
@@ -56,6 +42,26 @@ class _MapPageState extends State<MapPage>{
               builder: (context, snapshot) {
                 if(snapshot.hasData) {
                   var spots = snapshot.data!;
+                  if (spots.isEmpty) {
+                    return FlutterMap(
+                      options: MapOptions(
+                        center: LatLng(50.746036, 10.642666),
+                        zoom: 5,
+                      ),
+                      nonRotatedChildren: [
+                        AttributionWidget.defaultWidget(
+                          source: 'OpenStreetMap contributors',
+                          onSourceTapped: null,
+                        ),
+                      ],
+                      children: [
+                        TileLayer(
+                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.app',
+                        ),
+                      ],
+                    );
+                  }
                   return FlutterMap(
                     options: MapOptions(
                       center: LatLng(spots[0].coordinates[0], spots[0].coordinates[1]),

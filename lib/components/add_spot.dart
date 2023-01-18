@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../interfaces/create_spot.dart';
+import '../services/spot_service.dart';
+
 class AddSpot extends StatefulWidget {
   const AddSpot({super.key, required this.coordinates, required this.address});
 
@@ -14,6 +17,7 @@ class AddSpot extends StatefulWidget {
 
 class _AddSpotState extends State<AddSpot>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final SpotService spotService = SpotService();
   double currentSliderValue = 0;
 
   @override
@@ -118,14 +122,15 @@ class _AddSpotState extends State<AddSpot>{
       ),
       actions: <Widget>[
         TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (_formKey.currentState!.validate()) {
                 var now = DateTime.now();
                 var formatter = DateFormat('yyyy-MM-dd');
                 String formattedDate = formatter.format(now);
-                //Spot spot = Spot(id: null, date: formattedDate, name: _controllerTitle.text, coordinates: [coordinates.latitude, coordinates.longitude], country: null, location: [address], routes: null, rating: int.parse(_controllerRating.text), comments: null, familyFriendly: null, distanceParking: int.parse(_controllerCar.text), distancePublicTransport: int.parse(_controllerBus.text));
+                CreateSpot spot = CreateSpot(date: formattedDate, name: controllerTitle.text, coordinates: [widget.coordinates.latitude, widget.coordinates.longitude], location: [widget.address], routes: [], rating: currentSliderValue.toInt(), distanceParking: int.parse(controllerCar.text), distancePublicTransport: int.parse(controllerBus.text), comment: controllerDescription.text, mediaIds: []);
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
+                await spotService.createSpot(spot);
               }
             },
             child: const Text("Save"))

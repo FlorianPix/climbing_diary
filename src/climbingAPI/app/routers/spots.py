@@ -19,13 +19,13 @@ async def create_spot(spot: SpotModel = Body(...), user: Auth0User = Security(au
     spot = jsonable_encoder(spot)
     new_spot = await db["spots"].insert_one(spot)
     created_spot = await db["spots"].find_one({"_id": new_spot.inserted_id})
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_spot)
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content=jsonable_encoder(SpotModel(**created_spot)))
 
 
 @router.get('', response_description="List all spots", response_model=List[SpotModel], dependencies=[Depends(auth.implicit_scheme)])
 async def list_spots(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
-    spots = await db["spots"].find().to_list(1000)
+    spots = await db["spots"].find().to_list(None)
     return spots
 
 

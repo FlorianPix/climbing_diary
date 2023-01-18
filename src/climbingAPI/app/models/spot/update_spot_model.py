@@ -8,7 +8,6 @@ class UpdateSpotModel(BaseModel):
     date: Optional[str]
     name: Optional[str]
     coordinates: Optional[tuple]
-    country: Optional[str]
     location: Optional[tuple]
     routes: Optional[tuple]
     rating: Optional[int]
@@ -25,8 +24,7 @@ class UpdateSpotModel(BaseModel):
                 "date": "2022-10-08",
                 "name": "Falkenstein",
                 "coordinates": [50.746036, 10.642666],
-                "country": "Deutschland",
-                "location": ["Thüringen", "Thüringer Wald"],
+                "location": ["Deutschland", "Thüringen", "Thüringer Wald"],
                 "routes": [],
                 "rating": 5,
                 "comment": "Great spot close to a lake with solid holds but kinda hard to reach.",

@@ -73,7 +73,7 @@ class _DiaryPageState extends State<DiaryPage> {
   @override
   void initState(){
     super.initState();
-    futureSpots = spotService.fetchSpots();
+    futureSpots = spotService.getSpots();
   }
 
   @override
@@ -123,13 +123,6 @@ class _DiaryPageState extends State<DiaryPage> {
                     ));
                     elements.add(Text(
                       details,
-                      style: DefaultTextStyle.of(context).style.copyWith(
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w600
-                      ),
-                    ));
-                    elements.add(Text(
-                      spots[index].country,
                       style: DefaultTextStyle.of(context).style.copyWith(
                           fontSize: 14.0,
                           fontWeight: FontWeight.w600

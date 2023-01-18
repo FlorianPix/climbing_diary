@@ -66,13 +66,6 @@ class _SpotDetailsState extends State<SpotDetails>{
         ),
       ),
       Text(
-        widget.spot.country,
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400
-        ),
-      ),
-      Text(
         location,
         style: const TextStyle(
             fontSize: 14,
