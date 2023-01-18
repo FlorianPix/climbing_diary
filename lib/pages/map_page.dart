@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:climbing_diary/components/spot_details.dart';
+import 'package:climbing_diary/pages/navigation_screen_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -84,9 +85,13 @@ class _MapPageState extends State<MapPage>{
           )
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NavigationScreenPage()),
+            );
+          },
+          child: const Icon(Icons.add)// Comes pick destination icon
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }

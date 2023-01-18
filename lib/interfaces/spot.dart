@@ -12,6 +12,19 @@ class Spot {
   final int distancePublicTransport;
   final List<String> mediaIds;
 
+  /*final String? id;
+  final String date;
+  final String name;
+  final List<double> coordinates;
+  final String? country;
+  final List<String> location;
+  final List<String>? routes;
+  final int rating;
+  final List<String>? comments;
+  final int? familyFriendly;
+  final int? distanceParking;
+  final int? distancePublicTransport;*/
+
   const Spot({
     required this.id,
     required this.date,

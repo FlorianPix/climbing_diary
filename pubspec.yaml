@@ -38,6 +38,7 @@ dependencies:
   flutter_map: ^3.0.0
   latlong2: ^0.8.1
   timelines: ^0.1.0
+  intl: ^0.17.0
 
   http: ^0.13.5
   auth0_flutter: ^1.0.2
@@ -58,6 +59,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   flutter_native_splash: ^2.0.1+1
+  open_street_map_search_and_pick: ^0.0.15
 
 flutter_native_splash:
   color: "f5cb42"
