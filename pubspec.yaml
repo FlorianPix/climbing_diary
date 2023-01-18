@@ -47,6 +47,7 @@ dependencies:
   shared_preferences: ^2.0.16
   dio: ^4.0.6
   skeletons: ^0.0.3
+  open_street_map_search_and_pick: ^0.0.15
 
 dev_dependencies:
   flutter_test:
@@ -59,7 +60,6 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   flutter_native_splash: ^2.0.1+1
-  open_street_map_search_and_pick: ^0.0.15
 
 flutter_native_splash:
   color: "f5cb42"
