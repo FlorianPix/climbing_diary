@@ -1,5 +1,4 @@
-class Spot {
-  final String id;
+class CreateSpot {
   final String date;
   final String name;
   final List<double> coordinates;
@@ -11,8 +10,7 @@ class Spot {
   final int distancePublicTransport;
   final List<String> mediaIds;
 
-  const Spot({
-    required this.id,
+  const CreateSpot({
     required this.date,
     required this.name,
     required this.coordinates,
@@ -25,9 +23,8 @@ class Spot {
     required this.mediaIds
   });
 
-  factory Spot.fromJson(Map<String, dynamic> json) {
-    return Spot(
-      id: json['_id'],
+  factory CreateSpot.fromJson(Map<String, dynamic> json) {
+    return CreateSpot(
       date: json['date'],
       name: json['name'],
       coordinates: List<double>.from(json['coordinates']),
@@ -40,4 +37,17 @@ class Spot {
       mediaIds: List<String>.from(json['media_ids'])
     );
   }
+
+  Map toJson() => {
+    "date": date,
+    "name": name,
+    "coordinates": coordinates,
+    "location": location,
+    "routes": routes,
+    "rating": rating,
+    "comment": comment,
+    "distance_parking": distanceParking,
+    "distance_public_transport": distancePublicTransport,
+    "media_ids": mediaIds
+  };
 }

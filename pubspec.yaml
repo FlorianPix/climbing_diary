@@ -38,8 +38,17 @@ dependencies:
   flutter_map: ^3.0.0
   latlong2: ^0.8.1
   timelines: ^0.1.0
+  intl: ^0.17.0
 
   http: ^0.13.5
+  auth0_flutter: ^1.0.2
+  flutter_dotenv: ^5.0.2
+  get_it: ^7.2.0
+  shared_preferences: ^2.0.16
+  dio: ^4.0.6
+  skeletons: ^0.0.3
+  open_street_map_search_and_pick: ^0.0.15
+  image_picker: ^0.8.6
 
 dev_dependencies:
   flutter_test:

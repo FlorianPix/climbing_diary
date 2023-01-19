@@ -1,0 +1,18 @@
+volumes:
+  db_test:
+
+services:
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=cd-media
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=cd-media
+    ports:
+      - '5432:5432'
+    volumes: 
+      - db_test:/var/lib/postgresql/data
+
+# For local development, database only.

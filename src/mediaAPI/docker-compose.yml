@@ -1,0 +1,38 @@
+volumes:
+  db:
+
+services:
+
+  app:
+    image: cd-media
+    build: .
+    ports:
+      - 8001:8001
+    depends_on:
+      - db
+    environment:
+      - PROJECT_NAME=mediaAPI
+      - SERVER_IP=0.0.0.0
+      - SERVER_PORT=8001
+      - BACKEND_CORS_ORIGINS=["http://localhost:4200", "http://localhost:4200/", "http://localhost", "http://localhost:8000"]
+      - POSTGRES_SERVER=db
+      - POSTGRES_USER=cd-media
+      - POSTGRES_PASSWORD=aeQf6t764b9tKCpvUm9eUmWX3Yk8w9bc
+      - POSTGRES_DB=cd-media
+      - AUTH0_DOMAIN=climbing-diary.eu.auth0.com
+      - AUTH0_API_AUDIENCE=climbing-diary-API
+      - S3_ENDPOINT_URL=https://3400173884a95cb9ec0e448bcf2b1861.r2.cloudflarestorage.com/media
+      - S3_ACCESS_KEY_ID=9b8f001814c238104ed795ca6f1d16db
+      - S3_SECRET_ACCESS_KEY=e39a67aaf5467eaabcd5dae97ef95409a3200f2fbc6900fd1555b90c2f609132
+      - S3_BUCKET_NAME=testing-cd-media
+      - S3_SIGNATURE_VERSION=s3v4
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=cd-media
+      - POSTGRES_PASSWORD=aeQf6t764b9tKCpvUm9eUmWX3Yk8w9bc
+      - POSTGRES_DB=cd-media
+    volumes: 
+      - db:/var/lib/postgresql/data

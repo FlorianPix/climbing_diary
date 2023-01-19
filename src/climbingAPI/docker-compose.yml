@@ -1,0 +1,31 @@
+volumes:
+  db:
+
+services:
+
+  app:
+    image: cd-diary
+    build: .
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+    environment:
+      - PROJECT_NAME=climbing-api
+      - SERVER_IP=0.0.0.0
+      - SERVER_PORT=8000
+      - BACKEND_CORS_ORIGINS=["http://localhost:4200", "http://localhost:4200/", "http://localhost", "http://localhost:8000"]
+      - DATABASE_URI=mongodb://cd-diary:9SfKhCKyedig2tfiWqoRSbB4@db/?retryWrites=true&w=majority
+      - AUTH0_DOMAIN=climbing-diary.eu.auth0.com
+      - AUTH0_API_AUDIENCE=climbing-diary-API
+
+  db:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: cd-diary
+      MONGO_INITDB_ROOT_PASSWORD: 9SfKhCKyedig2tfiWqoRSbB4
+    volumes:
+      - db:/data/db
