@@ -89,9 +89,9 @@ class _DiaryPageState extends State<DiaryPage> {
           if(snapshot.hasData) {
             var spots = snapshot.data!;
             spots.sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
-            return Padding(
+            return ListView(
               padding: const EdgeInsets.all(20.0),
-              child: FixedTimeline.tileBuilder(
+              children: [FixedTimeline.tileBuilder(
                 theme: TimelineThemeData(
                   nodePosition: 0,
                   color: const Color(0xff989898),
@@ -185,7 +185,7 @@ class _DiaryPageState extends State<DiaryPage> {
                     color: Color(0xff66c97f),
                   ),
                 ),
-              ),
+              )],
             );
           } else if (snapshot.hasError) {
             return Text('${snapshot.error}');
