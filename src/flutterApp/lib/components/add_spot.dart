@@ -70,6 +70,19 @@ class _AddSpotState extends State<AddSpot>{
                 controller: controllerLong,
                 decoration: const InputDecoration(labelText: "Longitude"),
               ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    "Rating",
+                    style: TextStyle(
+                      color: Colors.black.withOpacity(0.6),
+                      fontSize: 16
+                    )
+                  ),
+                ),
+              ),
               Slider(
                 value: currentSliderValue,
                 max: 5,
@@ -82,20 +95,17 @@ class _AddSpotState extends State<AddSpot>{
                 },
               ),
               TextFormField(
-                validator: (value) {
-                  if (value == null) {
-                    return "Please add description";
-                  }
-                  return null;
-                },
                 controller: controllerDescription,
                 decoration: const InputDecoration(
                     hintText: "Description", labelText: "Description"),
               ),
               TextFormField(
                 validator: (value) {
-                  if (value.runtimeType != String) {
-                    return "Just a number please";
+                  if (value != null && value != ""){
+                    var i = int.tryParse(value);
+                    if (i == null) {
+                      return "Must be a number";
+                    }
                   }
                   return null;
                 },
@@ -106,8 +116,11 @@ class _AddSpotState extends State<AddSpot>{
               ),
               TextFormField(
                 validator: (value) {
-                  if (value.runtimeType != String) {
-                    return "Just a number please";
+                  if (value != null && value != ""){
+                    var i = int.tryParse(value);
+                    if (i == null) {
+                      return "Must be a number";
+                    }
                   }
                   return null;
                 },
