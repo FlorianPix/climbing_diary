@@ -279,16 +279,26 @@ class _SpotDetailsState extends State<SpotDetails>{
         ),
       )
     );
-    // close button
     elements.add(
-        Align(
-          alignment: Alignment.bottomRight,
-          child: TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('Close'),
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // delete spot button
+            IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+                spotService.deleteSpot(widget.spot.id);
+              },
+              icon: const Icon(Icons.delete),
+            ),
+            // close dialog button
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Close'),
+            ),
+          ],
         )
     );
 
