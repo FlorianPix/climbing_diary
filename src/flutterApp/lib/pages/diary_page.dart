@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:timelines/timelines.dart';
 
+import '../components/spot_details.dart';
 import '../interfaces/spot.dart';
 import '../services/spot_service.dart';
 
@@ -166,12 +167,25 @@ class _DiaryPageState extends State<DiaryPage> {
                       _InnerTimeline(routes: spots[index].routes)
                     );
 
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: elements,
+                    return InkWell(
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (BuildContext context) => Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: SpotDetails(spot: spots[index])
+                        ),
+                      ),
+                      child: Ink(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: elements,
+                          ),
+                        )
                       ),
                     );
                   },
