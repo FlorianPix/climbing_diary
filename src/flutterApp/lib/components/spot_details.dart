@@ -196,7 +196,6 @@ class _SpotDetailsState extends State<SpotDetails>{
           )
       ));
     }
-
     // images
     if (widget.spot.mediaIds.isNotEmpty) {
       List<Widget> imageWidgets = [];
@@ -226,6 +225,7 @@ class _SpotDetailsState extends State<SpotDetails>{
                       borderRadius: BorderRadius.circular(8.0),
                       child: Image.network(
                         url,
+                        fit: BoxFit.fitHeight,
                         loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
                           if (loadingProgress == null) {
                             return child;
@@ -238,7 +238,7 @@ class _SpotDetailsState extends State<SpotDetails>{
                 );
               }
               return Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(10),
                   child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: images
@@ -250,7 +250,7 @@ class _SpotDetailsState extends State<SpotDetails>{
               skeletons.add(skeleton);
             }
             return Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(10),
                 child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: skeletons
@@ -261,7 +261,7 @@ class _SpotDetailsState extends State<SpotDetails>{
       );
       elements.add(
         Container(
-            height: 300,
+            height: 250,
             child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: imageWidgets
