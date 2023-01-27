@@ -18,6 +18,14 @@ class AddSpot extends StatefulWidget {
 class _AddSpotState extends State<AddSpot>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final SpotService spotService = SpotService();
+  final TextEditingController controllerTitle = TextEditingController();
+  final TextEditingController controllerAddress = TextEditingController();
+  final TextEditingController controllerLat = TextEditingController();
+  final TextEditingController controllerLong = TextEditingController();
+  final TextEditingController controllerDescription = TextEditingController();
+  final TextEditingController controllerBus = TextEditingController();
+  final TextEditingController controllerCar = TextEditingController();
+
   double currentSliderValue = 0;
 
   @override
@@ -27,13 +35,6 @@ class _AddSpotState extends State<AddSpot>{
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController controllerTitle = TextEditingController();
-    final TextEditingController controllerAddress = TextEditingController();
-    final TextEditingController controllerLat = TextEditingController();
-    final TextEditingController controllerLong = TextEditingController();
-    final TextEditingController controllerDescription = TextEditingController();
-    final TextEditingController controllerBus = TextEditingController();
-    final TextEditingController controllerCar = TextEditingController();
     controllerAddress.text = widget.address;
     controllerLat.text = widget.coordinates.latitude.toString();
     controllerLong.text = widget.coordinates.longitude.toString();
