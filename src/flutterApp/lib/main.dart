@@ -64,7 +64,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late Auth0 auth0;
 
-  int _counter = 0;
   int currentIndex = 0;
   final screens = [
     const MapPage(),
@@ -76,17 +75,6 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     auth0 = Auth0('climbing-diary.eu.auth0.com', 'FnK5PkMpjuoH5uJ64X70dlNBuBzPVynE');
-  }
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
   }
 
   Future<void> login() async {
