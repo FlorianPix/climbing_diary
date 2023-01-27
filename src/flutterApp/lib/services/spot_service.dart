@@ -43,20 +43,35 @@ class SpotService {
     }
   }
 
-  Future<Spot> createSpot(CreateSpot spot) async {
-    final Response response = await netWorkLocator.dio.post(
-        'http://10.0.2.2:8000/spot',
-        data: spot.toJson()
+  Future<Spot?> createSpot(CreateSpot createSpot) async {
+    CreateSpot spot = CreateSpot(
+      date: createSpot.date,
+      name: createSpot.name,
+      coordinates: createSpot.coordinates,
+      location: createSpot.location,
+      rating: createSpot.rating,
+      comment: (createSpot.comment != null) ? createSpot.comment! : "",
+      distanceParking: (createSpot.distanceParking != null) ? createSpot.distanceParking! : 0,
+      distancePublicTransport: (createSpot.distancePublicTransport != null) ? createSpot.distancePublicTransport! : 0,
     );
-
-    if (response.statusCode == 201) {
-      // If the server did return a 200 OK response, then parse the JSON.
-      return response.data;
-    } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Failed to create spot');
+    try {
+      final Response response = await netWorkLocator.dio.post(
+          'http://10.0.2.2:8000/spot',
+          data: spot.toJson()
+      );
+      if (response.statusCode == 201) {
+        return Spot.fromJson(response.data);
+      } else {
+        throw Exception('Failed to create spot');
+      }
+    } catch (e) {
+      if (e is DioError) {
+        print(e);
+        print(e.response!);
+        print(spot.toJson());
+      }
     }
+    return null;
   }
 
   Future<Spot> updateSpot(Spot spot) async {

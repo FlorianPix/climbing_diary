@@ -287,6 +287,7 @@ class _SpotDetailsState extends State<SpotDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
+                print(widget.spot.id);
                 spotService.deleteSpot(widget.spot.id);
               },
               icon: const Icon(Icons.delete),

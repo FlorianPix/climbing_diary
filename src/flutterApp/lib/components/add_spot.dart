@@ -140,7 +140,18 @@ class _AddSpotState extends State<AddSpot>{
                 var now = DateTime.now();
                 var formatter = DateFormat('yyyy-MM-dd');
                 String formattedDate = formatter.format(now);
-                CreateSpot spot = CreateSpot(date: formattedDate, name: controllerTitle.text, coordinates: [widget.coordinates.latitude, widget.coordinates.longitude], location: [widget.address], routes: [], rating: currentSliderValue.toInt(), distanceParking: int.parse(controllerCar.text), distancePublicTransport: int.parse(controllerBus.text), comment: controllerDescription.text, mediaIds: []);
+                var valDistanceParking = int.tryParse(controllerCar.text);
+                var valDistancePublicTransport = int.tryParse(controllerBus.text);
+                CreateSpot spot = CreateSpot(
+                    date: formattedDate,
+                    name: controllerTitle.text,
+                    coordinates: [widget.coordinates.latitude, widget.coordinates.longitude],
+                    location: [widget.address],
+                    rating: currentSliderValue.toInt(),
+                    distanceParking: (valDistanceParking != null) ? valDistanceParking : 0,
+                    distancePublicTransport: (valDistancePublicTransport != null) ? valDistancePublicTransport : 0,
+                    comment: controllerDescription.text,
+                );
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
                 await spotService.createSpot(spot);
