@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:skeletons/skeletons.dart';
 import 'package:timelines/timelines.dart';
 
+import '../components/spot_details.dart';
 import '../interfaces/spot.dart';
+import '../services/media_service.dart';
 import '../services/spot_service.dart';
 
 const kTileHeight = 50.0;
@@ -69,6 +72,15 @@ class _DiaryPageState extends State<DiaryPage> {
   late Future<List<Spot>> futureSpots;
 
   final SpotService spotService = SpotService();
+  final MediaService mediaService = MediaService();
+
+  Future<List<String>> fetchURLs(mediaIds) {
+    List<Future<String>> futures = [];
+    for (var mediaId in mediaIds) {
+      futures.add(mediaService.getMediumUrl(mediaId));
+    }
+    return Future.wait(futures);
+  }
 
   @override
   void initState(){
@@ -89,9 +101,9 @@ class _DiaryPageState extends State<DiaryPage> {
           if(snapshot.hasData) {
             var spots = snapshot.data!;
             spots.sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
-            return Padding(
+            return ListView(
               padding: const EdgeInsets.all(20.0),
-              child: FixedTimeline.tileBuilder(
+              children: [FixedTimeline.tileBuilder(
                 theme: TimelineThemeData(
                   nodePosition: 0,
                   color: const Color(0xff989898),
@@ -162,16 +174,102 @@ class _DiaryPageState extends State<DiaryPage> {
                         )
                     )));
 
+                    // images
+                    if (spots[index].mediaIds.isNotEmpty) {
+                      List<Widget> imageWidgets = [];
+                      Future<List<String>> futureMediaUrls = fetchURLs(spots[index].mediaIds);
+
+                      imageWidgets.add(
+                          FutureBuilder<List<String>>(
+                              future: futureMediaUrls,
+                              builder: (context, snapshot) {
+                                Widget skeleton = const Padding(
+                                    padding: EdgeInsets.all(5),
+                                    child: SkeletonAvatar(
+                                      style: SkeletonAvatarStyle(
+                                          shape: BoxShape.rectangle, width: 150, height: 250
+                                      ),
+                                    )
+                                );
+
+                                if (snapshot.data != null){
+                                  List<String> urls = snapshot.data!;
+                                  List<Widget> images = [];
+                                  for (var url in urls){
+                                    images.add(
+                                        Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(8.0),
+                                              child: Image.network(
+                                                url,
+                                                loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                                  if (loadingProgress == null) {
+                                                    return child;
+                                                  }
+                                                  return skeleton;
+                                                },
+                                              )
+                                          ),
+                                        )
+                                    );
+                                  }
+                                  return Container(
+                                      padding: const EdgeInsets.all(20),
+                                      child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: images
+                                      )
+                                  );
+                                }
+                                List<Widget> skeletons = [];
+                                for (var i = 0; i < spots[index].mediaIds.length; i++){
+                                  skeletons.add(skeleton);
+                                }
+                                return Container(
+                                    padding: const EdgeInsets.all(20),
+                                    child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: skeletons
+                                    )
+                                );
+                              }
+                          )
+                      );
+                      elements.add(
+                        Container(
+                            height: 300,
+                            child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: imageWidgets
+                            )
+                        ),
+                      );
+                    }
+
                     elements.add(
                       _InnerTimeline(routes: spots[index].routes)
                     );
 
-                    return Padding(
-                      padding: const EdgeInsets.only(left: 8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: elements,
+                    return InkWell(
+                      onTap: () => showDialog(
+                        context: context,
+                        builder: (BuildContext context) => Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: SpotDetails(spot: spots[index])
+                        ),
+                      ),
+                      child: Ink(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: elements,
+                          ),
+                        )
                       ),
                     );
                   },
@@ -185,7 +283,7 @@ class _DiaryPageState extends State<DiaryPage> {
                     color: Color(0xff66c97f),
                   ),
                 ),
-              ),
+              )],
             );
           } else if (snapshot.hasError) {
             return Text('${snapshot.error}');

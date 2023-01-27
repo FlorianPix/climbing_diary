@@ -87,4 +87,13 @@ class SpotService {
       throw Exception('Failed to create spot');
     }
   }
+
+  Future<void> deleteSpot(String spotId) async {
+    final Response response = await netWorkLocator.dio.delete('http://10.0.2.2:8000/spot/$spotId');
+
+    if (response.statusCode != 204) {
+      throw Exception('Failed to delete spot');
+    }
+    return response.data;
+  }
 }
