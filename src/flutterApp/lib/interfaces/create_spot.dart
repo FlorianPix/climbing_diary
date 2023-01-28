@@ -3,24 +3,24 @@ class CreateSpot {
   final String name;
   final List<double> coordinates;
   final List<String> location;
-  final List<String> routes;
+  final List<String>? routes;
   final int rating;
-  final String comment;
-  final int distanceParking;
-  final int distancePublicTransport;
-  final List<String> mediaIds;
+  final String? comment;
+  final int? distanceParking;
+  final int? distancePublicTransport;
+  final List<String>? mediaIds;
 
   const CreateSpot({
     required this.date,
     required this.name,
     required this.coordinates,
     required this.location,
-    required this.routes,
+    this.routes,
     required this.rating,
-    required this.comment,
-    required this.distanceParking,
-    required this.distancePublicTransport,
-    required this.mediaIds
+    this.comment,
+    this.distanceParking,
+    this.distancePublicTransport,
+    this.mediaIds
   });
 
   factory CreateSpot.fromJson(Map<String, dynamic> json) {

@@ -15,7 +15,6 @@ class MediaService {
     final Response response = await netWorkLocator.dio.get('http://10.0.2.2:8001/media');
 
     if (response.statusCode == 200) {
-      // If the server did return a 200 OK response, then parse the JSON.
       List<Media> media = [];
       response.data.forEach((s) =>
       {
@@ -23,8 +22,6 @@ class MediaService {
       });
       return media;
     } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
       throw Exception('Failed to load media');
     }
   }
@@ -33,11 +30,8 @@ class MediaService {
     final Response response = await netWorkLocator.dio.get('http://10.0.2.2:8001/media/$mediaId/access-url');
 
     if (response.statusCode == 200) {
-      // If the server did return a 200 OK response, then parse the JSON.
       return response.data['url'];
     } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
       throw Exception('Failed to load spots');
     }
   }
@@ -52,12 +46,21 @@ class MediaService {
     );
 
     if (response.statusCode == 200) {
-      // If the server did return a 200 OK response, then parse the JSON.
       return response.data['id'];
     } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
       throw Exception('Failed to upload media');
+    }
+  }
+
+  Future<void> deleteMedium(String mediaId) async {
+    final Response response = await netWorkLocator.dio.delete(
+        'http://10.0.2.2:8001/media/$mediaId'
+    );
+
+    if (response.statusCode == 204) {
+      return;
+    } else {
+      throw Exception('Failed to load spots');
     }
   }
 }

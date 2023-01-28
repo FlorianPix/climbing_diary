@@ -7,9 +7,9 @@ class StatisticPage extends StatelessWidget {
   //Just a test case for "Save spot" - feature
   Widget build(BuildContext context) => Scaffold(
     body: Container(
-      padding: EdgeInsets.all(32),
+      padding: const EdgeInsets.all(32),
       child: ElevatedButton(
-        child: Text('open a dialog'),
+        child: const Text('open a dialog'),
         onPressed: () {
           openFormDialog(context);
         },
@@ -19,16 +19,16 @@ class StatisticPage extends StatelessWidget {
   Future openFormDialog(BuildContext context) => showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text('Add a new spot'),
+      title: const Text('Add a new spot'),
       contentPadding: EdgeInsets.zero,
       content: Padding (
-        padding: EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(20.0),
         child: Container(
           height: 50,
           decoration: BoxDecoration(
               border: Border.all(color: Colors.grey.withOpacity(0.2) )
           ),
-          child: TextField(decoration: InputDecoration(hintText: 'Description'),),
+          child: const TextField(decoration: InputDecoration(hintText: 'Description'),),
         ),
       ),
     ),
