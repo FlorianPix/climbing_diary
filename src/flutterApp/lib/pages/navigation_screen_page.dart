@@ -45,6 +45,7 @@ class _NavigationScreenPage extends State<NavigationScreenPage> {
     Position position = await Geolocator.getCurrentPosition();
     setState(() {
       _center = LatLong(position.latitude, position.longitude);
+      print("here is location ${_center}");
     });
   }
 
@@ -56,6 +57,7 @@ class _NavigationScreenPage extends State<NavigationScreenPage> {
         buttonColor: Colors.orange,
         buttonText: 'Set location',
         onPicked: (pickedData) {
+
           double lat = pickedData.latLong.latitude;
           double long = pickedData.latLong.longitude;
           setState(() {
