@@ -1,14 +1,22 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
-import 'package:climbing_diary/pages/diary_page.dart';
-import 'package:climbing_diary/pages/map_page.dart';
-import 'package:climbing_diary/pages/statistic_page.dart';
-import 'package:climbing_diary/services/locator.dart';
+import 'pages/diary_page.dart';
+import 'pages/map_page.dart';
+import 'pages/statistic_page.dart';
+import 'services/locator.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+
 
 import 'data/sharedprefs/shared_preference_helper.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final applicationDocumentDir = await getApplicationDocumentsDirectory();
+  await Hive.initFlutter(applicationDocumentDir.path);
+  await Hive.openBox('saveSpot');
   await setup();
   runApp(const MyApp());
 }

@@ -1,36 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 
 class StatisticPage extends StatelessWidget {
   const StatisticPage({super.key});
 
   @override
-  //Just a test case for "Save spot" - feature
-  Widget build(BuildContext context) => Scaffold(
-    body: Container(
-      padding: const EdgeInsets.all(32),
-      child: ElevatedButton(
-        child: const Text('open a dialog'),
-        onPressed: () {
-          openFormDialog(context);
-        },
+  Widget build(BuildContext context) {
+    var data = _getInfo();
+    print("here is caches data ${data}");
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('statistic'),
       ),
-    )
-  );
-  Future openFormDialog(BuildContext context) => showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Add a new spot'),
-      contentPadding: EdgeInsets.zero,
-      content: Padding (
-        padding: const EdgeInsets.all(20.0),
-        child: Container(
-          height: 50,
-          decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.withOpacity(0.2) )
-          ),
-          child: const TextField(decoration: InputDecoration(hintText: 'Description'),),
-        ),
+      body: Center(
+        child: TextField (
+          textAlign: _getInfo(),
+        )
       ),
-    ),
-  );
+    );
+  }
+  _getInfo() {
+    Box box = Hive.box('saveSpot');
+    var data = box.get('spot');
+    return data;
+  }
 }

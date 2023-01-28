@@ -1,11 +1,16 @@
-import 'package:climbing_diary/components/spot_details.dart';
-import 'package:climbing_diary/pages/navigation_screen_page.dart';
+import 'package:climbing_diary/pages/save_location_no_connection.dart';
+
+import '../components/spot_details.dart';
+import 'navigation_screen_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+
 
 import '../interfaces/spot.dart';
 import '../services/spot_service.dart';
+
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -96,11 +101,20 @@ class _MapPageState extends State<MapPage>{
           )
       ),
       floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const NavigationScreenPage()),
-            );
+          onPressed: () async {
+            bool connected = await InternetConnectionChecker().hasConnection;
+            if(connected) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const NavigationScreenPage()),
+              );
+            }
+            else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SaveLocationNoConnectionPage()),
+              );
+            }
           },
           child: const Icon(Icons.add)
       ), // This trailing comma makes auto-formatting nicer for build methods.
@@ -133,4 +147,5 @@ class _MapPageState extends State<MapPage>{
     }
     return markers;
   }
+
 }
