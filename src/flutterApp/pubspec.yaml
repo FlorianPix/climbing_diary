@@ -40,6 +40,9 @@ dependencies:
   timelines: ^0.1.0
   intl: ^0.17.0
   internet_connection_checker: ^1.0.0+1
+  hive: ^2.1.0
+  hive_flutter: ^1.1.0
+  path_provider: ^2.0.12
 
   http: ^0.13.5
   auth0_flutter: ^1.0.2

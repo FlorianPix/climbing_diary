@@ -1,3 +1,5 @@
+import 'package:hive/hive.dart';
+
 import '../interfaces/create_spot.dart';
 import 'package:dio/dio.dart';
 
@@ -74,6 +76,8 @@ class SpotService {
       }
     }
     else {
+      Box box = Hive.box('saveSpot');
+      box.put('spot', spot.toJson());
       // save to cache
     }
     return null;
