@@ -101,6 +101,12 @@ class _DiaryPageState extends State<DiaryPage> {
           if(snapshot.hasData) {
             var spots = snapshot.data!;
             spots.sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
+
+            deleteCallback(spot) {
+              spots.remove(spot);
+              setState(() {});
+            }
+
             return ListView(
               padding: const EdgeInsets.all(20.0),
               children: [FixedTimeline.tileBuilder(
@@ -258,7 +264,7 @@ class _DiaryPageState extends State<DiaryPage> {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: SpotDetails(spot: spots[index])
+                            child: SpotDetails(spot: spots[index], onDelete: deleteCallback,)
                         ),
                       ),
                       child: Ink(

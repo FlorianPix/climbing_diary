@@ -8,9 +8,10 @@ import '../services/media_service.dart';
 import '../services/spot_service.dart';
 
 class SpotDetails extends StatefulWidget {
-  const SpotDetails({super.key, required this.spot});
+  const SpotDetails({super.key, required this.spot, required this.onDelete});
 
   final Spot spot;
+  final ValueSetter<Spot> onDelete;
 
   @override
   State<StatefulWidget> createState() => _SpotDetailsState();
@@ -288,6 +289,7 @@ class _SpotDetailsState extends State<SpotDetails>{
               onPressed: () {
                 Navigator.pop(context);
                 spotService.deleteSpot(widget.spot.id);
+                widget.onDelete.call(widget.spot);
               },
               icon: const Icon(Icons.delete),
             ),
