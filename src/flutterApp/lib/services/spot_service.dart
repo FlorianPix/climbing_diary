@@ -1,4 +1,4 @@
-import 'package:climbing_diary/interfaces/create_spot.dart';
+import '../interfaces/create_spot.dart';
 import 'package:dio/dio.dart';
 
 import '../data/network/dio_client.dart';
@@ -43,7 +43,7 @@ class SpotService {
     }
   }
 
-  Future<Spot?> createSpot(CreateSpot createSpot) async {
+  Future<Spot?> createSpot(CreateSpot createSpot, bool hasConnection) async {
     CreateSpot spot = CreateSpot(
       date: createSpot.date,
       name: createSpot.name,
@@ -54,22 +54,27 @@ class SpotService {
       distanceParking: (createSpot.distanceParking != null) ? createSpot.distanceParking! : 0,
       distancePublicTransport: (createSpot.distancePublicTransport != null) ? createSpot.distancePublicTransport! : 0,
     );
-    try {
-      final Response response = await netWorkLocator.dio.post(
-          'http://10.0.2.2:8000/spot',
-          data: spot.toJson()
-      );
-      if (response.statusCode == 201) {
-        return Spot.fromJson(response.data);
-      } else {
-        throw Exception('Failed to create spot');
+    if(hasConnection) {
+      try {
+        final Response response = await netWorkLocator.dio.post(
+            'http://10.0.2.2:8000/spot',
+            data: spot.toJson()
+        );
+        if (response.statusCode == 201) {
+          return Spot.fromJson(response.data);
+        } else {
+          throw Exception('Failed to create spot');
+        }
+      } catch (e) {
+        if (e is DioError) {
+          print(e);
+          print(e.response!);
+          print(spot.toJson());
+        }
       }
-    } catch (e) {
-      if (e is DioError) {
-        print(e);
-        print(e.response!);
-        print(spot.toJson());
-      }
+    }
+    else {
+      // save to cache
     }
     return null;
   }

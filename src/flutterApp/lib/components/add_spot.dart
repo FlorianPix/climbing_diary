@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../interfaces/create_spot.dart';
 import '../services/spot_service.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class AddSpot extends StatefulWidget {
   const AddSpot({super.key, required this.coordinates, required this.address});
@@ -32,6 +33,8 @@ class _AddSpotState extends State<AddSpot>{
   void initState(){
     super.initState();
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +140,7 @@ class _AddSpotState extends State<AddSpot>{
       actions: <Widget>[
         TextButton(
             onPressed: () async {
+              bool result = await InternetConnectionChecker().hasConnection;
               if (_formKey.currentState!.validate()) {
                 var now = DateTime.now();
                 var formatter = DateFormat('yyyy-MM-dd');
@@ -155,7 +159,7 @@ class _AddSpotState extends State<AddSpot>{
                 );
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
-                await spotService.createSpot(spot);
+                await spotService.createSpot(spot, result);
               }
             },
             child: const Text("Save"))

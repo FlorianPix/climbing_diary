@@ -39,6 +39,7 @@ dependencies:
   latlong2: ^0.8.1
   timelines: ^0.1.0
   intl: ^0.17.0
+  internet_connection_checker: ^1.0.0+1
 
   http: ^0.13.5
   auth0_flutter: ^1.0.2

@@ -1,5 +1,5 @@
-import 'package:climbing_diary/components/spot_details.dart';
-import 'package:climbing_diary/pages/navigation_screen_page.dart';
+import '../components/spot_details.dart';
+import 'navigation_screen_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
