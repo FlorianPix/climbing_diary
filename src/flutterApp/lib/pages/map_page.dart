@@ -42,6 +42,11 @@ class _MapPageState extends State<MapPage>{
               builder: (context, snapshot) {
                 if(snapshot.hasData) {
                   var spots = snapshot.data!;
+                  deleteCallback(spot) {
+                    spots.remove(spot);
+                    setState(() {});
+                  }
+
                   if (spots.isEmpty) {
                     return FlutterMap(
                       options: MapOptions(
@@ -79,7 +84,7 @@ class _MapPageState extends State<MapPage>{
                         userAgentPackageName: 'com.example.app',
                       ),
                       MarkerLayer(
-                          markers: getMarkers(spots)
+                          markers: getMarkers(spots, deleteCallback)
                       ),
                     ],
                   );
@@ -102,8 +107,9 @@ class _MapPageState extends State<MapPage>{
     );
   }
 
-  getMarkers(List<Spot> spots){
+  getMarkers(List<Spot> spots, ValueSetter<Spot> deleteCallback){
     List<Marker> markers = [];
+
     for (var spot in spots) {
       markers.add(Marker(
         point: LatLng(spot.coordinates[0], spot.coordinates[1]),
@@ -118,7 +124,7 @@ class _MapPageState extends State<MapPage>{
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: SpotDetails(spot: spot)
+              child: SpotDetails(spot: spot, onDelete: deleteCallback)
               ),
             ),
           ),
