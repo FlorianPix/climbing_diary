@@ -1,14 +1,23 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
-import 'package:climbing_diary/pages/diary_page.dart';
-import 'package:climbing_diary/pages/map_page.dart';
-import 'package:climbing_diary/pages/statistic_page.dart';
-import 'package:climbing_diary/services/locator.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'pages/diary_page.dart';
+import 'pages/map_page.dart';
+import 'pages/statistic_page.dart';
+import 'services/locator.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+
 
 import 'data/sharedprefs/shared_preference_helper.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final applicationDocumentDir = await getApplicationDocumentsDirectory();
+  await Hive.initFlutter(applicationDocumentDir.path);
+  await Hive.openBox('saveSpot');
   await setup();
   runApp(const MyApp());
 }
@@ -63,6 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final _prefsLocator = getIt.get<SharedPreferenceHelper>();
 
   late Auth0 auth0;
+  late bool online = true;
 
   int currentIndex = 0;
   final screens = [
@@ -75,6 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     auth0 = Auth0('climbing-diary.eu.auth0.com', 'FnK5PkMpjuoH5uJ64X70dlNBuBzPVynE');
+    checkConnection();
   }
 
   Future<void> login() async {
@@ -102,6 +113,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  checkConnection() async {
+    online = await InternetConnectionChecker().hasConnection;
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -126,6 +141,33 @@ class _MyHomePageState extends State<MyHomePage> {
                 semanticLabel: 'logout',
               ),
             )],
+        ),
+        body: screens[currentIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: currentIndex,
+          onTap: (index) => setState(() => currentIndex = index),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.map),
+              label: 'Map',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.menu_book),
+              label: 'Diary',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.graphic_eq),
+              label: 'Statistic',
+            )
+          ],
+        ),
+      );
+    } else if (!online) {
+      return Scaffold(
+        appBar: AppBar(
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: Text(widget.title),
         ),
         body: screens[currentIndex],
         bottomNavigationBar: BottomNavigationBar(
