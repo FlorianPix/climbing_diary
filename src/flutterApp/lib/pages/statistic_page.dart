@@ -10,7 +10,8 @@ class StatisticPage extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Text (
-          "$data"
+         // "$data"
+          "Statistics"
         )
       ),
     );

@@ -44,14 +44,11 @@ class _MapPageState extends State<MapPage> {
               //if chache is'nt empty => upload
               Box box = Hive.box('saveSpot');
               var data = box.get('spot');
-              print("Data for upload: ${data}");
-              if(data != null ) {
+              if (data != null) {
                 SpotService spot = SpotService();
                 spot.uploadSpot(data);
                 box.delete('spot');
               }
-              var data2 = box.get('spot');
-              print("Data after delete: ${data2}");
               futureSpots = spotService.getSpots();
               return Scaffold(
                 body: Center(

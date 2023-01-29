@@ -10,8 +10,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-
-
 import 'data/sharedprefs/shared_preference_helper.dart';
 
 Future<void> main() async {
@@ -76,38 +74,38 @@ class _MyHomePageState extends State<MyHomePage> {
   late bool online = true;
 
   int currentIndex = 0;
-  final screens = [
-    const MapPage(),
-    const DiaryPage(),
-    const StatisticPage()
-  ];
+  final screens = [const MapPage(), const DiaryPage(), const StatisticPage()];
 
   @override
   void initState() {
     super.initState();
-    auth0 = Auth0('climbing-diary.eu.auth0.com', 'FnK5PkMpjuoH5uJ64X70dlNBuBzPVynE');
+    auth0 = Auth0(
+        'climbing-diary.eu.auth0.com', 'FnK5PkMpjuoH5uJ64X70dlNBuBzPVynE');
     checkConnection();
   }
 
   Future<void> login() async {
-    var credentials = await auth0
-        .webAuthentication(scheme: 'demo')
-        .login(
-          audience: 'climbing-diary-API',
-          scopes: {'profile', 'email', 'read:diary', 'write:diary', 'read:media', 'write:media'}
-        );
+    var credentials = await auth0.webAuthentication(scheme: 'demo').login(
+        audience: 'climbing-diary-API',
+        scopes: {
+          'profile',
+          'email',
+          'read:diary',
+          'write:diary',
+          'read:media',
+          'write:media'
+        });
 
     setState(() {
       _user = credentials.user;
       _credentials = credentials;
-      _prefsLocator.setUserToken(userToken: 'Bearer ${credentials.accessToken}');
+      _prefsLocator.setUserToken(
+          userToken: 'Bearer ${credentials.accessToken}');
     });
   }
 
   Future<void> logout() async {
-    await auth0
-        .webAuthentication(scheme: 'demo')
-        .logout();
+    await auth0.webAuthentication(scheme: 'demo').logout();
 
     setState(() {
       _user = null;
@@ -141,7 +139,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 size: 30.0,
                 semanticLabel: 'logout',
               ),
-            )],
+            )
+          ],
         ),
         body: screens[currentIndex],
         bottomNavigationBar: BottomNavigationBar(
@@ -164,7 +163,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     } else if (!online) {
-      print("here2");
       return Scaffold(
         appBar: AppBar(
           // Here we take the value from the MyHomePage object that was created by
@@ -192,7 +190,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     } else {
-      print("here3");
       return Scaffold(
           appBar: AppBar(
             // Here we take the value from the MyHomePage object that was created by
@@ -200,37 +197,33 @@ class _MyHomePageState extends State<MyHomePage> {
             title: Text(widget.title),
           ),
           body:
-          Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
+              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            Expanded(
+              child: Column(children: [
                 Expanded(
-                  child: Column(children: [
-                    Expanded(child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(child: Column(
-                          children: [
-                            const Icon(
-                              Icons.face,
-                              color: Colors.orange,
-                              size: 240.0,
-                              semanticLabel: 'Text to announce in accessibility modes',
-                            ),
-                            ElevatedButton(
-                              onPressed: login,
-                              style: ButtonStyle(
-                                backgroundColor:
-                                MaterialStateProperty.all<Color>(Colors.green),
-                              ),
-                              child: const Text('Login'),
-                            ),
-                          ]
-                      )),
-                    ))
-                  ]),
-                )
-              ]
-          )
-      );
+                    child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                      child: Column(children: [
+                    const Icon(
+                      Icons.face,
+                      color: Colors.orange,
+                      size: 240.0,
+                      semanticLabel: 'Text to announce in accessibility modes',
+                    ),
+                    ElevatedButton(
+                      onPressed: login,
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all<Color>(Colors.green),
+                      ),
+                      child: const Text('Login'),
+                    ),
+                  ])),
+                ))
+              ]),
+            )
+          ]));
     }
   }
 }
