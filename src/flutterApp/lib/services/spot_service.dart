@@ -57,28 +57,13 @@ class SpotService {
       distancePublicTransport: (createSpot.distancePublicTransport != null) ? createSpot.distancePublicTransport! : 0,
     );
     if(hasConnection) {
-      try {
-        final Response response = await netWorkLocator.dio.post(
-            'http://10.0.2.2:8000/spot',
-            data: spot.toJson()
-        );
-        if (response.statusCode == 201) {
-          return Spot.fromJson(response.data);
-        } else {
-          throw Exception('Failed to create spot');
-        }
-      } catch (e) {
-        if (e is DioError) {
-          print(e);
-          print(e.response!);
-          print(spot.toJson());
-        }
-      }
+      var data = spot.toJson();
+      uploadSpot(data);
     }
     else {
+      // save to cache
       Box box = Hive.box('saveSpot');
       box.put('spot', spot.toJson());
-      // save to cache
     }
     return null;
   }
@@ -120,4 +105,25 @@ class SpotService {
     }
     return response.data;
   }
+
+  Future<Spot?> uploadSpot ( Map data) async {
+    try {
+      final Response response = await netWorkLocator.dio.post(
+          'http://10.0.2.2:8000/spot',
+          data: data
+      );
+      if (response.statusCode == 201) {
+        return Spot.fromJson(response.data);
+      } else {
+        throw Exception('Failed to create spot');
+      }
+    } catch (e) {
+      if (e is DioError) {
+        print(e);
+        print(e.response!);
+        print(data);
+      }
+    }
+  }
+
 }

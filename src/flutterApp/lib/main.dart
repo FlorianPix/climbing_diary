@@ -1,4 +1,5 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:climbing_diary/services/spot_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'pages/diary_page.dart';
 import 'pages/map_page.dart';
@@ -163,6 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     } else if (!online) {
+      print("here2");
       return Scaffold(
         appBar: AppBar(
           // Here we take the value from the MyHomePage object that was created by
@@ -190,6 +192,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     } else {
+      print("here3");
       return Scaffold(
           appBar: AppBar(
             // Here we take the value from the MyHomePage object that was created by
