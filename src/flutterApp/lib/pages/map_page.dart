@@ -133,7 +133,7 @@ class _MapPageState extends State<MapPage> {
               );
             } else {
               return Scaffold(
-                body: Center(
+                body: const Center(
                   child: Text('No connection'),
                 ),
                 floatingActionButton: FloatingActionButton(
