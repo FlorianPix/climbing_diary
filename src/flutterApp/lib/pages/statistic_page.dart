@@ -7,14 +7,10 @@ class StatisticPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var data = _getInfo();
-    print("here is caches data ${data}");
     return Scaffold(
-      appBar: AppBar(
-        title: Text('statistic'),
-      ),
       body: Center(
-        child: TextField (
-          textAlign: _getInfo(),
+        child: Text (
+          "$data"
         )
       ),
     );

@@ -4,7 +4,6 @@ import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.
 import '../components/add_spot.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:geolocator/geolocator.dart';
 
 class SaveLocationNoConnectionPage extends StatefulWidget {
   const SaveLocationNoConnectionPage({super.key});
@@ -32,7 +31,7 @@ class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> 
           children: [
             ElevatedButton(
             child: const Text('Save spot with current location',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w400
               ),
@@ -69,7 +68,7 @@ class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> 
     Position position = await Geolocator.getCurrentPosition();
     setState(() {
       _center = LatLong(position.latitude, position.longitude);
-      print("here is location ${_center}");
+      print("here is location $_center");
     });
   }
 

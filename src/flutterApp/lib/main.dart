@@ -1,4 +1,5 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'pages/diary_page.dart';
 import 'pages/map_page.dart';
 import 'pages/statistic_page.dart';
@@ -71,6 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final _prefsLocator = getIt.get<SharedPreferenceHelper>();
 
   late Auth0 auth0;
+  late bool online = true;
 
   int currentIndex = 0;
   final screens = [
@@ -83,6 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     auth0 = Auth0('climbing-diary.eu.auth0.com', 'FnK5PkMpjuoH5uJ64X70dlNBuBzPVynE');
+    checkConnection();
   }
 
   Future<void> login() async {
@@ -110,6 +113,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  checkConnection() async {
+    online = await InternetConnectionChecker().hasConnection;
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -134,6 +141,33 @@ class _MyHomePageState extends State<MyHomePage> {
                 semanticLabel: 'logout',
               ),
             )],
+        ),
+        body: screens[currentIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: currentIndex,
+          onTap: (index) => setState(() => currentIndex = index),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.map),
+              label: 'Map',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.menu_book),
+              label: 'Diary',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.graphic_eq),
+              label: 'Statistic',
+            )
+          ],
+        ),
+      );
+    } else if (!online) {
+      return Scaffold(
+        appBar: AppBar(
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: Text(widget.title),
         ),
         body: screens[currentIndex],
         bottomNavigationBar: BottomNavigationBar(
