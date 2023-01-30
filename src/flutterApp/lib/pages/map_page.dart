@@ -1,9 +1,9 @@
 import 'package:climbing_diary/pages/save_location_no_connection.dart';
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 import '../components/spot_details.dart';
 import 'navigation_screen_page.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -36,137 +36,167 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<bool>(
-        future: checkConnection(),
-        builder: (context, AsyncSnapshot<bool> snapshot) {
-          if (snapshot.hasData) {
-            var online = snapshot.data!;
-            if (online) {
-              //if chache is'nt empty => upload
-              Box box = Hive.box('saveSpot');
-              var data = box.get('spot');
-              if (data != null) {
-                SpotService spot = SpotService();
-                spot.uploadSpot(data);
-                box.delete('spot');
-              }
-              futureSpots = spotService.getSpots();
-              return Scaffold(
-                body: Center(
-                    child: FutureBuilder<List<Spot>>(
-                        future: futureSpots,
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            var spots = snapshot.data!;
-                            deleteCallback(spot) {
-                              spots.remove(spot);
-                              setState(() {});
-                            }
-
-                            if (spots.isEmpty) {
-                              return FlutterMap(
-                                options: MapOptions(
-                                  center: LatLng(50.746036, 10.642666),
-                                  zoom: 5,
-                                ),
-                                nonRotatedChildren: [
-                                  AttributionWidget.defaultWidget(
-                                    source: 'OpenStreetMap contributors',
-                                    onSourceTapped: null,
-                                  ),
-                                ],
-                                children: [
-                                  TileLayer(
-                                    urlTemplate:
-                                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                    userAgentPackageName: 'com.example.app',
-                                  ),
-                                ],
-                              );
-                            }
-                            return FlutterMap(
-                              options: MapOptions(
-                                center: LatLng(spots[0].coordinates[0],
-                                    spots[0].coordinates[1]),
-                                zoom: 5,
-                              ),
-                              nonRotatedChildren: [
-                                AttributionWidget.defaultWidget(
-                                  source: 'OpenStreetMap contributors',
-                                  onSourceTapped: null,
-                                ),
-                              ],
-                              children: [
-                                TileLayer(
-                                  urlTemplate:
-                                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                  userAgentPackageName: 'com.example.app',
-                                ),
-                                MarkerLayer(
-                                    markers: getMarkers(spots, deleteCallback)),
-                              ],
-                            );
-                          } else if (snapshot.hasError) {
-                            return Text('${snapshot.error}');
-                          }
-                          return const CircularProgressIndicator();
-                        })),
-                floatingActionButton: FloatingActionButton(
-                    onPressed: () async {
-                      if (online) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const NavigationScreenPage()),
-                        );
-                      } else {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const SaveLocationNoConnectionPage()),
-                        );
-                      }
-                    },
-                    child: const Icon(Icons
-                        .add)), // This trailing comma makes auto-formatting nicer for build methods.
-              );
-            } else {
-              return Scaffold(
-                body: const Center(
-                  child: Text('No connection'),
-                ),
-                floatingActionButton: FloatingActionButton(
-                  onPressed: () async {
-                    if (online) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const NavigationScreenPage()),
-                      );
-                    } else {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const SaveLocationNoConnectionPage()),
-                      );
-                    }
-                  },
-                  child: const Icon(Icons.add),
-                ),
-              );
+      future: checkConnection(),
+      builder: (context, AsyncSnapshot<bool> snapshot) {
+        if (snapshot.hasData) {
+          var online = snapshot.data!;
+          if (online) {
+            //if chache is'nt empty => upload
+            Box box = Hive.box('saveSpot');
+            var data = box.get('spot');
+            if (data != null) {
+              SpotService spot = SpotService();
+              spot.uploadSpot(data);
+              box.delete('spot');
             }
-          } else if (snapshot.hasError) {
-            return Text('${snapshot.error}');
+            futureSpots = spotService.getSpots();
+            return FutureBuilder<List<Spot>>(
+              future: futureSpots,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  var spots = snapshot.data!;
+
+                  addSpotCallback(spot) {
+                    spots.add(spot);
+                    setState(() {});
+                  }
+
+                  deleteSpotCallback(spot) {
+                    spots.remove(spot);
+                    setState(() {});
+                  }
+
+                  if (spots.isEmpty) {
+                    return Scaffold(
+                      body: Center(
+                        child: FlutterMap(
+                          options: MapOptions(
+                            center: LatLng(50.746036, 10.642666),
+                            zoom: 5,
+                          ),
+                          nonRotatedChildren: [
+                            AttributionWidget.defaultWidget(
+                              source: 'OpenStreetMap contributors',
+                              onSourceTapped: null,
+                            ),
+                          ],
+                          children: [
+                            TileLayer(
+                              urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              userAgentPackageName: 'com.example.app',
+                            ),
+                          ],
+                        )
+                      ),
+                      floatingActionButton: FloatingActionButton(
+                        onPressed: () async {
+                          if (online) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => NavigationScreenPage(onAdd: addSpotCallback)),
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (
+                                  context) => SaveLocationNoConnectionPage(onAdd: addSpotCallback)),
+                            );
+                          }
+                        },
+                          child: const Icon(Icons.add)
+                      ), // This trailing comma makes auto-formatting nicer for build methods.
+                    );
+                  }
+                  return Scaffold(
+                    body: Center(
+                      child: FlutterMap(
+                        options: MapOptions(
+                          center: LatLng(spots[0].coordinates[0],
+                              spots[0].coordinates[1]),
+                          zoom: 5,
+                        ),
+                        nonRotatedChildren: [
+                          AttributionWidget.defaultWidget(
+                            source: 'OpenStreetMap contributors',
+                            onSourceTapped: null,
+                          ),
+                        ],
+                        children: [
+                          TileLayer(
+                            urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: 'com.example.app',
+                          ),
+                          MarkerLayer(
+                              markers: getMarkers(spots, deleteSpotCallback)),
+                        ],
+                      )
+                    ),
+                    floatingActionButton: FloatingActionButton(
+                      onPressed: () async {
+                        if (online) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (
+                                context) => NavigationScreenPage(onAdd: addSpotCallback)),
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (
+                                context) => SaveLocationNoConnectionPage(onAdd: addSpotCallback)),
+                          );
+                        }
+                      },
+                      child: const Icon(Icons.add)
+                    ),
+                  );
+                } else if (snapshot.hasError) {
+                  return Text('${snapshot.error}');
+                } else {
+                  return const CircularProgressIndicator();
+                }
+              }
+            );
+          } else {
+            return Scaffold(
+              body: const Center(
+                child: Text('No connection'),
+              ),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () async {
+                  if (online) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => NavigationScreenPage(onAdd: (Spot value) {})),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SaveLocationNoConnectionPage(onAdd: (Spot value) {})),
+                    );
+                  }
+                },
+                child: const Icon(Icons.add),
+              ),
+            );
           }
-          return const CircularProgressIndicator();
-        });
+        } else if (snapshot.hasError) {
+          return Text('${snapshot.error}');
+        }
+        return const CircularProgressIndicator();
+      });
   }
 
   getMarkers(List<Spot> spots, ValueSetter<Spot> deleteCallback) {
     List<Marker> markers = [];
-
     for (var spot in spots) {
       markers.add(
         Marker(
@@ -179,10 +209,10 @@ class _MapPageState extends State<MapPage> {
             onPressed: () => showDialog(
               context: context,
               builder: (BuildContext context) => Dialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: SpotDetails(spot: spot, onDelete: deleteCallback)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: SpotDetails(spot: spot, onDelete: deleteCallback)),
             ),
           ),
         ),

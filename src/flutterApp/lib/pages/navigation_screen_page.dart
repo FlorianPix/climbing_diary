@@ -4,10 +4,13 @@ import 'package:latlong2/latlong.dart';
 import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
 
 import '../components/add_spot.dart';
+import '../interfaces/spot.dart';
 import '../services/location_service.dart';
 
 class NavigationScreenPage extends StatefulWidget {
-  const NavigationScreenPage({super.key});
+  const NavigationScreenPage({super.key, required this.onAdd});
+
+  final ValueSetter<Spot> onAdd;
 
   @override
   State<NavigationScreenPage> createState() => _NavigationScreenPage();
@@ -48,7 +51,8 @@ class _NavigationScreenPage extends State<NavigationScreenPage> {
                         pickedData.latLong.latitude,
                         pickedData.latLong.longitude
                       ),
-                      address: address
+                      address: address,
+                      onAdd: widget.onAdd,
                     )
                 );
               }

@@ -61,7 +61,7 @@ class SpotService {
     );
     if (hasConnection) {
       var data = spot.toJson();
-      uploadSpot(data);
+      return uploadSpot(data);
     } else {
       // save to cache
       Box box = Hive.box('saveSpot');
