@@ -54,7 +54,7 @@ class _NavigationScreenPage extends State<NavigationScreenPage> {
     return Scaffold(
       body: OpenStreetMapSearchAndPick(
         center: _center,
-        buttonColor: Colors.orange,
+        buttonColor: Theme.of(context).colorScheme.primary,
         buttonText: 'Set location',
         onPicked: (pickedData) {
 

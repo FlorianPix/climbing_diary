@@ -26,19 +26,22 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    Map<int, Color> color = const {
+      50:Color.fromRGBO(255,127,90, .1),
+      100:Color.fromRGBO(255,127,90, .2),
+      200:Color.fromRGBO(255,127,90, .3),
+      300:Color.fromRGBO(255,127,90, .4),
+      400:Color.fromRGBO(255,127,90, .5),
+      500:Color.fromRGBO(255,127,90, .6),
+      600:Color.fromRGBO(255,127,90, .7),
+      700:Color.fromRGBO(255,127,90, .8),
+      800:Color.fromRGBO(255,127,90, .9),
+      900:Color.fromRGBO(255,127,90, 1),
+    };
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.orange,
+        primarySwatch: MaterialColor(0xffff7f50, color),
       ),
       home: const MyHomePage(title: 'ClimbingDiary'),
     );
@@ -173,9 +176,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           padding: const EdgeInsets.all(8.0),
                           child: Center(
                             child: Column(children: [
-                              const Icon(
+                              Icon(
                                 Icons.face,
-                                color: Colors.orange,
+                                color: Theme.of(context).colorScheme.primary,
                                 size: 240.0,
                                 semanticLabel: 'Text to announce in accessibility modes',
                               ),
