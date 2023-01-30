@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../components/add_spot.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:latlong2/latlong.dart';
+
+import '../services/location_service.dart';
 
 class SaveLocationNoConnectionPage extends StatefulWidget {
   const SaveLocationNoConnectionPage({super.key});
@@ -13,6 +14,7 @@ class SaveLocationNoConnectionPage extends StatefulWidget {
 }
 
 class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> {
+  final LocationService locationService = LocationService();
 
   @override
   initState() {
@@ -23,7 +25,7 @@ class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> 
   //Just a test case for "Save spot" - feature
   Widget build(BuildContext context) {
     return FutureBuilder<Position>(
-      future: getPosition(),
+      future: locationService.getPosition(),
       builder: (context, AsyncSnapshot<Position> snapshot) {
         if (snapshot.hasData) {
           Position position = snapshot.data!;
@@ -63,8 +65,8 @@ class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> 
                 Padding(
                   padding: EdgeInsets.all(50),
                   child: SizedBox(
-                    height: 200.0,
-                    width: 200.0,
+                    height: 100.0,
+                    width: 100.0,
                     child: CircularProgressIndicator(),
                   ),
                 )
@@ -73,24 +75,5 @@ class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> 
           ));
         }
     );
-  }
-
-  Future<Position> getPosition() async {
-    if (await Permission.location.serviceStatus.isEnabled) {
-      var status = await Permission.location.status;
-      if (status.isGranted) {
-      } else if (status.isDenied) {
-        Map<Permission, PermissionStatus> status = await [
-          Permission.location,
-        ].request();
-      }
-    } else {
-      // permission is disabled
-    }
-    if (await Permission.location.isPermanentlyDenied) {
-      openAppSettings();
-    }
-
-    return await Geolocator.getCurrentPosition();
   }
 }
