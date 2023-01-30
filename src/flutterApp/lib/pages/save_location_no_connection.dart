@@ -3,10 +3,13 @@ import 'package:geolocator/geolocator.dart';
 import '../components/add_spot.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../interfaces/spot.dart';
 import '../services/location_service.dart';
 
 class SaveLocationNoConnectionPage extends StatefulWidget {
-  const SaveLocationNoConnectionPage({super.key});
+  const SaveLocationNoConnectionPage({super.key, required this.onAdd});
+
+  final ValueSetter<Spot> onAdd;
 
   @override
   State<SaveLocationNoConnectionPage> createState() =>
@@ -47,7 +50,10 @@ class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> 
                         builder: (BuildContext context) => AddSpot(
                           coordinates:
                           LatLng(position.latitude, position.longitude),
-                          address: " "));
+                          address: " ",
+                          onAdd: widget.onAdd
+                        )
+                      );
                     },
                   ),
                 ]

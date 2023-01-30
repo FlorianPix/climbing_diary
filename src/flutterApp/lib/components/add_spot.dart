@@ -3,14 +3,16 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../interfaces/create_spot.dart';
+import '../interfaces/spot.dart';
 import '../services/spot_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class AddSpot extends StatefulWidget {
-  const AddSpot({super.key, required this.coordinates, required this.address});
+  const AddSpot({super.key, required this.coordinates, required this.address, required this.onAdd});
 
   final LatLng coordinates;
   final String address;
+  final ValueSetter<Spot> onAdd;
 
   @override
   State<StatefulWidget> createState() => _AddSpotState();
@@ -55,8 +57,8 @@ class _AddSpotState extends State<AddSpot>{
               TextFormField(
                 validator: (value) {
                   return value!.isNotEmpty
-                      ? null
-                      : "Please add a title";
+                    ? null
+                    : "Please add a title";
                 },
                 controller: controllerTitle,
                 decoration: const InputDecoration(
@@ -65,8 +67,8 @@ class _AddSpotState extends State<AddSpot>{
               TextFormField(
                 controller: controllerDate,
                 decoration: const InputDecoration(
-                    icon: Icon(Icons.calendar_today),
-                    labelText: "Enter Date"
+                  icon: Icon(Icons.calendar_today),
+                  labelText: "Enter Date"
                 ),
                 readOnly: true,
                 onTap: () async {
@@ -123,7 +125,7 @@ class _AddSpotState extends State<AddSpot>{
               TextFormField(
                 controller: controllerDescription,
                 decoration: const InputDecoration(
-                    hintText: "Description", labelText: "Description"),
+                  hintText: "Description", labelText: "Description"),
               ),
               TextFormField(
                 validator: (value) {
@@ -137,8 +139,8 @@ class _AddSpotState extends State<AddSpot>{
                 },
                 controller: controllerBus,
                 decoration: const InputDecoration(
-                    hintText: "in minutes",
-                    labelText: "Distance to public transport station"),
+                  hintText: "in minutes",
+                  labelText: "Distance to public transport station"),
               ),
               TextFormField(
                 validator: (value) {
@@ -152,8 +154,8 @@ class _AddSpotState extends State<AddSpot>{
                 },
                 controller: controllerCar,
                 decoration: const InputDecoration(
-                    hintText: "in minutes",
-                    labelText: "Distance to parking"),
+                  hintText: "in minutes",
+                  labelText: "Distance to parking"),
               )
             ],
           ),
@@ -161,27 +163,30 @@ class _AddSpotState extends State<AddSpot>{
       ),
       actions: <Widget>[
         TextButton(
-            onPressed: () async {
-              bool result = await InternetConnectionChecker().hasConnection;
-              if (_formKey.currentState!.validate()) {
-                var valDistanceParking = int.tryParse(controllerCar.text);
-                var valDistancePublicTransport = int.tryParse(controllerBus.text);
-                CreateSpot spot = CreateSpot(
-                    date: controllerDate.text,
-                    name: controllerTitle.text,
-                    coordinates: [widget.coordinates.latitude, widget.coordinates.longitude],
-                    location: [widget.address],
-                    rating: currentSliderValue.toInt(),
-                    distanceParking: (valDistanceParking != null) ? valDistanceParking : 0,
-                    distancePublicTransport: (valDistancePublicTransport != null) ? valDistancePublicTransport : 0,
-                    comment: controllerDescription.text,
-                );
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-                await spotService.createSpot(spot, result);
+          onPressed: () async {
+            bool result = await InternetConnectionChecker().hasConnection;
+            if (_formKey.currentState!.validate()) {
+              var valDistanceParking = int.tryParse(controllerCar.text);
+              var valDistancePublicTransport = int.tryParse(controllerBus.text);
+              CreateSpot spot = CreateSpot(
+                date: controllerDate.text,
+                name: controllerTitle.text,
+                coordinates: [widget.coordinates.latitude, widget.coordinates.longitude],
+                location: [widget.address],
+                rating: currentSliderValue.toInt(),
+                distanceParking: (valDistanceParking != null) ? valDistanceParking : 0,
+                distancePublicTransport: (valDistancePublicTransport != null) ? valDistancePublicTransport : 0,
+                comment: controllerDescription.text,
+              );
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+              Spot? createdSpot = await spotService.createSpot(spot, result);
+              if (createdSpot != null) {
+                widget.onAdd.call(createdSpot);
               }
-            },
-            child: const Text("Save"))
+            }
+          },
+          child: const Text("Save"))
       ],
     );
   }
