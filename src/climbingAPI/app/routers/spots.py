@@ -87,9 +87,3 @@ async def delete_spot(spot_id: str, user: Auth0User = Security(auth.get_user, sc
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spot {spot_id} not found")
-
-
-@router.delete('', description="Delete all spots", dependencies=[Depends(auth.implicit_scheme)])
-async def delete_spots(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
-    db = await get_db()
-    delete_result = await db["spots"].delete_many({})
