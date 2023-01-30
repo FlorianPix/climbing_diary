@@ -95,14 +95,21 @@ class SpotService {
     }
   }
 
-  Future<void> deleteSpot(String spotId) async {
-    final Response response =
-        await netWorkLocator.dio.delete('http://10.0.2.2:8000/spot/$spotId');
+  Future<void> deleteSpot(Spot spot) async {
+    for (var id in spot.mediaIds) {
+      final Response mediaResponse =
+      await netWorkLocator.dio.delete('http://10.0.2.2:8001/media/$id');
+      if (mediaResponse.statusCode != 204) {
+        throw Exception('Failed to delete medium');
+      }
+    }
 
-    if (response.statusCode != 204) {
+    final Response spotResponse =
+        await netWorkLocator.dio.delete('http://10.0.2.2:8000/spot/${spot.id}');
+    if (spotResponse.statusCode != 204) {
       throw Exception('Failed to delete spot');
     }
-    return response.data;
+    return spotResponse.data;
   }
 
   Future<Spot?> uploadSpot(Map data) async {
@@ -121,5 +128,6 @@ class SpotService {
         print(data);
       }
     }
+    return null;
   }
 }
