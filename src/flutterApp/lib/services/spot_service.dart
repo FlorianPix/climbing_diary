@@ -70,21 +70,10 @@ class SpotService {
     return null;
   }
 
-  Future<Spot> updateSpot(Spot spot) async {
+  Future<Spot?> editSpot(UpdateSpot spot) async {
     // TODO replace with spread operator after upgrade to flutter 2.3
-    UpdateSpot updateSpot = UpdateSpot(
-        name: spot.name,
-        date: spot.date,
-        coordinates: spot.coordinates,
-        location: spot.location,
-        routes: spot.routes,
-        rating: spot.rating,
-        comment: spot.comment,
-        distanceParking: spot.distanceParking,
-        distancePublicTransport: spot.distancePublicTransport,
-        mediaIds: spot.mediaIds);
     final Response response = await netWorkLocator.dio
-        .put('http://10.0.2.2:8000/spot/${spot.id}', data: updateSpot.toJson());
+        .put('http://10.0.2.2:8000/spot/${spot.id}', data: spot.toJson());
 
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response, then parse the JSON.
@@ -92,7 +81,7 @@ class SpotService {
     } else {
       // If the server did not return a 200 OK response,
       // then throw an exception.
-      throw Exception('Failed to create spot');
+      throw Exception('Failed to edit spot');
     }
   }
 

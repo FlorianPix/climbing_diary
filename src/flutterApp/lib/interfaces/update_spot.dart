@@ -1,4 +1,5 @@
 class UpdateSpot {
+  final String id;
   String? date;
   String? name;
   List<double>? coordinates;
@@ -11,6 +12,7 @@ class UpdateSpot {
   List<String>? mediaIds;
 
   UpdateSpot({
+    required this.id,
     this.date,
     this.name,
     this.coordinates,
@@ -25,6 +27,7 @@ class UpdateSpot {
 
   factory UpdateSpot.fromJson(Map<String, dynamic> json) {
     return UpdateSpot(
+      id: json['_id'],
       date: json['date'],
       name: json['name'],
       coordinates: List<double>.from(json['coordinates']),
@@ -39,6 +42,7 @@ class UpdateSpot {
   }
 
   Map toJson() => {
+    "_id": id,
     "date": date,
     "name": name,
     "coordinates": coordinates,

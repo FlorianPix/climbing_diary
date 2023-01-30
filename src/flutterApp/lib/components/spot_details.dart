@@ -6,12 +6,14 @@ import 'package:skeletons/skeletons.dart';
 import '../interfaces/spot.dart';
 import '../services/media_service.dart';
 import '../services/spot_service.dart';
+import 'edit_spot.dart';
 
 class SpotDetails extends StatefulWidget {
-  const SpotDetails({super.key, required this.spot, required this.onDelete});
+  const SpotDetails({super.key, required this.spot, required this.onDelete, required this.onUpdate });
 
   final Spot spot;
   final ValueSetter<Spot> onDelete;
+  final ValueSetter<Spot> onUpdate;
 
   @override
   State<StatefulWidget> createState() => _SpotDetailsState();
@@ -38,7 +40,7 @@ class _SpotDetailsState extends State<SpotDetails>{
       var mediaId = await mediaService.uploadMedia(img);
       Spot spot = widget.spot;
       spot.mediaIds.add(mediaId);
-      spotService.updateSpot(spot);
+      spotService.editSpot(spot.toUpdateSpot());
     }
 
     setState(() {
@@ -46,51 +48,58 @@ class _SpotDetailsState extends State<SpotDetails>{
     });
   }
 
-  void myAlert() {
+  void addImageDialog() {
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            title: const Text('Please choose media to select'),
-            content: SizedBox(
-              height: MediaQuery.of(context).size.height / 6,
-              child: Column(
-                children: [
-                  ElevatedButton(
-                    //if user click this button, user can upload image from gallery
-                    onPressed: () {
-                      Navigator.pop(context);
-                      getImage(ImageSource.gallery);
-                    },
-                    child: Row(
-                      children: const [
-                        Icon(Icons.image),
-                        Text('From Gallery'),
-                      ],
-                    ),
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          title: const Text('Please choose media to select'),
+          content: SizedBox(
+            height: MediaQuery.of(context).size.height / 6,
+            child: Column(
+              children: [
+                ElevatedButton(
+                  //if user click this button, user can upload image from gallery
+                  onPressed: () {
+                    Navigator.pop(context);
+                    getImage(ImageSource.gallery);
+                  },
+                  child: Row(
+                    children: const [
+                      Icon(Icons.image),
+                      Text('From Gallery'),
+                    ],
                   ),
-                  ElevatedButton(
-                    //if user click this button. user can upload image from camera
-                    onPressed: () {
-                      Navigator.pop(context);
-                      getImage(ImageSource.camera);
-                    },
-                    child: Row(
-                      children: const [
-                        Icon(Icons.camera),
-                        Text('From Camera'),
-                      ],
-                    ),
+                ),
+                ElevatedButton(
+                  //if user click this button. user can upload image from camera
+                  onPressed: () {
+                    Navigator.pop(context);
+                    getImage(ImageSource.camera);
+                  },
+                  child: Row(
+                    children: const [
+                      Icon(Icons.camera),
+                      Text('From Camera'),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
-        });
+          ),
+        );
+      });
   }
 
+  void editSpotDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return EditSpot(spot: widget.spot, onUpdate: widget.onUpdate);
+      });
+  }
 
   @override
   void initState(){
@@ -260,26 +269,31 @@ class _SpotDetailsState extends State<SpotDetails>{
           }
         )
       );
+      imageWidgets.add(
+        IconButton(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          tooltip: 'add image',
+          onPressed: () => addImageDialog()
+        )
+      );
       elements.add(
-        Container(
-            height: 250,
-            child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: imageWidgets
-            )
+        SizedBox(
+          height: 250,
+          child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: imageWidgets
+          )
+        ),
+      );
+    } else {
+      elements.add(
+        IconButton(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          tooltip: 'add image',
+          onPressed: () => addImageDialog()
         ),
       );
     }
-    elements.add(
-      Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: IconButton(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => myAlert()
-        ),
-      )
-    );
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -293,12 +307,13 @@ class _SpotDetailsState extends State<SpotDetails>{
               },
               icon: const Icon(Icons.delete),
             ),
-            // close dialog button
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Close'),
+            IconButton(
+              onPressed: () => editSpotDialog(),
+              icon: const Icon(Icons.edit),
+            ),
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.close),
             ),
           ],
         )

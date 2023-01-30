@@ -56,12 +56,24 @@ class _MapPageState extends State<MapPage> {
                 if (snapshot.hasData) {
                   var spots = snapshot.data!;
 
-                  addSpotCallback(spot) {
+                  addSpotCallback(Spot spot) {
                     spots.add(spot);
                     setState(() {});
                   }
 
-                  deleteSpotCallback(spot) {
+                  updateCallback(Spot spot) {
+                    var index = -1;
+                    for (int i = 0; i < spots.length; i++) {
+                      if (spots[i].id == spot.id) {
+                        index = i;
+                      }
+                    }
+                    spots.removeAt(index);
+                    spots.add(spot);
+                    setState(() {});
+                  }
+
+                  deleteSpotCallback(Spot spot) {
                     spots.remove(spot);
                     setState(() {});
                   }
@@ -131,7 +143,7 @@ class _MapPageState extends State<MapPage> {
                             userAgentPackageName: 'com.example.app',
                           ),
                           MarkerLayer(
-                              markers: getMarkers(spots, deleteSpotCallback)),
+                              markers: getMarkers(spots, deleteSpotCallback, updateCallback)),
                         ],
                       )
                     ),
@@ -195,7 +207,7 @@ class _MapPageState extends State<MapPage> {
       });
   }
 
-  getMarkers(List<Spot> spots, ValueSetter<Spot> deleteCallback) {
+  getMarkers(List<Spot> spots, ValueSetter<Spot> deleteCallback, ValueSetter<Spot> updateCallback) {
     List<Marker> markers = [];
     for (var spot in spots) {
       markers.add(
@@ -212,7 +224,7 @@ class _MapPageState extends State<MapPage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: SpotDetails(spot: spot, onDelete: deleteCallback)),
+                child: SpotDetails(spot: spot, onDelete: deleteCallback, onUpdate: updateCallback)),
             ),
           ),
         ),
