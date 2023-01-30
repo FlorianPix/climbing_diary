@@ -167,34 +167,35 @@ class _MyHomePageState extends State<MyHomePage> {
                 appBar: AppBar(
                   title: Text(widget.title),
                 ),
-                body:
-                Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                  Expanded(
-                    child: Column(children: [
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Center(
-                            child: Column(children: [
-                              Icon(
-                                Icons.face,
-                                color: Theme.of(context).colorScheme.primary,
-                                size: 240.0,
-                                semanticLabel: 'Text to announce in accessibility modes',
-                              ),
-                              ElevatedButton(
-                                onPressed: login,
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                  MaterialStateProperty.all<Color>(Colors.green),
+                body: Container(
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage("assets/images/start_page_background.jpeg"),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                    Expanded(
+                      child: Column(children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 50),
+                            child: Center(
+                              child: Column(children: [
+                                ElevatedButton(
+                                  onPressed: login,
+                                  style: ButtonStyle(
+                                    backgroundColor:
+                                    MaterialStateProperty.all<Color>(Colors.green),
+                                  ),
+                                  child: const Text('Login'),
                                 ),
-                                child: const Text('Login'),
-                              ),
-                            ])),
-                        ))
-                    ]),
-                  )
-                ])
+                              ])),
+                          ))
+                      ]),
+                    )
+                  ])
+                ),
               );
             }
           }
