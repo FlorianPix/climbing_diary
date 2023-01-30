@@ -12,6 +12,8 @@ services:
       - db
     environment:
       - PROJECT_NAME=climbing-api
+      - PROJECT_DESCRIPTION=API to manage spot, route and pitch data for the climbing diary app.
+      - PROJECT_VERSION=alpha
       - SERVER_IP=0.0.0.0
       - SERVER_PORT=8000
       - BACKEND_CORS_ORIGINS=["http://localhost:4200", "http://localhost:4200/", "http://localhost", "http://localhost:8000"]

@@ -8,7 +8,20 @@ from app.routers import pitches, spots, routes
 
 
 def get_application():
-    _app = FastAPI(title=settings.PROJECT_NAME)
+    _app = FastAPI(
+        title=settings.PROJECT_NAME,
+        description=settings.PROJECT_DESCRIPTION,
+        version=settings.PROJECT_VERSION,
+        contact={
+            "name": "Florian Pix",
+            "url": "https://florianpix.de/",
+            "email": "florian.pix.97@outlook.com",
+        },
+        license_info={
+            "name": "Apache 2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
+        },
+    )
 
     _app.add_middleware(
         CORSMiddleware,
