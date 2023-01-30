@@ -1,3 +1,5 @@
+import 'package:climbing_diary/interfaces/update_spot.dart';
+
 class Spot {
   final String id;
   final String date;
@@ -38,6 +40,22 @@ class Spot {
       distanceParking: json['distance_parking'],
       distancePublicTransport: json['distance_public_transport'],
       mediaIds: List<String>.from(json['media_ids'])
+    );
+  }
+
+  UpdateSpot toUpdateSpot() {
+    return UpdateSpot(
+      id: id,
+      date: date,
+      name: name,
+      coordinates: coordinates,
+      location: location,
+      routes: routes,
+      rating: rating,
+      comment: comment,
+      distanceParking: distanceParking,
+      distancePublicTransport: distancePublicTransport,
+      mediaIds: mediaIds
     );
   }
 }

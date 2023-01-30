@@ -121,6 +121,18 @@ class _DiaryPageState extends State<DiaryPage> {
                           setState(() {});
                         }
 
+                        updateCallback(Spot spot) {
+                          var index = -1;
+                          for (int i = 0; i < spots.length; i++) {
+                            if (spots[i].id == spot.id) {
+                              index = i;
+                            }
+                          }
+                          spots.removeAt(index);
+                          spots.add(spot);
+                          setState(() {});
+                        }
+
                         return ListView(
                           padding: const EdgeInsets.all(20.0),
                           children: [FixedTimeline.tileBuilder(
@@ -278,7 +290,7 @@ class _DiaryPageState extends State<DiaryPage> {
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(20),
                                         ),
-                                        child: SpotDetails(spot: spots[index], onDelete: deleteCallback,)
+                                        child: SpotDetails(spot: spots[index], onDelete: deleteCallback, onUpdate: updateCallback)
                                     ),
                                   ),
                                   child: Ink(
