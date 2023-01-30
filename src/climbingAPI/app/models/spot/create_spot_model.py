@@ -7,14 +7,14 @@ from app.models.py_object_id import PyObjectId
 
 
 class CreateSpotModel(BaseModel):
-    date: date
-    name: str = Field(...)
-    coordinates: List[float] = []
-    location: List[str] = []
-    rating: int = Field(..., ge=0, le=5)
     comment: Optional[str]
+    coordinates: List[float] = []
+    date: date
     distance_parking: Optional[int]
     distance_public_transport: Optional[int]
+    location: List[str] = []
+    name: str = Field(...)
+    rating: int = Field(..., ge=0, le=5)
 
     class Config:
         allow_population_by_field_name = True
@@ -22,14 +22,13 @@ class CreateSpotModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "spot_id": "6381f5cd63407a7f6e6fa820",
-                "date": "2022-10-08",
-                "name": "Falkenstein",
-                "coordinates": [50.746036, 10.642666],
-                "location": ["Deutschland", "Thüringen", "Thüringer Wald"],
-                "rating": 5,
                 "comment": "Great spot close to a lake with solid holds but kinda hard to reach.",
+                "coordinates": [50.746036, 10.642666],
+                "date": "2022-10-08",
                 "distance_parking": 120,
                 "distance_public_transport": 120,
+                "location": ["Deutschland", "Thüringen", "Thüringer Wald"],
+                "name": "Falkenstein",
+                "rating": 5,
             }
         }

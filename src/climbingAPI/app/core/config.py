@@ -5,6 +5,8 @@ from pydantic import AnyHttpUrl, BaseSettings, MongoDsn, validator
 
 class Settings(BaseSettings):
     PROJECT_NAME: str
+    PROJECT_DESCRIPTION: str
+    PROJECT_VERSION: str
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)

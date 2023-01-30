@@ -1,5 +1,4 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
-import 'package:climbing_diary/services/spot_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'pages/diary_page.dart';
 import 'pages/map_page.dart';
@@ -112,118 +111,121 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  checkConnection() async {
-    online = await InternetConnectionChecker().hasConnection;
+  Future<bool> checkConnection() async {
+    return await InternetConnectionChecker().hasConnection;
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    if (_user != null) {
-      return Scaffold(
-        appBar: AppBar(
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          title: Text(widget.title),
-          actions: <Widget>[
-            IconButton(
-              onPressed: logout,
-              icon: const Icon(
-                Icons.logout,
-                color: Colors.black,
-                size: 30.0,
-                semanticLabel: 'logout',
-              ),
-            )
-          ],
-        ),
-        body: screens[currentIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: currentIndex,
-          onTap: (index) => setState(() => currentIndex = index),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map),
-              label: 'Map',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.menu_book),
-              label: 'Diary',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.graphic_eq),
-              label: 'Statistic',
-            )
-          ],
-        ),
-      );
-    } else if (!online) {
-      return Scaffold(
-        appBar: AppBar(
-          // Here we take the value from the MyHomePage object that was created by
-          // the App.build method, and use it to set our appbar title.
-          title: Text(widget.title),
-        ),
-        body: screens[currentIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: currentIndex,
-          onTap: (index) => setState(() => currentIndex = index),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.map),
-              label: 'Map',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.menu_book),
-              label: 'Diary',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.graphic_eq),
-              label: 'Statistic',
-            )
-          ],
-        ),
-      );
-    } else {
-      return Scaffold(
-          appBar: AppBar(
-            // Here we take the value from the MyHomePage object that was created by
-            // the App.build method, and use it to set our appbar title.
-            title: Text(widget.title),
-          ),
-          body:
-              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Expanded(
-              child: Column(children: [
-                Expanded(
-                    child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                      child: Column(children: [
-                    const Icon(
-                      Icons.face,
-                      color: Colors.orange,
-                      size: 240.0,
-                      semanticLabel: 'Text to announce in accessibility modes',
-                    ),
-                    ElevatedButton(
-                      onPressed: login,
-                      style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(Colors.green),
+    return FutureBuilder<bool>(
+      future: checkConnection(),
+      builder: (context, AsyncSnapshot<bool> snapshot) {
+        if (snapshot.hasData) {
+          var online = snapshot.data!;
+          if (online) {
+            if (_user != null) {
+              return Scaffold(
+                appBar: AppBar(
+                  title: Text(widget.title),
+                  actions: <Widget>[
+                    IconButton(
+                      onPressed: logout,
+                      icon: const Icon(
+                        Icons.logout,
+                        color: Colors.black,
+                        size: 30.0,
+                        semanticLabel: 'logout',
                       ),
-                      child: const Text('Login'),
+                    )
+                  ],
+                ),
+                body: screens[currentIndex],
+                bottomNavigationBar: BottomNavigationBar(
+                  currentIndex: currentIndex,
+                  onTap: (index) => setState(() => currentIndex = index),
+                  items: const [
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.map),
+                      label: 'Map',
                     ),
-                  ])),
-                ))
-              ]),
-            )
-          ]));
-    }
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.menu_book),
+                      label: 'Diary',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.graphic_eq),
+                      label: 'Statistic',
+                    )
+                  ],
+                ),
+              );
+            } else {
+              return Scaffold(
+                appBar: AppBar(
+                  title: Text(widget.title),
+                ),
+                body:
+                Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                  Expanded(
+                    child: Column(children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Center(
+                            child: Column(children: [
+                              const Icon(
+                                Icons.face,
+                                color: Colors.orange,
+                                size: 240.0,
+                                semanticLabel: 'Text to announce in accessibility modes',
+                              ),
+                              ElevatedButton(
+                                onPressed: login,
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                  MaterialStateProperty.all<Color>(Colors.green),
+                                ),
+                                child: const Text('Login'),
+                              ),
+                            ])),
+                        ))
+                    ]),
+                  )
+                ])
+              );
+            }
+          }
+          else {
+            return Scaffold(
+              appBar: AppBar(
+                title: Text(widget.title),
+              ),
+              body: screens[currentIndex],
+              bottomNavigationBar: BottomNavigationBar(
+                currentIndex: currentIndex,
+                onTap: (index) => setState(() => currentIndex = index),
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.map),
+                    label: 'Map',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.menu_book),
+                    label: 'Diary',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.graphic_eq),
+                    label: 'Statistic',
+                  )
+                ],
+              ),
+            );
+          }
+        } else if (snapshot.hasError) {
+          return Text('${snapshot.error}');
+        }
+        return const CircularProgressIndicator();
+      }
+    );
   }
 }
