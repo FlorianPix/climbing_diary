@@ -14,19 +14,20 @@ class SpotService {
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
 
   Future<List<Spot>> getSpots() async {
-    final Response response =
-        await netWorkLocator.dio.get('http://10.0.2.2:8000/spot');
+    try {
+      final Response response = await netWorkLocator.dio.get('http://10.0.2.2:8000/spot');
 
-    if (response.statusCode == 200) {
-      // If the server did return a 200 OK response, then parse the JSON.
-      List<Spot> spots = [];
-      response.data.forEach((s) => {spots.add(Spot.fromJson(s))});
-      return spots;
-    } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Failed to load spots');
+      if (response.statusCode == 200) {
+        // If the server did return a 200 OK response, then parse the JSON.
+        List<Spot> spots = [];
+        response.data.forEach((s) => {spots.add(Spot.fromJson(s))});
+        return spots;
+      }
+    } catch (e) {
+      // TODO give a notification that the API isn't reachable
+      return [];
     }
+    throw Exception('Failed to load spots');
   }
 
   Future<Spot> getSpot(String spotId) async {
