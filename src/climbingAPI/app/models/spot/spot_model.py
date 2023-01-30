@@ -37,6 +37,6 @@ class SpotModel(BaseModel):
                 "rating": 5,
                 "routes": [],
                 "spot_id": "6381f5cd63407a7f6e6fa820",
-                "user_id": "6381f5cd63407a7f6e6fa821"
+                "user_id": "6381f5cd63407a7f6e6fa821",
             }
         }
