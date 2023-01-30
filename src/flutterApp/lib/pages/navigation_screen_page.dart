@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../components/add_spot.dart';
+import '../services/location_service.dart';
 
 class NavigationScreenPage extends StatefulWidget {
   const NavigationScreenPage({super.key});
@@ -14,8 +14,7 @@ class NavigationScreenPage extends StatefulWidget {
 }
 
 class _NavigationScreenPage extends State<NavigationScreenPage> {
-  LatLng targetLocation = LatLng(50.746036, 10.642666);
-  LatLong _center = LatLong(50.746036, 10.642666);
+  final LocationService locationService = LocationService();
   String address = "";
   List values = [1, 2, 3, 4, 5];
   double currentSliderValue = 1;
@@ -23,53 +22,59 @@ class _NavigationScreenPage extends State<NavigationScreenPage> {
   @override
   initState(){
     super.initState();
-    getLocation();
-  }
-
-  getLocation() async {
-    if (await Permission.location.serviceStatus.isEnabled) {
-      var status = await Permission.location.status;
-      if (status.isGranted) {
-      } else if (status.isDenied) {
-        Map<Permission, PermissionStatus> status = await [
-          Permission.location,
-        ].request();
-      }
-    } else {
-      // permission is disabled
-    }
-    if (await Permission.location.isPermanentlyDenied) {
-      openAppSettings();
-    }
-
-    Position position = await Geolocator.getCurrentPosition();
-    setState(() {
-      _center = LatLong(position.latitude, position.longitude);
-      print("here is location ${_center}");
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: OpenStreetMapSearchAndPick(
-        center: _center,
-        buttonColor: Theme.of(context).colorScheme.primary,
-        buttonText: 'Set location',
-        onPicked: (pickedData) {
-
-          double lat = pickedData.latLong.latitude;
-          double long = pickedData.latLong.longitude;
-          setState(() {
-            targetLocation = LatLng(lat, long);
-            address = pickedData.address;
-          });
-          showDialog(
-            context: context,
-            builder: (BuildContext context) => AddSpot(coordinates: targetLocation, address: address)
+    return FutureBuilder<Position>(
+      future: locationService.getPosition(),
+      builder: (context, AsyncSnapshot<Position> snapshot) {
+        if (snapshot.hasData) {
+          Position position = snapshot.data!;
+          return Scaffold(
+            body: OpenStreetMapSearchAndPick(
+              center: LatLong(position.latitude, position.longitude),
+              buttonColor: Theme.of(context).colorScheme.primary,
+              buttonText: 'Set location',
+              onPicked: (pickedData) {
+                setState(() {
+                  address = pickedData.address;
+                });
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) =>
+                    AddSpot(
+                      coordinates: LatLng(
+                        pickedData.latLong.latitude,
+                        pickedData.latLong.longitude
+                      ),
+                      address: address
+                    )
+                );
+              }
+            )
           );
+        } else if (snapshot.hasError) {
+          return Text('${snapshot.error}');
         }
-      )
+        return Scaffold(
+          body: Center (
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: const <Widget>[
+                Padding(
+                  padding: EdgeInsets.all(50),
+                  child: SizedBox(
+                    height: 100.0,
+                    width: 100.0,
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              ],
+            )
+          )
+        );
+      }
     );
   }
 }

@@ -20,6 +20,7 @@ class _AddSpotState extends State<AddSpot>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final SpotService spotService = SpotService();
   final TextEditingController controllerTitle = TextEditingController();
+  final TextEditingController controllerDate = TextEditingController();
   final TextEditingController controllerAddress = TextEditingController();
   final TextEditingController controllerLat = TextEditingController();
   final TextEditingController controllerLong = TextEditingController();
@@ -31,10 +32,9 @@ class _AddSpotState extends State<AddSpot>{
 
   @override
   void initState(){
+    controllerDate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
     super.initState();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +61,28 @@ class _AddSpotState extends State<AddSpot>{
                 controller: controllerTitle,
                 decoration: const InputDecoration(
                     hintText: "Name of the spot", labelText: "Title"),
+              ),
+              TextFormField(
+                controller: controllerDate,
+                decoration: const InputDecoration(
+                    icon: Icon(Icons.calendar_today),
+                    labelText: "Enter Date"
+                ),
+                readOnly: true,
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                      context: context, initialDate: DateTime.now(),
+                      firstDate: DateTime(1923),
+                      lastDate: DateTime(2123)
+                  );
+                  if(pickedDate != null ){
+                    String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                    print(formattedDate); //formatted date output using intl package =>  2021-03-16
+                    setState(() {
+                      controllerDate.text = formattedDate; //set output date to TextField value.
+                    });
+                  }
+                },
               ),
               TextFormField(
                 controller: controllerAddress,
@@ -142,13 +164,10 @@ class _AddSpotState extends State<AddSpot>{
             onPressed: () async {
               bool result = await InternetConnectionChecker().hasConnection;
               if (_formKey.currentState!.validate()) {
-                var now = DateTime.now();
-                var formatter = DateFormat('yyyy-MM-dd');
-                String formattedDate = formatter.format(now);
                 var valDistanceParking = int.tryParse(controllerCar.text);
                 var valDistancePublicTransport = int.tryParse(controllerBus.text);
                 CreateSpot spot = CreateSpot(
-                    date: formattedDate,
+                    date: controllerDate.text,
                     name: controllerTitle.text,
                     coordinates: [widget.coordinates.latitude, widget.coordinates.longitude],
                     location: [widget.address],
