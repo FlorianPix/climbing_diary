@@ -1,5 +1,6 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'config/environment.dart';
 import 'pages/diary_page.dart';
 import 'pages/map_page.dart';
 import 'pages/statistic_page.dart';
@@ -12,6 +13,13 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'data/sharedprefs/shared_preference_helper.dart';
 
 Future<void> main() async {
+  const String environment = String.fromEnvironment(
+    'ENVIRONMENT',
+    defaultValue: Environment.DEV,
+  );
+
+  Environment().initConfig(environment);
+
   WidgetsFlutterBinding.ensureInitialized();
   final applicationDocumentDir = await getApplicationDocumentsDirectory();
   await Hive.initFlutter(applicationDocumentDir.path);

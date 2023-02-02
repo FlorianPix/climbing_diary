@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 
+import '../config/environment.dart';
 import '../interfaces/create_spot.dart';
 import 'package:dio/dio.dart';
 
@@ -12,10 +13,12 @@ import 'locator.dart';
 class SpotService {
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
+  final String climbingApiHost = Environment().config.climbingApiHost;
+  final String mediaApiHost = Environment().config.mediaApiHost;
 
   Future<List<Spot>> getSpots() async {
     try {
-      final Response response = await netWorkLocator.dio.get('http://10.0.2.2:8000/spot');
+      final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
 
       if (response.statusCode == 200) {
         // If the server did return a 200 OK response, then parse the JSON.
@@ -32,7 +35,7 @@ class SpotService {
 
   Future<Spot> getSpot(String spotId) async {
     final Response response =
-        await netWorkLocator.dio.get('http://10.0.2.2:8000/spot/$spotId');
+        await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
 
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response, then parse the JSON.
@@ -73,7 +76,7 @@ class SpotService {
   Future<Spot?> editSpot(UpdateSpot spot) async {
     // TODO replace with spread operator after upgrade to flutter 2.3
     final Response response = await netWorkLocator.dio
-        .put('http://10.0.2.2:8000/spot/${spot.id}', data: spot.toJson());
+        .put('$climbingApiHost/spot/${spot.id}', data: spot.toJson());
 
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response, then parse the JSON.
@@ -88,14 +91,14 @@ class SpotService {
   Future<void> deleteSpot(Spot spot) async {
     for (var id in spot.mediaIds) {
       final Response mediaResponse =
-      await netWorkLocator.dio.delete('http://10.0.2.2:8001/media/$id');
+      await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
       if (mediaResponse.statusCode != 204) {
         throw Exception('Failed to delete medium');
       }
     }
 
     final Response spotResponse =
-        await netWorkLocator.dio.delete('http://10.0.2.2:8000/spot/${spot.id}');
+        await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
     if (spotResponse.statusCode != 204) {
       throw Exception('Failed to delete spot');
     }
@@ -105,7 +108,7 @@ class SpotService {
   Future<Spot?> uploadSpot(Map data) async {
     try {
       final Response response = await netWorkLocator.dio
-          .post('http://10.0.2.2:8000/spot', data: data);
+          .post('$climbingApiHost/spot', data: data);
       if (response.statusCode == 201) {
         return Spot.fromJson(response.data);
       } else {
