@@ -4,3 +4,4 @@ __pycache__
 .idea
 .env
 /local.properties
+server/traefik/letsencrypt/acme.json
