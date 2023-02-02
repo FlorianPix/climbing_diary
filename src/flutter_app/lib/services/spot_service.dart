@@ -23,7 +23,15 @@ class SpotService {
       if (response.statusCode == 200) {
         // If the server did return a 200 OK response, then parse the JSON.
         List<Spot> spots = [];
-        response.data.forEach((s) => {spots.add(Spot.fromJson(s))});
+        // save to cache
+        Box box = Hive.box('spots');
+        response.data.forEach((s) {
+          Spot spot = Spot.fromJson(s);
+          if (!box.containsKey(spot.id)) {
+            box.put(spot.id, spot.toJson());
+          }
+          spots.add(spot);
+        });
         return spots;
       }
     } catch (e) {
@@ -67,8 +75,8 @@ class SpotService {
       return uploadSpot(data);
     } else {
       // save to cache
-      Box box = Hive.box('saveSpot');
-      box.put('spot', spot.toJson());
+      Box box = Hive.box('upload_later_spots');
+      box.put('spot_${box.length+1}', spot.toJson());
     }
     return null;
   }
@@ -116,9 +124,16 @@ class SpotService {
       }
     } catch (e) {
       if (e is DioError) {
-        print(e);
-        print(e.response!);
-        print(data);
+        final response = e.response;
+        if (response != null) {
+          switch (response.statusCode) {
+            case 409:
+              // TODO give a notification that this spot already exists
+              return null;
+            default:
+              throw Exception('Failed to create spot');
+          }
+        }
       }
     }
     return null;

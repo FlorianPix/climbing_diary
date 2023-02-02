@@ -330,7 +330,7 @@ class _DiaryPageState extends State<DiaryPage> {
             );
           }
         } else {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         }
       }
     );

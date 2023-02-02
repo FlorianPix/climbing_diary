@@ -43,6 +43,20 @@ class Spot {
     );
   }
 
+  Map toJson() => {
+    "id": id,
+    "date": date,
+    "name": name,
+    "coordinates": coordinates,
+    "location": location,
+    "routes": routes,
+    "rating": rating,
+    "comment": comment,
+    "distance_parking": distanceParking,
+    "distance_public_transport": distancePublicTransport,
+    "media_ids": mediaIds
+  };
+
   UpdateSpot toUpdateSpot() {
     return UpdateSpot(
       id: id,
