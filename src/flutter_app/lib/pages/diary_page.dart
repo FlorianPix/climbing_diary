@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import '../components/diary_page/timeline.dart';
@@ -34,6 +35,7 @@ class DiaryPageState extends State<DiaryPage> {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
+            uploadQueuedSpots();
             futureSpots = spotService.getSpots();
             return FutureBuilder<List<Spot>>(
               future: futureSpots,
@@ -82,7 +84,6 @@ class DiaryPageState extends State<DiaryPage> {
 
             deleteCallback(spot) {
               spots.remove(spot);
-              // TODO remove from cache
               setState(() {});
             }
 
@@ -96,7 +97,6 @@ class DiaryPageState extends State<DiaryPage> {
               if (index != -1) {
                 spots.removeAt(index);
                 spots.add(spot);
-                // TODO update in cache
               }
               setState(() {});
             }
@@ -113,6 +113,4 @@ class DiaryPageState extends State<DiaryPage> {
   Future<bool> checkConnection() async {
     return await InternetConnectionChecker().hasConnection;
   }
-
-
 }

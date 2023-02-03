@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 import '../components/spot_details.dart';
+import '../services/cache.dart';
 import 'navigation_screen_page.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -41,18 +42,7 @@ class _MapPageState extends State<MapPage> {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            // if cache isn't empty => upload
-            Box box = Hive.box('upload_later_spots');
-            var data = [];
-            for(var i = 0; i < box.length; i++){
-              data.add(box.getAt(i));
-            }
-            if (data != []) {
-              for(var i = data.length-1; i >= 0; i--){
-                spotService.uploadSpot(data[i]);
-                box.deleteAt(i);
-              }
-            }
+            uploadQueuedSpots();
             futureSpots = spotService.getSpots();
             return FutureBuilder<List<Spot>>(
               future: futureSpots,
@@ -186,19 +176,11 @@ class _MapPageState extends State<MapPage> {
               ),
               floatingActionButton: FloatingActionButton(
                 onPressed: () async {
-                  if (online) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => NavigationScreenPage(onAdd: (Spot value) {})),
-                    );
-                  } else {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SaveLocationNoConnectionPage(onAdd: (Spot value) {})),
-                    );
-                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SaveLocationNoConnectionPage(onAdd: (Spot value) {})),
+                  );
                 },
                 child: const Icon(Icons.add),
               ),

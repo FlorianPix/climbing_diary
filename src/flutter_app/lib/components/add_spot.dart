@@ -170,14 +170,13 @@ class _AddSpotState extends State<AddSpot>{
               CreateSpot spot = CreateSpot(
                 date: controllerDate.text,
                 name: controllerTitle.text,
-                coordinates: [widget.coordinates.latitude, widget.coordinates.longitude],
-                location: [widget.address],
+                coordinates: [double.parse(controllerLat.text), double.parse(controllerLong.text)],
+                location: [controllerAddress.text],
                 rating: currentSliderValue.toInt(),
                 distanceParking: (valDistanceParking != null) ? valDistanceParking : 0,
                 distancePublicTransport: (valDistancePublicTransport != null) ? valDistancePublicTransport : 0,
                 comment: controllerDescription.text,
               );
-              Navigator.of(context).pop();
               Navigator.of(context).pop();
               Spot? createdSpot = await spotService.createSpot(spot, result);
               if (createdSpot != null) {

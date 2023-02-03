@@ -10,6 +10,7 @@ import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/spot.dart';
 import '../interfaces/update_spot.dart';
+import 'cache.dart';
 import 'locator.dart';
 
 class SpotService {
@@ -83,7 +84,8 @@ class SpotService {
     } else {
       // save to cache
       Box box = Hive.box('upload_later_spots');
-      box.put('spot_${box.length+1}', spot.toJson());
+      Map spotJson = spot.toJson();
+      box.put(spotJson.hashCode, spotJson);
     }
     return null;
   }
@@ -104,20 +106,30 @@ class SpotService {
   }
 
   Future<void> deleteSpot(Spot spot) async {
-    for (var id in spot.mediaIds) {
-      final Response mediaResponse =
-      await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-      if (mediaResponse.statusCode != 204) {
-        throw Exception('Failed to delete medium');
+    try {
+      for (var id in spot.mediaIds) {
+        final Response mediaResponse =
+        await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
+        if (mediaResponse.statusCode != 204) {
+          throw Exception('Failed to delete medium');
+        }
       }
-    }
 
-    final Response spotResponse =
-        await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
-    if (spotResponse.statusCode != 204) {
-      throw Exception('Failed to delete spot');
+      final Response spotResponse =
+      await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
+      if (spotResponse.statusCode != 204) {
+        throw Exception('Failed to delete spot');
+      }
+      return spotResponse.data;
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
+          // no connection error
+        }
+      }
+    } finally {
+      deleteSpotFromCache(spot.id);
     }
-    return spotResponse.data;
   }
 
   Future<Spot?> uploadSpot(Map data) async {
@@ -145,6 +157,8 @@ class SpotService {
           }
         }
       }
+    } finally {
+      deleteSpotFromUploadQueue(data.hashCode);
     }
     return null;
   }
