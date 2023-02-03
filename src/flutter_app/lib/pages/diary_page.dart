@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../components/diary_page/timeline.dart';
 import '../interfaces/spot.dart';
+import '../services/cache.dart';
 import '../services/spot_service.dart';
 
 const kTileHeight = 50.0;
@@ -53,8 +53,10 @@ class DiaryPageState extends State<DiaryPage> {
                         index = i;
                       }
                     }
-                    spots.removeAt(index);
-                    spots.add(spot);
+                    if (index != -1) {
+                      spots.removeAt(index);
+                      spots.add(spot);
+                    }
                     setState(() {});
                   }
 
@@ -67,9 +69,30 @@ class DiaryPageState extends State<DiaryPage> {
             );
           } else {
             // offline
-            return const Scaffold(
-                body: Center(child: Text('No connection'),)
-            );
+            List<Spot> spots = getSpotsFromCache();
+
+            deleteCallback(spot) {
+              spots.remove(spot);
+              // TODO remove from cache
+              setState(() {});
+            }
+
+            updateCallback(Spot spot) {
+              var index = -1;
+              for (int i = 0; i < spots.length; i++) {
+                if (spots[i].id == spot.id) {
+                  index = i;
+                }
+              }
+              if (index != -1) {
+                spots.removeAt(index);
+                spots.add(spot);
+                // TODO update in cache
+              }
+              setState(() {});
+            }
+
+            return Timeline(spots: spots, deleteCallback: deleteCallback, updateCallback: updateCallback);
           }
         } else {
           return const CircularProgressIndicator();
@@ -81,4 +104,6 @@ class DiaryPageState extends State<DiaryPage> {
   Future<bool> checkConnection() async {
     return await InternetConnectionChecker().hasConnection;
   }
+
+
 }

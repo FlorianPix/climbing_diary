@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../interfaces/spot.dart';
 import '../interfaces/update_spot.dart';
@@ -184,6 +183,7 @@ class _EditSpotState extends State<EditSpot>{
               );
               Navigator.of(context).pop();
               Navigator.of(context).pop();
+              // TODO only update cache when offline
               Spot? updatedSpot = await spotService.editSpot(spot);
               if (updatedSpot != null) {
                 widget.onUpdate.call(updatedSpot);
