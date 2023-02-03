@@ -23,7 +23,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final applicationDocumentDir = await getApplicationDocumentsDirectory();
   await Hive.initFlutter(applicationDocumentDir.path);
-  await Hive.openBox('saveSpot');
+  await Hive.openBox('spots');
+  await Hive.openBox('upload_later_spots');
   await setup();
   runApp(const MyApp());
 }

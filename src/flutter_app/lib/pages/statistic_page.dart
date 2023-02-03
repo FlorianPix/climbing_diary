@@ -6,19 +6,12 @@ class StatisticPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var data = _getInfo();
-    return Scaffold(
+    return const Scaffold(
       body: Center(
         child: Text (
-         // "$data"
           "Statistics"
         )
       ),
     );
-  }
-  _getInfo() {
-    Box box = Hive.box('saveSpot');
-    var data = box.get('spot');
-    return data;
   }
 }

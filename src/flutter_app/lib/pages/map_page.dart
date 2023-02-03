@@ -41,13 +41,17 @@ class _MapPageState extends State<MapPage> {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            //if chache is'nt empty => upload
-            Box box = Hive.box('saveSpot');
-            var data = box.get('spot');
-            if (data != null) {
-              SpotService spot = SpotService();
-              spot.uploadSpot(data);
-              box.delete('spot');
+            // if cache isn't empty => upload
+            Box box = Hive.box('upload_later_spots');
+            var data = [];
+            for(var i = 0; i < box.length; i++){
+              data.add(box.getAt(i));
+            }
+            if (data != []) {
+              for(var i = data.length-1; i >= 0; i--){
+                spotService.uploadSpot(data[i]);
+                box.deleteAt(i);
+              }
             }
             futureSpots = spotService.getSpots();
             return FutureBuilder<List<Spot>>(
@@ -178,7 +182,7 @@ class _MapPageState extends State<MapPage> {
           } else {
             return Scaffold(
               body: const Center(
-                child: Text('No connection'),
+                child: Text('You have no connection at the moment. But you can still create spots. They will be uploaded automatically as soon as you regain connection.'),
               ),
               floatingActionButton: FloatingActionButton(
                 onPressed: () async {
