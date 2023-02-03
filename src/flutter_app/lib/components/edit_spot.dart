@@ -183,7 +183,6 @@ class _EditSpotState extends State<EditSpot>{
               );
               Navigator.of(context).pop();
               Navigator.of(context).pop();
-              // TODO only update cache when offline
               Spot? updatedSpot = await spotService.editSpot(spot);
               if (updatedSpot != null) {
                 widget.onUpdate.call(updatedSpot);

@@ -10,6 +10,7 @@ import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/spot.dart';
 import '../interfaces/update_spot.dart';
+import 'cache.dart';
 import 'locator.dart';
 
 class SpotService {
@@ -53,11 +54,8 @@ class SpotService {
     final Response response =
         await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
     if (response.statusCode == 200) {
-      // If the server did return a 200 OK response, then parse the JSON.
       return Spot.fromJson(response.data);
     } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
       throw Exception('Failed to load spot');
     }
   }
@@ -83,41 +81,66 @@ class SpotService {
     } else {
       // save to cache
       Box box = Hive.box('upload_later_spots');
-      box.put('spot_${box.length+1}', spot.toJson());
+      Map spotJson = spot.toJson();
+      box.put(spotJson.hashCode, spotJson);
     }
     return null;
   }
 
   Future<Spot?> editSpot(UpdateSpot spot) async {
-    // TODO replace with spread operator after upgrade to flutter 2.3
-    final Response response = await netWorkLocator.dio
-        .put('$climbingApiHost/spot/${spot.id}', data: spot.toJson());
-
-    if (response.statusCode == 200) {
-      // If the server did return a 200 OK response, then parse the JSON.
-      return Spot.fromJson(response.data);
-    } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Failed to edit spot');
+    try {
+      final Response response = await netWorkLocator.dio
+          .put('$climbingApiHost/spot/${spot.id}', data: spot.toJson());
+      if (response.statusCode == 200) {
+        deleteSpotFromEditQueue(spot.hashCode);
+        return Spot.fromJson(response.data);
+      } else {
+        throw Exception('Failed to edit spot');
+      }
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
+          // this means we are offline so queue this spot and edit later
+          Box box = Hive.box('edit_later_spots');
+          Map spotJson = spot.toJson();
+          box.put(spotJson.hashCode, spotJson);
+        }
+      }
+    } finally {
+      editSpotFromCache(spot);
     }
+    return null;
   }
 
   Future<void> deleteSpot(Spot spot) async {
-    for (var id in spot.mediaIds) {
-      final Response mediaResponse =
-      await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-      if (mediaResponse.statusCode != 204) {
-        throw Exception('Failed to delete medium');
+    try {
+      for (var id in spot.mediaIds) {
+        final Response mediaResponse =
+        await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
+        if (mediaResponse.statusCode != 204) {
+          throw Exception('Failed to delete medium');
+        }
       }
-    }
 
-    final Response spotResponse =
-        await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
-    if (spotResponse.statusCode != 204) {
-      throw Exception('Failed to delete spot');
+      final Response spotResponse =
+      await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
+      if (spotResponse.statusCode != 204) {
+        throw Exception('Failed to delete spot');
+      }
+      deleteSpotFromDeleteQueue(spot.toJson().hashCode);
+      return spotResponse.data;
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
+          // this means we are offline so queue this spot and delete later
+          Box box = Hive.box('delete_later_spots');
+          Map spotJson = spot.toJson();
+          box.put(spotJson.hashCode, spotJson);
+        }
+      }
+    } finally {
+      deleteSpotFromCache(spot.id);
     }
-    return spotResponse.data;
   }
 
   Future<Spot?> uploadSpot(Map data) async {
@@ -145,6 +168,8 @@ class SpotService {
           }
         }
       }
+    } finally {
+      deleteSpotFromUploadQueue(data.hashCode);
     }
     return null;
   }

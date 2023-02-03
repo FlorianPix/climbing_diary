@@ -33,31 +33,10 @@ class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> 
         if (snapshot.hasData) {
           Position position = snapshot.data!;
           return Scaffold(
-            body: Container(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    child: const Text(
-                      'Save spot with current location',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w400),
-                    ),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) => AddSpot(
-                          coordinates:
-                          LatLng(position.latitude, position.longitude),
-                          address: " ",
-                          onAdd: widget.onAdd
-                        )
-                      );
-                    },
-                  ),
-                ]
-              )
+            body: AddSpot(
+              coordinates: LatLng(position.latitude, position.longitude),
+              address: " ",
+              onAdd: widget.onAdd
             )
           );
         } else if (snapshot.hasError) {

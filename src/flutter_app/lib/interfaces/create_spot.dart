@@ -38,6 +38,19 @@ class CreateSpot {
     );
   }
 
+  factory CreateSpot.fromCache(Map<dynamic, dynamic> cache) {
+    return CreateSpot(
+        date: cache['date'],
+        name: cache['name'],
+        coordinates: List<double>.from(cache['coordinates']),
+        location: List<String>.from(cache['location']),
+        rating: cache['rating'],
+        comment: cache['comment'],
+        distanceParking: cache['distance_parking'],
+        distancePublicTransport: cache['distance_public_transport'],
+    );
+  }
+
   Map toJson() => {
     "date": date,
     "name": name,
