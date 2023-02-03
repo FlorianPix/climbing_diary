@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'package:overlay_support/overlay_support.dart';
 
 import '../config/environment.dart';
 import '../interfaces/create_spot.dart';
@@ -35,16 +37,21 @@ class SpotService {
         return spots;
       }
     } catch (e) {
-      // TODO give a notification that the API isn't reachable
-      return [];
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          showSimpleNotification(
+            const Text('Couldn\'t connect to API'),
+            background: Colors.red,
+          );
+        }
+      }
     }
-    throw Exception('Failed to load spots');
+    return [];
   }
 
   Future<Spot> getSpot(String spotId) async {
     final Response response =
         await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
-
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response, then parse the JSON.
       return Spot.fromJson(response.data);
@@ -128,8 +135,11 @@ class SpotService {
         if (response != null) {
           switch (response.statusCode) {
             case 409:
-              // TODO give a notification that this spot already exists
-              return null;
+              showSimpleNotification(
+                const Text('This spot already exists!'),
+                background: Colors.red,
+              );
+              break;
             default:
               throw Exception('Failed to create spot');
           }

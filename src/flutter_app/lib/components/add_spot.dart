@@ -79,7 +79,6 @@ class _AddSpotState extends State<AddSpot>{
                   );
                   if(pickedDate != null ){
                     String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-                    print(formattedDate); //formatted date output using intl package =>  2021-03-16
                     setState(() {
                       controllerDate.text = formattedDate; //set output date to TextField value.
                     });
