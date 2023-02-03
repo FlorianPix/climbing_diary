@@ -1,6 +1,5 @@
 import 'package:climbing_diary/pages/save_location_no_connection.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 
 import '../components/spot_details.dart';
 import '../services/cache.dart';
@@ -42,6 +41,8 @@ class _MapPageState extends State<MapPage> {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
+            deleteQueuedSpots();
+            editQueuedSpots();
             uploadQueuedSpots();
             futureSpots = spotService.getSpots();
             return FutureBuilder<List<Spot>>(

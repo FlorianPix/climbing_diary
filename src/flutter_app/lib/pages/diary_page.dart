@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import '../components/diary_page/timeline.dart';
@@ -35,6 +34,8 @@ class DiaryPageState extends State<DiaryPage> {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
+            deleteQueuedSpots();
+            editQueuedSpots();
             uploadQueuedSpots();
             futureSpots = spotService.getSpots();
             return FutureBuilder<List<Spot>>(

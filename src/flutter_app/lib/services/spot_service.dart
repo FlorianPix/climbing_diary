@@ -54,11 +54,8 @@ class SpotService {
     final Response response =
         await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
     if (response.statusCode == 200) {
-      // If the server did return a 200 OK response, then parse the JSON.
       return Spot.fromJson(response.data);
     } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
       throw Exception('Failed to load spot');
     }
   }
@@ -91,18 +88,28 @@ class SpotService {
   }
 
   Future<Spot?> editSpot(UpdateSpot spot) async {
-    // TODO replace with spread operator after upgrade to flutter 2.3
-    final Response response = await netWorkLocator.dio
-        .put('$climbingApiHost/spot/${spot.id}', data: spot.toJson());
-
-    if (response.statusCode == 200) {
-      // If the server did return a 200 OK response, then parse the JSON.
-      return Spot.fromJson(response.data);
-    } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Failed to edit spot');
+    try {
+      final Response response = await netWorkLocator.dio
+          .put('$climbingApiHost/spot/${spot.id}', data: spot.toJson());
+      if (response.statusCode == 200) {
+        deleteSpotFromEditQueue(spot.hashCode);
+        return Spot.fromJson(response.data);
+      } else {
+        throw Exception('Failed to edit spot');
+      }
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
+          // this means we are offline so queue this spot and edit later
+          Box box = Hive.box('edit_later_spots');
+          Map spotJson = spot.toJson();
+          box.put(spotJson.hashCode, spotJson);
+        }
+      }
+    } finally {
+      editSpotFromCache(spot);
     }
+    return null;
   }
 
   Future<void> deleteSpot(Spot spot) async {
@@ -120,11 +127,15 @@ class SpotService {
       if (spotResponse.statusCode != 204) {
         throw Exception('Failed to delete spot');
       }
+      deleteSpotFromDeleteQueue(spot.toJson().hashCode);
       return spotResponse.data;
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // no connection error
+          // this means we are offline so queue this spot and delete later
+          Box box = Hive.box('delete_later_spots');
+          Map spotJson = spot.toJson();
+          box.put(spotJson.hashCode, spotJson);
         }
       }
     } finally {
