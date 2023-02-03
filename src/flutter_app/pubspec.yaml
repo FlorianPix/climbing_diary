@@ -55,6 +55,7 @@ dependencies:
   image_picker: ^0.8.6
   permission_handler: ^10.2.0
   geolocator: ^9.0.2
+  overlay_support: ^2.1.0
 
 dev_dependencies:
   flutter_test:

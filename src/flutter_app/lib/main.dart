@@ -1,5 +1,6 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'config/environment.dart';
 import 'pages/diary_page.dart';
 import 'pages/map_page.dart';
@@ -7,7 +8,6 @@ import 'pages/statistic_page.dart';
 import 'services/locator.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import 'data/sharedprefs/shared_preference_helper.dart';
@@ -26,7 +26,7 @@ Future<void> main() async {
   await Hive.openBox('spots');
   await Hive.openBox('upload_later_spots');
   await setup();
-  runApp(const MyApp());
+  runApp(const OverlaySupport.global(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

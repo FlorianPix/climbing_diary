@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:overlay_support/overlay_support.dart';
 import '../components/diary_page/timeline.dart';
 import '../interfaces/spot.dart';
 import '../services/cache.dart';
@@ -43,6 +44,10 @@ class DiaryPageState extends State<DiaryPage> {
 
                   deleteCallback(spot) {
                     spots.remove(spot);
+                    showSimpleNotification(
+                      Text('${spot.name} was deleted'),
+                      background: Colors.green,
+                    );
                     setState(() {});
                   }
 
@@ -57,6 +62,10 @@ class DiaryPageState extends State<DiaryPage> {
                       spots.removeAt(index);
                       spots.add(spot);
                     }
+                    showSimpleNotification(
+                      Text('${spot.name} was updated'),
+                      background: Colors.green,
+                    );
                     setState(() {});
                   }
 
