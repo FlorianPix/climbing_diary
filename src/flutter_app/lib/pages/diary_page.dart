@@ -34,6 +34,9 @@ class DiaryPageState extends State<DiaryPage> {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
+            deleteQueuedSpots();
+            editQueuedSpots();
+            uploadQueuedSpots();
             futureSpots = spotService.getSpots();
             return FutureBuilder<List<Spot>>(
               future: futureSpots,
@@ -82,7 +85,6 @@ class DiaryPageState extends State<DiaryPage> {
 
             deleteCallback(spot) {
               spots.remove(spot);
-              // TODO remove from cache
               setState(() {});
             }
 
@@ -96,7 +98,6 @@ class DiaryPageState extends State<DiaryPage> {
               if (index != -1) {
                 spots.removeAt(index);
                 spots.add(spot);
-                // TODO update in cache
               }
               setState(() {});
             }
@@ -113,6 +114,4 @@ class DiaryPageState extends State<DiaryPage> {
   Future<bool> checkConnection() async {
     return await InternetConnectionChecker().hasConnection;
   }
-
-
 }

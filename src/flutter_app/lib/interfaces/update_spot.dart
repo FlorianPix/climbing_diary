@@ -41,6 +41,22 @@ class UpdateSpot {
     );
   }
 
+  factory UpdateSpot.fromCache(Map<dynamic, dynamic> cache) {
+    return UpdateSpot(
+        id: cache['_id'],
+        date: cache['date'],
+        name: cache['name'],
+        coordinates: List<double>.from(cache['coordinates']),
+        location: List<String>.from(cache['location']),
+        routes: cache['routes'] != null ? List<String>.from(cache['routes']) : [],
+        rating: cache['rating'],
+        comment: cache['comment'],
+        distanceParking: cache['distance_parking'],
+        distancePublicTransport: cache['distance_public_transport'],
+        mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : []
+    );
+  }
+
   Map toJson() => {
     "_id": id,
     "date": date,

@@ -24,6 +24,8 @@ Future<void> main() async {
   final applicationDocumentDir = await getApplicationDocumentsDirectory();
   await Hive.initFlutter(applicationDocumentDir.path);
   await Hive.openBox('spots');
+  await Hive.openBox('delete_later_spots');
+  await Hive.openBox('edit_later_spots');
   await Hive.openBox('upload_later_spots');
   await setup();
   runApp(const OverlaySupport.global(child: MyApp()));

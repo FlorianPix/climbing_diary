@@ -45,22 +45,22 @@ class Spot {
 
   factory Spot.fromCache(Map<dynamic, dynamic> cache) {
     return Spot(
-      id: cache['id'],
+      id: cache['_id'],
       date: cache['date'],
       name: cache['name'],
       coordinates: List<double>.from(cache['coordinates']),
       location: List<String>.from(cache['location']),
-      routes: List<String>.from(cache['routes']),
+      routes: cache['routes'] != null ? List<String>.from(cache['routes']) : [],
       rating: cache['rating'],
       comment: cache['comment'],
       distanceParking: cache['distance_parking'],
       distancePublicTransport: cache['distance_public_transport'],
-      mediaIds: List<String>.from(cache['media_ids'])
+      mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : []
     );
   }
 
   Map toJson() => {
-    "id": id,
+    "_id": id,
     "date": date,
     "name": name,
     "coordinates": coordinates,
