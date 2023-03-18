@@ -7,6 +7,13 @@ jobs:
     env:
       PROJECT_NAME: climbing-api
       PROJECT_DESCRIPTION: "API to manage spot, route and pitch data for the climbing diary app."
+      PROJECT_VERSION: alpha
+      SERVER_IP: 0.0.0.0
+      SERVER_PORT: 8000
+      BACKEND_CORS_ORIGINS: '["http://localhost:4200", "http://localhost:4200/", "http://localhost", "http://localhost:8000"]'
+      DATABASE_URI: ${{ secrets.DATABASE_URI }}
+      AUTH0_DOMAIN: climbing-diary.eu.auth0.com
+      AUTH0_API_AUDIENCE: climbing-diary-API
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
