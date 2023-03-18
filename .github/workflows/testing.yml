@@ -32,7 +32,6 @@ jobs:
           pip install pytest-cov
           pytest src/climbingAPI/test_main.py --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
   testing_mediaAPI:
-    runs-on: ubuntu-latest
     env:
       PROJECT_NAME: mediaAPI
       SERVER_IP: 0.0.0.0
@@ -49,6 +48,7 @@ jobs:
       S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
       S3_BUCKET_NAME: testing-cd-media
       S3_SIGNATURE_VERSION: s3v4
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
