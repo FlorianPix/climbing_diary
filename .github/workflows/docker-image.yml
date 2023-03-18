@@ -27,7 +27,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./src/climbingAPI
-          file: ./Dockerfile
+          file: ./src/climbingAPI/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/cd-diary:latest
   mediaAPI:
@@ -50,6 +50,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./src/mediaAPI
-          file: ./Dockerfile
+          file: ./src/mediaAPI/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/cd-media:latest
