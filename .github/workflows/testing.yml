@@ -5,6 +5,7 @@ on: [pull_request]
 jobs:
   testing_climbingAPI:
     env:
+      DATABASE_URI: ${{ secrets.DATABASE_URI }}
       AUTH0_API_AUDIENCE: ${{ vars.AUTH0_API_AUDIENCE }}
     runs-on: ubuntu-latest
     steps:
