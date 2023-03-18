@@ -6,7 +6,7 @@ jobs:
   testing_climbingAPI:
     env:
       PROJECT_NAME: climbing-api
-      PROJECT_DESCRIPTION: API to manage spot, route and pitch data for the climbing diary app.
+      PROJECT_DESCRIPTION: "API to manage spot, route and pitch data for the climbing diary app."
       PROJECT_VERSION: alpha
       SERVER_IP: 0.0.0.0
       SERVER_PORT: 8000
