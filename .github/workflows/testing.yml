@@ -4,6 +4,8 @@ on: [pull_request]
 
 jobs:
   testing_climbingAPI:
+    environment:
+      climbingAPI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -22,6 +24,8 @@ jobs:
           pytest src/climbingAPI/test_main.py --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
   testing_mediaAPI:
     runs-on: ubuntu-latest
+    environment:
+      mediaAPI
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
