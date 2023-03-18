@@ -4,8 +4,8 @@ on: [pull_request]
 
 jobs:
   testing_climbingAPI:
-    environment:
-      climbingAPI
+    env:
+      AUTH0_API_AUDIENCE: ${{ vars.AUTH0_API_AUDIENCE }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
