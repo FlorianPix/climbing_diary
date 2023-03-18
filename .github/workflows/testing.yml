@@ -27,7 +27,6 @@ jobs:
           pip install -r src/climbingAPI/requirements.txt
       - name: Test with pytest
         run: |
-          env
           pip install pytest
           pip install pytest-cov
           pytest src/climbingAPI/test_main.py --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
@@ -61,7 +60,6 @@ jobs:
           pip install -r src/mediaAPI/requirements.txt
       - name: Test with pytest
         run: |
-          env
           pip install pytest
           pip install pytest-cov
           pytest src/mediaAPI/test_main.py --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
