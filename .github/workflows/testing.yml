@@ -23,7 +23,7 @@ jobs:
         run: |
           cd ./src/climbingAPI
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cd-diary:latest .
-          docker-compose up
+          docker-compose up -d
           docker container list
           docker exec -it climbingapi-app-1 /bin/bash 
           ls
@@ -31,4 +31,5 @@ jobs:
           pip install pytest-cov
           coverage run -m pytest src/mediaAPI
           coverage report
+          docker-compose down
 
