@@ -21,11 +21,9 @@ jobs:
       -
         name: Build and compose
         run: |
-          pwd
           cd ./src/climbingAPI
-          pwd
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cd-diary:latest .
-          docker-compose up .
+          docker-compose up
           docker container list
           docker exec -it climbingapi-app-1 /bin/bash 
           ls
