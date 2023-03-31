@@ -47,8 +47,8 @@ jobs:
           cd ./src/mediaAPI
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cd-media:latest .
           docker-compose up -d
-          docker exec climbingapi-app-1 pip install pytest
-          docker exec climbingapi-app-1 pip install pytest-cov
-          docker exec climbingapi-app-1 coverage run -m pytest .
-          docker exec climbingapi-app-1 coverage report
+          docker exec mediaapi-app-1 pip install pytest
+          docker exec mediaapi-app-1 pip install pytest-cov
+          docker exec mediaapi-app-1 coverage run -m pytest .
+          docker exec mediaapi-app-1 coverage report
           docker-compose down
