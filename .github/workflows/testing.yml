@@ -25,12 +25,10 @@ jobs:
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cd-diary:latest .
           docker-compose up -d
           docker container list
-          docker exec -it climbingapi-app-1 /bin/bash 
-          ls
-          pip install pytest
-          pip install pytest-cov
-          coverage run -m pytest src/mediaAPI
-          coverage report
-          exit
+          docker exec climbingapi-app-1 ls
+          docker exec climbingapi-app-1 pip install pytest
+          docker exec climbingapi-app-1 pip install pytest-cov
+          docker exec climbingapi-app-1 coverage run -m pytest src/mediaAPI
+          docker exec climbingapi-app-1 coverage report
           docker-compose down
 
