@@ -22,15 +22,15 @@ jobs:
         name: Build and compose
         run: |
           pwd
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cd-diary:latest ./src/climbingAPI
-          docker-compose up ./src/climbingAPI
+          cd ./src/climbingAPI
+          pwd
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cd-diary:latest .
+          docker-compose up .
           docker container list
-  testClimbingAPI:
-    runs-on: ubuntu-latest
-    container: climbingapi-app-1
-    steps:
-      -
-        name: Test
-        run: |
+          docker exec -it climbingapi-app-1 /bin/bash 
           ls
+          pip install pytest
+          pip install pytest-cov
+          coverage run -m pytest src/mediaAPI
+          coverage report
 
