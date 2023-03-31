@@ -21,9 +21,9 @@ jobs:
       -
         name: Build and compose
         run: |
-          ls
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cd-diary:latest .
-          docker-compose up
+          pwd
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cd-diary:latest ./src/climbingAPI
+          docker-compose up ./src/climbingAPI
           docker container list
   testClimbingAPI:
     runs-on: ubuntu-latest
