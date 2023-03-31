@@ -31,5 +31,6 @@ jobs:
           pip install pytest-cov
           coverage run -m pytest src/mediaAPI
           coverage report
+          exit
           docker-compose down
 
