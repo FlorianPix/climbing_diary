@@ -9,9 +9,10 @@ from app.models.py_object_id import PyObjectId
 class CreateSpotModel(BaseModel):
     comment: Optional[str]
     coordinates: List[float] = []
+    date: date
     distance_parking: Optional[int]
     distance_public_transport: Optional[int]
-    location: str = []
+    location: List[str] = []
     name: str = Field(...)
     rating: int = Field(..., ge=0, le=5)
 
@@ -23,9 +24,10 @@ class CreateSpotModel(BaseModel):
             "example": {
                 "comment": "Great spot close to a lake with solid holds but kinda hard to reach.",
                 "coordinates": [50.746036, 10.642666],
+                "date": "2022-10-08",
                 "distance_parking": 120,
                 "distance_public_transport": 120,
-                "location": "Deutschland, Thüringen, Thüringer Wald",
+                "location": ["Deutschland", "Thüringen", "Thüringer Wald"],
                 "name": "Falkenstein",
                 "rating": 5,
             }

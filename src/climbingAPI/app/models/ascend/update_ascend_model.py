@@ -6,11 +6,14 @@ from typing import Optional, List
 
 class UpdateSpotModel(BaseModel):
     date: Optional[str]
-    spot_id: Optional[str]
-    spot_name: Optional[str]
-    done_routes: Optional[tuple]
+    name: Optional[str]
+    coordinates: Optional[tuple]
+    location: Optional[tuple]
+    routes: Optional[tuple]
     rating: Optional[int]
     comment: Optional[str]
+    distance_parking: Optional[int]
+    distance_public_transport: Optional[int]
     media_ids: Optional[tuple]
 
     class Config:
@@ -20,9 +23,13 @@ class UpdateSpotModel(BaseModel):
             "example": {
                 "date": "2022-10-08",
                 "name": "Falkenstein",
-                "done_routes": [],
+                "coordinates": [50.746036, 10.642666],
+                "location": ["Deutschland", "Thüringen", "Thüringer Wald"],
+                "routes": [],
                 "rating": 5,
-                "comment": "We had very good conditions that day.",
+                "comment": "Great spot close to a lake with solid holds but kinda hard to reach.",
+                "distance_parking": 120,
+                "distance_public_transport": 120,
                 "media_ids": []
             }
         }

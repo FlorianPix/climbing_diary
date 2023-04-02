@@ -14,7 +14,6 @@ class PitchModel(BaseModel):
     grade: str = Field(...)
     length: int = Field(...)  # m
     description: str = Field(...)
-    ascend: str = Field(...)
 
     class Config:
         allow_population_by_field_name = True
@@ -29,6 +28,5 @@ class PitchModel(BaseModel):
                 "grade": "3",
                 "length": 10,
                 "description": "very easy and can be combined with pitch two at the cost of rope drag",
-                "ascend": "onsight",
             }
         }
