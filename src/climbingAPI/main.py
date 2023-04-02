@@ -31,9 +31,11 @@ def get_application():
         allow_headers=["*"],
     )
 
+    _app.include_router(spots.router, prefix="/trip", tags=["trip"])
     _app.include_router(spots.router, prefix="/spot", tags=["spot"])
     _app.include_router(routes.router, prefix="/route", tags=["route"])
     _app.include_router(pitches.router, prefix="/pitch", tags=["pitch"])
+    _app.include_router(spots.router, prefix="/ascend", tags=["ascend"])
     _app.include_router(admin.router, prefix="/admin", tags=["admin"])
 
     _app.add_event_handler("startup", connect_db)
