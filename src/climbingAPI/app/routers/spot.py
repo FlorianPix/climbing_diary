@@ -19,36 +19,36 @@ router = APIRouter()
 async def create_spot(spot: CreateSpotModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     spot = jsonable_encoder(spot)
     spot["user_id"] = user.id
-    spot["routes"] = []
+    spot["route_ids"] = []
     spot["media_ids"] = []
 
     db = await get_db()
 
     # check if spot already exists
-    if (spots := await db["spots"].find({
+    if (spots := await db["spot"].find({
         "name": spot["name"],
         "user_id": user.id,
         "coordinates.0": { "$gt": spot["coordinates"][0] - 0.001, "$lt": spot["coordinates"][0] + 0.001},
         "coordinates.1": { "$gt": spot["coordinates"][1] - 0.001, "$lt": spot["coordinates"][1] + 0.001},
     }).to_list(None)):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="spot already exists")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Spot already exists")
 
-    new_spot = await db["spots"].insert_one(spot)
-    created_spot = await db["spots"].find_one({"_id": new_spot.inserted_id})
+    new_spot = await db["spot"].insert_one(spot)
+    created_spot = await db["spot"].find_one({"_id": new_spot.inserted_id})
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=jsonable_encoder(SpotModel(**created_spot)))
 
 
-@router.get('', description="List all spots", response_model=List[SpotModel], dependencies=[Depends(auth.implicit_scheme)])
-async def list_spots(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+@router.get('', description="Retrieve all spots", response_model=List[SpotModel], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_spots(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
-    spots = await db["spots"].find({"user_id": user.id}).to_list(None)
+    spots = await db["spot"].find({"user_id": user.id}).to_list(None)
     return spots
 
 
-@router.get('/{spot_id}', description="Get a spot", response_model=SpotModel, dependencies=[Depends(auth.implicit_scheme)])
-async def show_spot(spot_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+@router.get('/{spot_id}', description="Retrieve a spot", response_model=SpotModel, dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_spot(spot_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
-    if (spot := await db["spots"].find_one({"_id": ObjectId(spot_id), "user_id": user.id})) is not None:
+    if (spot := await db["spot"].find_one({"_id": ObjectId(spot_id), "user_id": user.id})) is not None:
         return spot
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spot {spot_id} not found")
 
@@ -59,15 +59,15 @@ async def update_spot(spot_id: str, spot: UpdateSpotModel = Body(...), user: Aut
     spot = {k: v for k, v in spot.dict().items() if v is not None}
 
     if len(spot) >= 1:
-        update_result = await db["spots"].update_one({"_id": ObjectId(spot_id)}, {"$set": spot})
+        update_result = await db["spot"].update_one({"_id": ObjectId(spot_id)}, {"$set": spot})
 
         if update_result.modified_count == 1:
             if (
-                updated_spot := await db["spots"].find_one({"_id": ObjectId(spot_id)})
+                updated_spot := await db["spot"].find_one({"_id": ObjectId(spot_id)})
             ) is not None:
                 return updated_spot
 
-    if (existing_spot := await db["spots"].find_one({"_id": ObjectId(spot_id)})) is not None:
+    if (existing_spot := await db["spot"].find_one({"_id": ObjectId(spot_id)})) is not None:
         return existing_spot
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spot {spot_id} not found")
@@ -76,12 +76,12 @@ async def update_spot(spot_id: str, spot: UpdateSpotModel = Body(...), user: Aut
 @router.delete('/{spot_id}', description="Delete a spot", dependencies=[Depends(auth.implicit_scheme)])
 async def delete_spot(spot_id: str, user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
-    existing_spot = await db["spots"].find_one({"_id": ObjectId(spot_id), "user_id": user.id,})
+    existing_spot = await db["spot"].find_one({"_id": ObjectId(spot_id), "user_id": user.id,})
 
     if existing_spot is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spot {spot_id} not found")
 
-    delete_result = await db["spots"].delete_one({"_id": ObjectId(spot_id)})
+    delete_result = await db["spot"].delete_one({"_id": ObjectId(spot_id)})
 
     if delete_result.deleted_count == 1:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
