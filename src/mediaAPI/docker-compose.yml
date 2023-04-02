@@ -5,6 +5,7 @@ services:
 
   app:
     image: cd-media
+    container_name: mediaapi-app-1
     build: .
     ports:
       - 8001:8001
@@ -29,6 +30,7 @@ services:
 
   db:
     image: postgres
+    container_name: mediaapi-db-1
     restart: always
     environment:
       - POSTGRES_USER=cd-media

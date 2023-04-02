@@ -1,0 +1,64 @@
+name: testing
+
+on: [pull_request]
+
+jobs:
+  testingClimbingAPI:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Test Setup
+        run: |
+          cd ./src/climbingAPI
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cd-diary:latest .
+          docker-compose up -d
+          docker exec climbingapi-app-1 pip install pytest
+          docker exec climbingapi-app-1 pip install pytest-cov
+      -
+        name: Test
+        run: |
+          cd ./src/climbingAPI
+          docker exec climbingapi-app-1 coverage run -m pytest .
+      -
+        name: Coverage
+        run: |
+          cd ./src/climbingAPI
+          docker exec climbingapi-app-1 coverage report
+      -
+        name: End docker conatiner
+        run: |
+          cd ./src/climbingAPI
+          docker-compose down
+
+  testingMediaAPI:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Test Setup
+        run: |
+          cd ./src/mediaAPI
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/cd-media:latest .
+          docker-compose up -d
+          docker exec mediaapi-app-1 pip install pytest
+          docker exec mediaapi-app-1 pip install pytest-cov
+      - name: Test
+        run: |
+          cd ./src/mediaAPI
+          docker exec mediaapi-app-1 coverage run -m pytest .
+      - name: Coverage
+        run: |
+          cd ./src/mediaAPI
+          docker exec mediaapi-app-1 coverage report
+      - name: End docker container
+        run: |
+          cd ./src/mediaAPI
+          docker-compose down

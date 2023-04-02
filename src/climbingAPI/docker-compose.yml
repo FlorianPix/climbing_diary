@@ -5,6 +5,7 @@ services:
 
   app:
     image: cd-diary
+    container_name: climbingapi-app-1
     build: .
     ports:
       - 8000:8000
@@ -23,6 +24,7 @@ services:
 
   db:
     image: mongo
+    container_name: climbingapi-db-1
     restart: always
     ports:
       - 27017:27017
