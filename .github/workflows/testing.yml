@@ -60,6 +60,5 @@ jobs:
           docker exec mediaapi-app-1 coverage report
       - name: End docker container
         run: |
-          pwd
           cd ./src/mediaAPI
           docker-compose down
