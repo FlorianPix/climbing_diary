@@ -26,9 +26,9 @@ class SpotModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
+                "_id": "",
                 "media_ids": [],
                 "route_ids": [],
-                "spot_id": "",
                 "user_id": "",
                 "comment": "Great spot close to a lake with solid holds but kinda hard to reach.",
                 "coordinates": [50.746036, 10.642666],

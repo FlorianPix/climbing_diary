@@ -11,7 +11,7 @@ class CreateSpotModel(BaseModel):
     coordinates: List[float] = []
     distance_parking: Optional[int]
     distance_public_transport: Optional[int]
-    location: str = []
+    location: str = Field(...)
     name: str = Field(...)
     rating: int = Field(..., ge=0, le=5)
 

@@ -5,15 +5,13 @@ from bson import ObjectId
 from app.models.py_object_id import PyObjectId
 
 
-class PitchModel(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    date: date
-    name: str = Field(...)
-    total_pitch_number: int = Field(...)
-    pitch_number: int = Field(...)
+class CreatePitchModel(BaseModel):
+    comment: str = Optional[str]
     grade: str = Field(...)
-    length: int = Field(...)  # m
-    description: str = Field(...)
+    length: int = Field(...)
+    name: str = Field(...)
+    num: int = Field(..., ge=1)
+    rating: int = Field(..., ge=0, le=5)
 
     class Config:
         allow_population_by_field_name = True
@@ -21,12 +19,11 @@ class PitchModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "date": "2022-10-08",
-                "name": "Pitch 1",
-                "total_pitch_number": 3,
-                "pitch_number": 1,
-                "grade": "3",
-                "length": 10,
-                "description": "very easy and can be combined with pitch two at the cost of rope drag",
+                "comment": "Top Route",
+                "grade": "6a",
+                "length": 35,
+                "name": "Pitch 1 vom Falkensteiner Riss",
+                "num": 1,
+                "rating": 5,
             }
         }

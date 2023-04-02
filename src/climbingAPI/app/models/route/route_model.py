@@ -7,16 +7,15 @@ from app.models.py_object_id import PyObjectId
 
 
 class RouteModel(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    date: date
+    media_ids: List[str] = []
+    pitch_ids: List[str] = []
+    route_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    user_id: str = Field(...)
+
+    comment: str = Field(...)
+    location: str = Field(...)
     name: str = Field(...)
-    location: tuple = Field(...)
-    grade: str = Field(...)
     rating: int = Field(..., ge=0, le=5)
-    length: int = Field(...)  # m
-    rappel_length: int = Field(...)  # m
-    pitches: List[str] = []
-    comments: List[str] = []
 
     class Config:
         allow_population_by_field_name = True
@@ -24,14 +23,13 @@ class RouteModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "date": "2022-10-08",
+                "_id": "",
+                "media_ids": [],
+                "pitch_ids": [],
+                "user_id": "",
+                "comment": "Top Route",
+                "location": "Sektor Falkensteiner Riss",
                 "name": "Falkenstein Riss",
-                "location": ["Sektor Falkensteiner Riss"],
-                "grade": "5a",
-                "rating": 0,
-                "length": 80,
-                "rappel_length": 27,
-                "pitches": [],
-                "comments": [],
+                "rating": 5,
             }
         }
