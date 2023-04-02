@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class AscentStyle(Enum):
     LEAD = 0
     SECOND = 1

@@ -6,7 +6,7 @@ from app.models.py_object_id import PyObjectId
 
 
 class PitchModel(BaseModel):
-    ascend_ids: List[str] = []
+    ascent_ids: List[str] = []
     media_ids: List[str] = []
     pitch_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: str = Field(...)
@@ -25,7 +25,7 @@ class PitchModel(BaseModel):
         schema_extra = {
             "example": {
                 "_id": "",
-                "ascend_ids": [],
+                "ascent_ids": [],
                 "media_ids": [],
                 "user_id": "",
                 "comment": "Top Route",

@@ -19,7 +19,7 @@ router = APIRouter()
 async def create_pitch(pitch: CreatePitchModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     pitch = jsonable_encoder(pitch)
     pitch["user_id"] = user.id
-    pitch["ascend_ids"] = []
+    pitch["ascent_ids"] = []
     pitch["media_ids"] = []
     db = await get_db()
     new_pitch = await db["pitch"].insert_one(pitch)

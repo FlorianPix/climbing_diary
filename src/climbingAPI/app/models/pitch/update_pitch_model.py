@@ -5,7 +5,7 @@ from typing import Optional
 
 
 class UpdatePitchModel(BaseModel):
-    ascend_ids: Optional[tuple]
+    ascent_ids: Optional[tuple]
     media_ids: Optional[tuple]
 
     comment: Optional[str]
@@ -20,7 +20,7 @@ class UpdatePitchModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "ascend_ids": [],
+                "ascent_ids": [],
                 "media_ids": [],
                 "comment": "Top Route",
                 "grade": "6a",
