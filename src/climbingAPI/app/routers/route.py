@@ -6,11 +6,12 @@ from fastapi.responses import Response, JSONResponse
 from fastapi_auth0 import Auth0User
 from bson import ObjectId
 
+from app.core.db import get_db
+from app.core.auth import auth
+
 from app.models.route.route_model import RouteModel
 from app.models.route.create_route_model import CreateRouteModel
 from app.models.route.update_route_model import UpdateRouteModel
-from app.core.db import get_db
-from app.core.auth import auth
 
 router = APIRouter()
 

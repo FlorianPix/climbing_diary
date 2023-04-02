@@ -1,13 +1,13 @@
 from datetime import date
 from pydantic import BaseModel, Field
 from bson import ObjectId
-from typing import List
+from typing import List, Optional
 
 from app.models.py_object_id import PyObjectId
 
 
 class CreateRouteModel(BaseModel):
-    comment: str = Field(...)
+    comment: Optional[str]
     location: str = Field(...)
     name: str = Field(...)
     rating: int = Field(..., ge=0, le=5)

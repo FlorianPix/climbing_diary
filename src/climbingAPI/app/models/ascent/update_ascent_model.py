@@ -19,7 +19,7 @@ class UpdateAscentModel(BaseModel):
                 "media_ids": [],
                 "comment": "Great ascent",
                 "date": "2022-10-06",
-                "style": 0
-                "type": 3
+                "style": 0,
+                "type": 3,
             }
         }

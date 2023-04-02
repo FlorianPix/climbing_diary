@@ -6,11 +6,12 @@ from fastapi.responses import Response, JSONResponse
 from fastapi_auth0 import Auth0User
 from bson import ObjectId
 
+from app.core.db import get_db
+from app.core.auth import auth
+
 from app.models.spot.spot_model import SpotModel
 from app.models.spot.create_spot_model import CreateSpotModel
 from app.models.spot.update_spot_model import UpdateSpotModel
-from app.core.db import get_db
-from app.core.auth import auth
 
 router = APIRouter()
 

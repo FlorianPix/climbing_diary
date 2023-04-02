@@ -1,6 +1,7 @@
+from bson import ObjectId
 from datetime import date
 from pydantic import BaseModel, Field
-from bson import ObjectId
+from typing import List
 
 from app.models.py_object_id import PyObjectId
 

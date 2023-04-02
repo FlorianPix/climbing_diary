@@ -1,14 +1,15 @@
+from bson import ObjectId
 from datetime import date
 from pydantic import BaseModel, Field
-from bson import ObjectId
+from typing import List, Optional
 
 from app.models.py_object_id import PyObjectId
 
 
 class CreatePitchModel(BaseModel):
-    comment: str = Optional[str]
+    comment: Optional[str]
     grade: str = Field(...)
-    length: int = Field(...)
+    length: int = Field(..., ge=0)
     name: str = Field(...)
     num: int = Field(..., ge=1)
     rating: int = Field(..., ge=0, le=5)

@@ -9,6 +9,10 @@ from bson import ObjectId
 from app.core.db import get_db
 from app.core.auth import auth
 
+from app.models.trip.trip_model import TripModel
+from app.models.trip.create_trip_model import CreateTripModel
+from app.models.trip.update_trip_model import UpdateTripModel
+
 router = APIRouter()
 
 

@@ -16,7 +16,7 @@ class SpotModel(BaseModel):
     coordinates: List[float] = []
     distance_parking: int = Field(...)
     distance_public_transport: int = Field(...)
-    location: str = []
+    location: str = Field(...)
     name: str = Field(...)
     rating: int = Field(..., ge=0, le=5)
 

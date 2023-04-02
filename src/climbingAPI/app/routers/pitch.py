@@ -6,11 +6,12 @@ from fastapi.responses import Response, JSONResponse
 from fastapi_auth0 import Auth0User
 from bson import ObjectId
 
+from app.core.db import get_db
+from app.core.auth import auth
+
 from app.models.pitch.pitch_model import PitchModel
 from app.models.pitch.create_pitch_model import CreatePitchModel
 from app.models.pitch.update_pitch_model import UpdatePitchModel
-from app.core.db import get_db
-from app.core.auth import auth
 
 router = APIRouter()
 
