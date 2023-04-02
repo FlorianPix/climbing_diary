@@ -6,15 +6,12 @@ from typing import List, Optional
 from app.models.py_object_id import PyObjectId
 
 
-class CreateSpotModel(BaseModel):
+class CreateTripModel(BaseModel):
     comment: Optional[str]
-    coordinates: List[float] = []
-    date: date
-    distance_parking: Optional[int]
-    distance_public_transport: Optional[int]
-    location: List[str] = []
+    end_date: date
     name: str = Field(...)
     rating: int = Field(..., ge=0, le=5)
+    start_date: date
 
     class Config:
         allow_population_by_field_name = True
@@ -22,13 +19,12 @@ class CreateSpotModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "comment": "Great spot close to a lake with solid holds but kinda hard to reach.",
-                "coordinates": [50.746036, 10.642666],
-                "date": "2022-10-08",
-                "distance_parking": 120,
-                "distance_public_transport": 120,
-                "location": ["Deutschland", "Thüringen", "Thüringer Wald"],
-                "name": "Falkenstein",
+                "media_ids": [],
+                "spot_ids": [],
+                "comment": "Great trip",
+                "end_date": "2022-10-08",
+                "name": "Ausflug zum Falkenstein",
+                "start_date": "2022-10-06",
                 "rating": 5,
             }
         }

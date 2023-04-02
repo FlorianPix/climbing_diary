@@ -4,32 +4,27 @@ from bson import ObjectId
 from typing import Optional, List
 
 
-class UpdateSpotModel(BaseModel):
-    date: Optional[str]
-    name: Optional[str]
-    coordinates: Optional[tuple]
-    location: Optional[tuple]
-    routes: Optional[tuple]
-    rating: Optional[int]
-    comment: Optional[str]
-    distance_parking: Optional[int]
-    distance_public_transport: Optional[int]
+class UpdateTripModel(BaseModel):
     media_ids: Optional[tuple]
+    spot_ids: Optional[tuple]
+
+    comment: Optional[str]
+    end_date: Optional[str]
+    name: Optional[str]
+    rating: Optional[int]
+    start_date: Optional[str]
 
     class Config:
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "date": "2022-10-08",
-                "name": "Falkenstein",
-                "coordinates": [50.746036, 10.642666],
-                "location": ["Deutschland", "Thüringen", "Thüringer Wald"],
-                "routes": [],
+                "media_ids": [],
+                "spot_ids": [],
+                "comment": "Great trip",
+                "end_date": "2022-10-08",
+                "name": "Ausflug zum Falkenstein",
+                "start_date": "2022-10-06",
                 "rating": 5,
-                "comment": "Great spot close to a lake with solid holds but kinda hard to reach.",
-                "distance_parking": 120,
-                "distance_public_transport": 120,
-                "media_ids": []
             }
         }
