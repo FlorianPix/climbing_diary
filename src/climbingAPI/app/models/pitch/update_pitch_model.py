@@ -22,7 +22,7 @@ class UpdatePitchModel(BaseModel):
             "example": {
                 "ascent_ids": [],
                 "media_ids": [],
-                "comment": "Top Route",
+                "comment": "Top Pitch",
                 "grade": "6a",
                 "length": 35,
                 "name": "Pitch 1 vom Falkensteiner Riss",

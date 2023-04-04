@@ -89,7 +89,7 @@ async def delete_ascent(pitch_id: str, ascent_id: str, user: Auth0User = Securit
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Ascent {ascent_id} not found")
     # ascent was found
-    if await db["pitch"].find_one({"_id": ObjectId(pitch_id), "ascent_ids": {"$in": [ascent_id]}}) is None:
+    if await db["pitch"].find_one({"_id": ObjectId(pitch_id), "ascent_ids": ObjectId(ascent_id)}) is None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail=f"Ascent {ascent_id} does not belong to pitch {pitch_id}")
     # ascent belongs to pitch
@@ -98,7 +98,7 @@ async def delete_ascent(pitch_id: str, ascent_id: str, user: Auth0User = Securit
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Ascent {ascent_id} could not be deleted")
     # ascent was deleted
-    update_result = await db["pitch"].update_one({"_id": ObjectId(pitch_id)}, {"$pull": {"ascent_ids": ascent_id}})
+    update_result = await db["pitch"].update_one({"_id": ObjectId(pitch_id)}, {"$pull": {"ascent_ids": ObjectId(ascent_id)}})
     if update_result.modified_count != 1:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Removing ascent_id {ascent_id} from pitch {pitch_id} failed")

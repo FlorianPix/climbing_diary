@@ -90,12 +90,12 @@ async def delete_pitch(route_id: str, pitch_id: str, user: Auth0User = Security(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Pitch {pitch_id} not found")
     # pitch was found
-    if await db["route"].find_one({"_id": ObjectId(route_id), "pitch_ids": {"$in": [pitch_id]}}) is None:
+    if await db["route"].find_one({"_id": ObjectId(route_id), "pitch_ids": ObjectId(pitch_id)}) is None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail=f"Pitch {pitch_id} does not belong to route {route_id}")
     # pitch belongs to route
-    delete_result = await db["ascent"].delete_many({"_id": {"$in": pitch.ascent_ids}})
-    if delete_result.deleted_count < 1:
+    delete_result = await db["ascent"].delete_many({"_id": {"$in": pitch["ascent_ids"]}})
+    if not delete_result.acknowledged:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Ascents could not be deleted")
     # all ascents were deleted
@@ -104,7 +104,7 @@ async def delete_pitch(route_id: str, pitch_id: str, user: Auth0User = Security(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Pitch {pitch_id} could not be deleted")
     # pitch was deleted
-    update_result = await db["route"].update_one({"_id": ObjectId(route_id)}, {"$pull": {"pitch_ids": pitch_id}})
+    update_result = await db["route"].update_one({"_id": ObjectId(route_id)}, {"$pull": {"pitch_ids": ObjectId(pitch_id)}})
     if update_result.modified_count != 1:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Removing pitch_id {pitch_id} from route {route_id} failed")

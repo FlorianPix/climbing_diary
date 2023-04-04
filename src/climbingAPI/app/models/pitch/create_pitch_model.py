@@ -20,7 +20,7 @@ class CreatePitchModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "comment": "Top Route",
+                "comment": "Top Pitch",
                 "grade": "6a",
                 "length": 35,
                 "name": "Pitch 1 vom Falkensteiner Riss",
