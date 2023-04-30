@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import '../components/add_spot.dart';
+import '../components/add/add_spot.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../interfaces/spot.dart';

@@ -3,7 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
 
-import '../components/add_spot.dart';
+import '../components/add/add_spot.dart';
 import '../interfaces/spot.dart';
 import '../services/location_service.dart';
 
