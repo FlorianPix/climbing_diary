@@ -1,66 +1,53 @@
 class CreateSpot {
-  final String date;
-  final String name;
-  final List<double> coordinates;
-  final List<String> location;
-  final List<String>? routes;
-  final int rating;
   final String? comment;
+  final List<double> coordinates;
   final int? distanceParking;
   final int? distancePublicTransport;
-  final List<String>? mediaIds;
+  final String location;
+  final String name;
+  final int rating;
 
   const CreateSpot({
-    required this.date,
-    required this.name,
-    required this.coordinates,
-    required this.location,
-    this.routes,
-    required this.rating,
     this.comment,
+    required this.coordinates,
+    required this.name,
+    required this.location,
+    required this.rating,
     this.distanceParking,
     this.distancePublicTransport,
-    this.mediaIds
   });
 
   factory CreateSpot.fromJson(Map<String, dynamic> json) {
     return CreateSpot(
-      date: json['date'],
-      name: json['name'],
-      coordinates: List<double>.from(json['coordinates']),
-      location: List<String>.from(json['location']),
-      routes: List<String>.from(json['routes']),
-      rating: json['rating'],
       comment: json['comment'],
+      coordinates: List<double>.from(json['coordinates']),
       distanceParking: json['distance_parking'],
       distancePublicTransport: json['distance_public_transport'],
-      mediaIds: List<String>.from(json['media_ids'])
+      location: json['location'],
+      name: json['name'],
+      rating: json['rating'],
     );
   }
 
   factory CreateSpot.fromCache(Map<dynamic, dynamic> cache) {
     return CreateSpot(
-        date: cache['date'],
-        name: cache['name'],
-        coordinates: List<double>.from(cache['coordinates']),
-        location: List<String>.from(cache['location']),
-        rating: cache['rating'],
-        comment: cache['comment'],
-        distanceParking: cache['distance_parking'],
-        distancePublicTransport: cache['distance_public_transport'],
+      comment: cache['comment'],
+      coordinates: List<double>.from(cache['coordinates']),
+      location: cache['location'],
+      distanceParking: cache['distance_parking'],
+      distancePublicTransport: cache['distance_public_transport'],
+      name: cache['name'],
+      rating: cache['rating'],
     );
   }
 
   Map toJson() => {
-    "date": date,
-    "name": name,
-    "coordinates": coordinates,
-    "location": location,
-    "routes": routes,
-    "rating": rating,
     "comment": comment,
+    "coordinates": coordinates,
     "distance_parking": distanceParking,
     "distance_public_transport": distancePublicTransport,
-    "media_ids": mediaIds
+    "location": location,
+    "name": name,
+    "rating": rating,
   };
 }

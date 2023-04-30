@@ -1,73 +1,73 @@
 class UpdateSpot {
+  List<String>? mediaIds;
+  List<String>? routeIds;
   final String id;
-  String? date;
-  String? name;
-  List<double>? coordinates;
-  List<String>? location;
-  List<String>? routes;
-  int? rating;
+  String? userId;
   String? comment;
+  List<double>? coordinates;
   int? distanceParking;
   int? distancePublicTransport;
-  List<String>? mediaIds;
+  String? location;
+  String? name;
+  int? rating;
 
   UpdateSpot({
+    this.mediaIds,
+    this.routeIds,
     required this.id,
-    this.date,
-    this.name,
-    this.coordinates,
-    this.location,
-    this.routes,
-    this.rating,
+    this.userId,
     this.comment,
+    this.coordinates,
     this.distanceParking,
     this.distancePublicTransport,
-    this.mediaIds
+    this.location,
+    this.name,
+    this.rating,
   });
 
   factory UpdateSpot.fromJson(Map<String, dynamic> json) {
     return UpdateSpot(
+      mediaIds: List<String>.from(json['media_ids']),
+      routeIds: List<String>.from(json['route_ids']),
       id: json['_id'],
-      date: json['date'],
-      name: json['name'],
-      coordinates: List<double>.from(json['coordinates']),
-      location: List<String>.from(json['location']),
-      routes: List<String>.from(json['routes']),
-      rating: json['rating'],
+      userId: json['user_id'],
       comment: json['comment'],
+      coordinates: List<double>.from(json['coordinates']),
       distanceParking: json['distance_parking'],
       distancePublicTransport: json['distance_public_transport'],
-      mediaIds: List<String>.from(json['media_ids'])
+      location: json['location'],
+      name: json['name'],
+      rating: json['rating'],
     );
   }
 
   factory UpdateSpot.fromCache(Map<dynamic, dynamic> cache) {
     return UpdateSpot(
-        id: cache['_id'],
-        date: cache['date'],
-        name: cache['name'],
-        coordinates: List<double>.from(cache['coordinates']),
-        location: List<String>.from(cache['location']),
-        routes: cache['routes'] != null ? List<String>.from(cache['routes']) : [],
-        rating: cache['rating'],
-        comment: cache['comment'],
-        distanceParking: cache['distance_parking'],
-        distancePublicTransport: cache['distance_public_transport'],
-        mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : []
+      mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : [],
+      routeIds: cache['route_ids'] != null ? List<String>.from(cache['route_ids']) : [],
+      id: cache['_id'],
+      userId: cache['user_id'],
+      comment: cache['comment'],
+      coordinates: List<double>.from(cache['coordinates']),
+      distanceParking: cache['distance_parking'],
+      distancePublicTransport: cache['distance_public_transport'],
+      location: cache['location'],
+      name: cache['name'],
+      rating: cache['rating'],
     );
   }
 
   Map toJson() => {
+    "media_ids": mediaIds,
+    "route_ids": routeIds,
     "_id": id,
-    "date": date,
-    "name": name,
-    "coordinates": coordinates,
-    "location": location,
-    "routes": routes,
-    "rating": rating,
+    "user_id": userId,
     "comment": comment,
+    "coordinates": coordinates,
     "distance_parking": distanceParking,
     "distance_public_transport": distancePublicTransport,
-    "media_ids": mediaIds
+    "location": location,
+    "name": name,
+    "rating": rating,
   };
 }

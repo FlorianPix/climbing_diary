@@ -56,7 +56,7 @@ class Timeline extends StatelessWidget {
 
             // TODO routes
             elements.add(
-                InnerTimeline(routes: spots[index].routes)
+                InnerTimeline(routes: spots[index].routeIds)
             );
 
             return InkWell(

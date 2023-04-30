@@ -34,7 +34,7 @@ class _EditSpotState extends State<EditSpot>{
   void initState(){
     controllerTitle.text = widget.spot.name;
     controllerDate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    controllerAddress.text = widget.spot.location.join();
+    controllerAddress.text = widget.spot.location;
     controllerLat.text = widget.spot.coordinates[0].toString();
     controllerLong.text = widget.spot.coordinates[1].toString();
     currentSliderValue = widget.spot.rating;
@@ -172,10 +172,9 @@ class _EditSpotState extends State<EditSpot>{
               var valDistancePublicTransport = int.tryParse(controllerBus.text);
               UpdateSpot spot = UpdateSpot(
                 id: widget.spot.id,
-                date: controllerDate.text,
                 name: controllerTitle.text,
                 coordinates: [double.parse(controllerLat.text), double.parse(controllerLong.text)],
-                location: [controllerAddress.text],
+                location: controllerAddress.text,
                 rating: currentSliderValue.toInt(),
                 distanceParking: (valDistanceParking != null) ? valDistanceParking : 0,
                 distancePublicTransport: (valDistancePublicTransport != null) ? valDistancePublicTransport : 0,

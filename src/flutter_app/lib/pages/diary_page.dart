@@ -43,7 +43,6 @@ class DiaryPageState extends State<DiaryPage> {
               builder: (context, snapshot) {
                 if(snapshot.hasData) {
                   var spots = snapshot.data!;
-                  spots.sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
 
                   deleteCallback(spot) {
                     spots.remove(spot);

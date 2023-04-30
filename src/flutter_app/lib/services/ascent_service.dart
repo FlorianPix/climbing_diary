@@ -62,6 +62,7 @@ class SpotService {
 
   Future<Spot?> createSpot(CreateSpot createSpot, bool hasConnection) async {
     CreateSpot spot = CreateSpot(
+      date: createSpot.date,
       name: createSpot.name,
       coordinates: createSpot.coordinates,
       location: createSpot.location,

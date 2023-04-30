@@ -168,10 +168,9 @@ class _AddSpotState extends State<AddSpot>{
               var valDistanceParking = int.tryParse(controllerCar.text);
               var valDistancePublicTransport = int.tryParse(controllerBus.text);
               CreateSpot spot = CreateSpot(
-                date: controllerDate.text,
                 name: controllerTitle.text,
                 coordinates: [double.parse(controllerLat.text), double.parse(controllerLong.text)],
-                location: [controllerAddress.text],
+                location: controllerAddress.text,
                 rating: currentSliderValue.toInt(),
                 distanceParking: (valDistanceParking != null) ? valDistanceParking : 0,
                 distancePublicTransport: (valDistancePublicTransport != null) ? valDistancePublicTransport : 0,

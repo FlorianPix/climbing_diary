@@ -18,19 +18,9 @@ class SpotInfo extends StatelessWidget {
     listInfo.add(Text(
       spot.name,
       style: const TextStyle(
-          color: Color(0xff9b9b9b),
+          color: Color(0xff444444),
           fontSize: 18.0,
           fontWeight: FontWeight.w800
-      ),
-    ));
-
-    // date
-    listInfo.add(Text(
-      spot.date,
-      style: const TextStyle(
-        color: Color(0xff9b9b9b),
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
       ),
     ));
 
@@ -45,15 +35,8 @@ class SpotInfo extends StatelessWidget {
     ));
 
     // location
-    String location = "";
-    for (var i = 0; i < spot.location.length; i++){
-      location += spot.location[i];
-      if (i < spot.location.length - 1) {
-        location += ", ";
-      }
-    }
     listInfo.add(Text(
-      location,
+      spot.location,
       style: const TextStyle(
         color: Color(0xff9b9b9b),
         fontSize: 14,

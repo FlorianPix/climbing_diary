@@ -108,14 +108,6 @@ class _SpotDetailsState extends State<SpotDetails>{
 
   @override
   Widget build(BuildContext context) {
-    String location = "";
-    for (var i = 0; i < widget.spot.location.length; i++){
-      location += widget.spot.location[i];
-      if (i < widget.spot.location.length - 1) {
-        location += ", ";
-      }
-    }
-
     List<Widget> elements = [];
 
     // general info
@@ -128,13 +120,6 @@ class _SpotDetailsState extends State<SpotDetails>{
         ),
       ),
       Text(
-        widget.spot.date,
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400
-        ),
-      ),
-      Text(
         '${round(widget.spot.coordinates[0], decimals: 8)}, ${round(widget.spot.coordinates[1], decimals: 8)}',
         style: const TextStyle(
             fontSize: 14,
@@ -142,7 +127,7 @@ class _SpotDetailsState extends State<SpotDetails>{
         ),
       ),
       Text(
-        location,
+        widget.spot.location,
         style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400
