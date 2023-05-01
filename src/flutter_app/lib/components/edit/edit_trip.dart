@@ -19,23 +19,22 @@ class EditTrip extends StatefulWidget {
 class _EditTripState extends State<EditTrip>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TripService tripService = TripService();
-  final TextEditingController controllerTitle = TextEditingController();
-  final TextEditingController controllerDate = TextEditingController();
-  final TextEditingController controllerAddress = TextEditingController();
-  final TextEditingController controllerLat = TextEditingController();
-  final TextEditingController controllerLong = TextEditingController();
-  final TextEditingController controllerDescription = TextEditingController();
-  final TextEditingController controllerBus = TextEditingController();
-  final TextEditingController controllerCar = TextEditingController();
+  final TextEditingController controllerComment = TextEditingController();
+  final TextEditingController controllerEndDate = TextEditingController();
+  final TextEditingController controllerName = TextEditingController();
+  final TextEditingController controllerStartDate = TextEditingController();
+  final TextEditingController controllerDateRange = TextEditingController();
 
   int currentSliderValue = 0;
 
   @override
   void initState(){
-    controllerTitle.text = widget.trip.name;
-    controllerDate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    controllerComment.text = widget.trip.comment;
+    controllerEndDate.text = widget.trip.endDate;
+    controllerName.text = widget.trip.name;
+    controllerStartDate.text = widget.trip.startDate;
+    controllerDateRange.text = "${widget.trip.startDate} ${widget.trip.endDate}";
     currentSliderValue = widget.trip.rating;
-    controllerDescription.text = widget.trip.comment;
     super.initState();
   }
 
@@ -56,29 +55,32 @@ class _EditTripState extends State<EditTrip>{
                 validator: (value) {
                   return value!.isNotEmpty
                     ? null
-                    : "Please add a title";
+                    : "Please add a name";
                 },
-                controller: controllerTitle,
+                controller: controllerName,
                 decoration: const InputDecoration(
-                    hintText: "Name of the trip", labelText: "Title"),
+                    hintText: "name", labelText: "name"),
               ),
               TextFormField(
-                controller: controllerDate,
+                controller: controllerDateRange,
                 decoration: const InputDecoration(
-                  icon: Icon(Icons.calendar_today),
-                  labelText: "Enter Date"
+                    icon: Icon(Icons.calendar_today),
+                    labelText: "enter date range"
                 ),
                 readOnly: true,
                 onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                      context: context, initialDate: DateTime.now(),
-                      firstDate: DateTime(1923),
-                      lastDate: DateTime(2123)
+                  DateTimeRange? pickedDateRange = await showDateRangePicker(
+                      context: context, initialDateRange: DateTimeRange(start: DateTime.now(), end: DateTime.now()),
+                      firstDate: DateTime(DateTime.now().year - 100),
+                      lastDate: DateTime(DateTime.now().year + 100)
                   );
-                  if(pickedDate != null ){
-                    String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                  if(pickedDateRange != null ){
+                    String formattedStartDate = DateFormat('yyyy-MM-dd').format(pickedDateRange.start);
+                    String formattedEndDate = DateFormat('yyyy-MM-dd').format(pickedDateRange.end);
                     setState(() {
-                      controllerDate.text = formattedDate; //set output date to TextField value.
+                      controllerStartDate.text = formattedStartDate;
+                      controllerEndDate.text = formattedEndDate;//set output date to TextField value.
+                      controllerDateRange.text = "$formattedStartDate $formattedEndDate";
                     });
                   }
                 },
@@ -108,40 +110,10 @@ class _EditTripState extends State<EditTrip>{
                 },
               ),
               TextFormField(
-                controller: controllerDescription,
+                controller: controllerComment,
                 decoration: const InputDecoration(
-                  hintText: "Description", labelText: "Description"),
+                  hintText: "comment", labelText: "comment"),
               ),
-              TextFormField(
-                validator: (value) {
-                  if (value != null && value != ""){
-                    var i = int.tryParse(value);
-                    if (i == null) {
-                      return "Must be a number";
-                    }
-                  }
-                  return null;
-                },
-                controller: controllerBus,
-                decoration: const InputDecoration(
-                  hintText: "in minutes",
-                  labelText: "Distance to public transport station"),
-              ),
-              TextFormField(
-                validator: (value) {
-                  if (value != null && value != ""){
-                    var i = int.tryParse(value);
-                    if (i == null) {
-                      return "Must be a number";
-                    }
-                  }
-                  return null;
-                },
-                controller: controllerCar,
-                decoration: const InputDecoration(
-                  hintText: "in minutes",
-                  labelText: "Distance to parking"),
-              )
             ],
           ),
         ),
@@ -151,13 +123,11 @@ class _EditTripState extends State<EditTrip>{
           onPressed: () async {
             bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
-              var valDistanceParking = int.tryParse(controllerCar.text);
-              var valDistancePublicTransport = int.tryParse(controllerBus.text);
               UpdateTrip trip = UpdateTrip(
                 id: widget.trip.id,
-                name: controllerTitle.text,
+                name: controllerName.text,
                 rating: currentSliderValue.toInt(),
-                comment: controllerDescription.text,
+                comment: controllerComment.text,
               );
               Navigator.of(context).pop();
               Navigator.of(context).pop();

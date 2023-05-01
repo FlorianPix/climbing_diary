@@ -26,7 +26,7 @@ class _AddSpotState extends State<AddSpot>{
   final TextEditingController controllerAddress = TextEditingController();
   final TextEditingController controllerLat = TextEditingController();
   final TextEditingController controllerLong = TextEditingController();
-  final TextEditingController controllerDescription = TextEditingController();
+  final TextEditingController controllerComment = TextEditingController();
   final TextEditingController controllerBus = TextEditingController();
   final TextEditingController controllerCar = TextEditingController();
 
@@ -58,51 +58,30 @@ class _AddSpotState extends State<AddSpot>{
                 validator: (value) {
                   return value!.isNotEmpty
                     ? null
-                    : "Please add a title";
+                    : "Please add a name";
                 },
                 controller: controllerTitle,
                 decoration: const InputDecoration(
-                    hintText: "Name of the spot", labelText: "Title"),
-              ),
-              TextFormField(
-                controller: controllerDate,
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.calendar_today),
-                  labelText: "Enter Date"
-                ),
-                readOnly: true,
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                      context: context, initialDate: DateTime.now(),
-                      firstDate: DateTime(1923),
-                      lastDate: DateTime(2123)
-                  );
-                  if(pickedDate != null ){
-                    String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-                    setState(() {
-                      controllerDate.text = formattedDate; //set output date to TextField value.
-                    });
-                  }
-                },
+                    hintText: "name", labelText: "name"),
               ),
               TextFormField(
                 controller: controllerAddress,
-                decoration: const InputDecoration(labelText: "Address"),
+                decoration: const InputDecoration(labelText: "address"),
               ),
               TextFormField(
                 controller: controllerLat,
-                decoration: const InputDecoration(labelText: "Latitude"),
+                decoration: const InputDecoration(labelText: "latitude"),
               ),
               TextFormField(
                 controller: controllerLong,
-                decoration: const InputDecoration(labelText: "Longitude"),
+                decoration: const InputDecoration(labelText: "longitude"),
               ),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    "Rating",
+                    "rating",
                     style: TextStyle(
                       color: Colors.black.withOpacity(0.6),
                       fontSize: 16
@@ -122,9 +101,9 @@ class _AddSpotState extends State<AddSpot>{
                 },
               ),
               TextFormField(
-                controller: controllerDescription,
+                controller: controllerComment,
                 decoration: const InputDecoration(
-                  hintText: "Description", labelText: "Description"),
+                  hintText: "comment", labelText: "comment"),
               ),
               TextFormField(
                 validator: (value) {
@@ -168,13 +147,13 @@ class _AddSpotState extends State<AddSpot>{
               var valDistanceParking = int.tryParse(controllerCar.text);
               var valDistancePublicTransport = int.tryParse(controllerBus.text);
               CreateSpot spot = CreateSpot(
-                name: controllerTitle.text,
+                comment: controllerComment.text,
                 coordinates: [double.parse(controllerLat.text), double.parse(controllerLong.text)],
-                location: controllerAddress.text,
-                rating: currentSliderValue.toInt(),
                 distanceParking: (valDistanceParking != null) ? valDistanceParking : 0,
                 distancePublicTransport: (valDistancePublicTransport != null) ? valDistancePublicTransport : 0,
-                comment: controllerDescription.text,
+                location: controllerAddress.text,
+                name: controllerTitle.text,
+                rating: currentSliderValue.toInt(),
               );
               Navigator.of(context).pop();
               Spot? createdSpot = await spotService.createSpot(spot, result);
