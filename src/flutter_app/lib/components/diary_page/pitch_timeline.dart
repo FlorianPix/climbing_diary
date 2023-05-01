@@ -1,30 +1,29 @@
 import 'package:climbing_diary/components/diary_page/image_list_view.dart';
 import 'package:climbing_diary/components/diary_page/rating_row.dart';
-import 'package:climbing_diary/components/diary_page/route_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
-import '../../interfaces/spot/spot.dart';
+import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/trip/trip.dart';
-import '../../services/spot_service.dart';
+import '../../services/pitch_service.dart';
 import '../../services/trip_service.dart';
-import '../detail/spot_details.dart';
+import '../detail/pitch_details.dart';
 import '../detail/trip_details.dart';
-import '../info/spot_info.dart';
+import '../info/pitch_info.dart';
 import '../info/trip_info.dart';
 
-class SpotTimeline extends StatefulWidget {
-  SpotTimeline({super.key, required this.spotIds});
+class PitchTimeline extends StatefulWidget {
+  PitchTimeline({super.key, required this.pitchIds});
 
-  List<String> spotIds;
+  List<String> pitchIds;
 
   @override
-  State<StatefulWidget> createState() => SpotTimelineState();
+  State<StatefulWidget> createState() => PitchTimelineState();
 }
 
-class SpotTimelineState extends State<SpotTimeline> {
-  final SpotService spotService = SpotService();
+class PitchTimelineState extends State<PitchTimeline> {
+  final PitchService pitchService = PitchService();
 
   @override
   void initState(){
@@ -34,33 +33,33 @@ class SpotTimelineState extends State<SpotTimeline> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> spotIds = widget.spotIds;
+    List<String> pitchIds = widget.pitchIds;
     return FutureBuilder<bool>(
       future: checkConnection(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            return FutureBuilder<List<Spot>>(
-              future: Future.wait(spotIds.map((spotId) => spotService.getSpot(spotId))),
+            return FutureBuilder<List<Pitch>>(
+              future: Future.wait(pitchIds.map((pitchId) => pitchService.getPitch(pitchId))),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  List<Spot> spots = snapshot.data!;
+                  List<Pitch> pitches = snapshot.data!;
 
-                  updateSpotCallback(Spot spot) {
+                  updatePitchCallback(Pitch pitch) {
                     var index = -1;
-                    for (int i = 0; i < spots.length; i++) {
-                      if (spots[i].id == spot.id) {
+                    for (int i = 0; i < pitches.length; i++) {
+                      if (pitches[i].id == pitch.id) {
                         index = i;
                       }
                     }
-                    spots.removeAt(index);
-                    spots.add(spot);
+                    pitches.removeAt(index);
+                    pitches.add(pitch);
                     setState(() {});
                   }
 
-                  deleteSpotCallback(Spot spot) {
-                    spots.remove(spot);
+                  deletePitchCallback(Pitch pitch) {
+                    pitches.remove(pitch);
                     setState(() {});
                   }
 
@@ -80,23 +79,17 @@ class SpotTimelineState extends State<SpotTimeline> {
                         ),
                         builder: TimelineTileBuilder.connected(
                           connectionDirection: ConnectionDirection.before,
-                          itemCount: spots.length,
+                          itemCount: pitches.length,
                           contentsBuilder: (_, index) {
                             List<Widget> elements = [];
-                            // spot info
-                            elements.add(SpotInfo(spot: spots[index]));
+                            // pitch info
+                            elements.add(PitchInfo(pitch: pitches[index]));
                             // rating as hearts in a row
-                            elements.add(RatingRow(rating: spots[index].rating));
+                            elements.add(RatingRow(rating: pitches[index].rating));
                             // images list view
-                            if (spots[index].mediaIds.isNotEmpty) {
+                            if (pitches[index].mediaIds.isNotEmpty) {
                               elements.add(
-                                  ImageListView(mediaIds: spots[index].mediaIds)
-                              );
-                            }
-                            // routes
-                            if (spots[index].routeIds.isNotEmpty){
-                              elements.add(
-                                  RouteTimeline(routeIds: spots[index].routeIds)
+                                  ImageListView(mediaIds: pitches[index].mediaIds)
                               );
                             }
                             return InkWell(
@@ -108,9 +101,9 @@ class SpotTimelineState extends State<SpotTimeline> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(20),
                                             ),
-                                            child: SpotDetails(spot: spots[index],
-                                                onDelete: deleteSpotCallback,
-                                                onUpdate: updateSpotCallback)
+                                            child: PitchDetails(pitch: pitches[index],
+                                                onDelete: deletePitchCallback,
+                                                onUpdate: updatePitchCallback)
                                         ),
                                   ),
                               child: Ink(
