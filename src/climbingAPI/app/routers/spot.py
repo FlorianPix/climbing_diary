@@ -103,6 +103,8 @@ async def delete_spot(spot_id: str, user: Auth0User = Security(auth.get_user, sc
                 continue
             # pitches were found
             for pitch in pitches:
+                if not pitch["ascent_ids"]:
+                    continue
                 delete_result = await db["ascent"].delete_many({"_id": {"$in": pitch["ascent_ids"]}})
                 if delete_result.deleted_count < 1:
                     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -183,6 +185,8 @@ async def delete_route(spot_id: str, route_id: str, user: Auth0User = Security(a
                             detail=f"Pitches could not be found")
     # pitches were found
     for pitch in pitches:
+        if not pitch["ascent_ids"]:
+            continue
         delete_result = await db["ascent"].delete_many({"_id": {"$in": pitch["ascent_ids"]}})
         if delete_result.deleted_count < 1:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
