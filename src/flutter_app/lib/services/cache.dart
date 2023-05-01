@@ -3,6 +3,7 @@ import 'package:climbing_diary/services/spot_service.dart';
 import 'package:hive/hive.dart';
 
 import '../interfaces/spot/spot.dart';
+import '../interfaces/trip/trip.dart';
 
 final SpotService spotService = SpotService();
 
@@ -99,4 +100,14 @@ void deleteSpotFromDeleteQueue(int spotHash){
 void deleteSpotFromUploadQueue(int spotHash){
   Box box = Hive.box('upload_later_spots');
   box.delete(spotHash);
+}
+
+List<Trip> getTripsFromCache() {
+  Box box = Hive.box('trips');
+  List<Trip> trips = [];
+  for(var i = 0; i < box.length; i++){
+    var data = box.getAt(i);
+    trips.add(Trip.fromCache(data));
+  }
+  return trips;
 }

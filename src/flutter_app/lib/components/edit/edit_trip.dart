@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../interfaces/spot/spot.dart';
-import '../interfaces/spot/update_spot.dart';
-import '../services/spot_service.dart';
+import '../../interfaces/trip/trip.dart';
+import '../../interfaces/trip/update_trip.dart';
+import '../../services/trip_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-class EditSpot extends StatefulWidget {
-  const EditSpot({super.key, required this.spot, required this.onUpdate});
+class EditTrip extends StatefulWidget {
+  const EditTrip({super.key, required this.trip, required this.onUpdate});
 
-  final Spot spot;
-  final ValueSetter<Spot> onUpdate;
+  final Trip trip;
+  final ValueSetter<Trip> onUpdate;
 
   @override
-  State<StatefulWidget> createState() => _EditSpotState();
+  State<StatefulWidget> createState() => _EditTripState();
 }
 
-class _EditSpotState extends State<EditSpot>{
+class _EditTripState extends State<EditTrip>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final SpotService spotService = SpotService();
+  final TripService tripService = TripService();
   final TextEditingController controllerTitle = TextEditingController();
   final TextEditingController controllerDate = TextEditingController();
   final TextEditingController controllerAddress = TextEditingController();
@@ -32,15 +32,10 @@ class _EditSpotState extends State<EditSpot>{
 
   @override
   void initState(){
-    controllerTitle.text = widget.spot.name;
+    controllerTitle.text = widget.trip.name;
     controllerDate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    controllerAddress.text = widget.spot.location;
-    controllerLat.text = widget.spot.coordinates[0].toString();
-    controllerLong.text = widget.spot.coordinates[1].toString();
-    currentSliderValue = widget.spot.rating;
-    controllerDescription.text = widget.spot.comment;
-    controllerBus.text = widget.spot.distancePublicTransport.toString();
-    controllerCar.text = widget.spot.distanceParking.toString();
+    currentSliderValue = widget.trip.rating;
+    controllerDescription.text = widget.trip.comment;
     super.initState();
   }
 
@@ -50,7 +45,7 @@ class _EditSpotState extends State<EditSpot>{
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      title: const Text('Edit this spot'),
+      title: const Text('Edit this trip'),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -65,7 +60,7 @@ class _EditSpotState extends State<EditSpot>{
                 },
                 controller: controllerTitle,
                 decoration: const InputDecoration(
-                    hintText: "Name of the spot", labelText: "Title"),
+                    hintText: "Name of the trip", labelText: "Title"),
               ),
               TextFormField(
                 controller: controllerDate,
@@ -87,18 +82,6 @@ class _EditSpotState extends State<EditSpot>{
                     });
                   }
                 },
-              ),
-              TextFormField(
-                controller: controllerAddress,
-                decoration: const InputDecoration(labelText: "Address"),
-              ),
-              TextFormField(
-                controller: controllerLat,
-                decoration: const InputDecoration(labelText: "Latitude"),
-              ),
-              TextFormField(
-                controller: controllerLong,
-                decoration: const InputDecoration(labelText: "Longitude"),
               ),
               Align(
                 alignment: Alignment.centerLeft,
@@ -170,21 +153,17 @@ class _EditSpotState extends State<EditSpot>{
             if (_formKey.currentState!.validate()) {
               var valDistanceParking = int.tryParse(controllerCar.text);
               var valDistancePublicTransport = int.tryParse(controllerBus.text);
-              UpdateSpot spot = UpdateSpot(
-                id: widget.spot.id,
+              UpdateTrip trip = UpdateTrip(
+                id: widget.trip.id,
                 name: controllerTitle.text,
-                coordinates: [double.parse(controllerLat.text), double.parse(controllerLong.text)],
-                location: controllerAddress.text,
                 rating: currentSliderValue.toInt(),
-                distanceParking: (valDistanceParking != null) ? valDistanceParking : 0,
-                distancePublicTransport: (valDistancePublicTransport != null) ? valDistancePublicTransport : 0,
                 comment: controllerDescription.text,
               );
               Navigator.of(context).pop();
               Navigator.of(context).pop();
-              Spot? updatedSpot = await spotService.editSpot(spot);
-              if (updatedSpot != null) {
-                widget.onUpdate.call(updatedSpot);
+              Trip? updatedTrip = await tripService.editTrip(trip);
+              if (updatedTrip != null) {
+                widget.onUpdate.call(updatedTrip);
               }
             }
           },

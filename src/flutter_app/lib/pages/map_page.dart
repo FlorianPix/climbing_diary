@@ -6,7 +6,7 @@ import '../components/add/add_ascent.dart';
 import '../components/add/add_pitch.dart';
 import '../components/add/add_route.dart';
 import '../components/add/add_trip.dart';
-import '../components/spot_details.dart';
+import '../components/detail/spot_details.dart';
 import '../interfaces/pitch/pitch.dart';
 import '../services/ascent_service.dart';
 import '../services/cache.dart';

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import '../components/diary_page/timeline.dart';
-import '../interfaces/spot/spot.dart';
+import '../interfaces/trip/trip.dart';
+import '../interfaces/trip/trip.dart';
 import '../services/cache.dart';
-import '../services/spot_service.dart';
+import '../services/trip_service.dart';
 
 const kTileHeight = 50.0;
 
@@ -16,9 +17,8 @@ class DiaryPage extends StatefulWidget {
 }
 
 class DiaryPageState extends State<DiaryPage> {
-  late Future<List<Spot>> futureSpots;
 
-  final SpotService spotService = SpotService();
+  final TripService tripService = TripService();
 
   @override
   void initState(){
@@ -34,44 +34,43 @@ class DiaryPageState extends State<DiaryPage> {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            deleteQueuedSpots();
-            editQueuedSpots();
-            uploadQueuedSpots();
-            futureSpots = spotService.getSpots();
-            return FutureBuilder<List<Spot>>(
-              future: futureSpots,
+            // TODO deleteQueuedTrips();
+            // TODO editQueuedTrips();
+            // TODO uploadQueuedTrips();
+            return FutureBuilder<List<Trip>>(
+              future:  tripService.getTrips(),
               builder: (context, snapshot) {
                 if(snapshot.hasData) {
-                  var spots = snapshot.data!;
+                  var trips = snapshot.data!;
 
-                  deleteCallback(spot) {
-                    spots.remove(spot);
+                  deleteCallback(trip) {
+                    trips.remove(trip);
                     showSimpleNotification(
-                      Text('${spot.name} was deleted'),
+                      Text('${trip.name} was deleted'),
                       background: Colors.green,
                     );
                     setState(() {});
                   }
 
-                  updateCallback(Spot spot) {
+                  updateCallback(Trip trip) {
                     var index = -1;
-                    for (int i = 0; i < spots.length; i++) {
-                      if (spots[i].id == spot.id) {
+                    for (int i = 0; i < trips.length; i++) {
+                      if (trips[i].id == trip.id) {
                         index = i;
                       }
                     }
                     if (index != -1) {
-                      spots.removeAt(index);
-                      spots.add(spot);
+                      trips.removeAt(index);
+                      trips.add(trip);
                     }
                     showSimpleNotification(
-                      Text('${spot.name} was updated'),
+                      Text('${trip.name} was updated'),
                       background: Colors.green,
                     );
                     setState(() {});
                   }
 
-                  return Timeline(spots: spots, deleteCallback: deleteCallback, updateCallback: updateCallback);
+                  return Timeline(trips: trips, deleteCallback: deleteCallback, updateCallback: updateCallback);
                 } else if (snapshot.hasError) {
                   return Text('${snapshot.error}');
                 }
@@ -80,28 +79,28 @@ class DiaryPageState extends State<DiaryPage> {
             );
           } else {
             // offline
-            List<Spot> spots = getSpotsFromCache();
+            List<Trip> trips = getTripsFromCache();
 
-            deleteCallback(spot) {
-              spots.remove(spot);
+            deleteCallback(Trip trip) {
+              trips.remove(trip);
               setState(() {});
             }
 
-            updateCallback(Spot spot) {
+            updateCallback(Trip trip) {
               var index = -1;
-              for (int i = 0; i < spots.length; i++) {
-                if (spots[i].id == spot.id) {
+              for (int i = 0; i < trips.length; i++) {
+                if (trips[i].id == trip.id) {
                   index = i;
                 }
               }
               if (index != -1) {
-                spots.removeAt(index);
-                spots.add(spot);
+                trips.removeAt(index);
+                trips.add(trip);
               }
               setState(() {});
             }
 
-            return Timeline(spots: spots, deleteCallback: deleteCallback, updateCallback: updateCallback);
+            return Timeline(trips: trips, deleteCallback: deleteCallback, updateCallback: updateCallback);
           }
         } else {
           return const CircularProgressIndicator();
