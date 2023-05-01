@@ -27,12 +27,6 @@ class SpotInfo extends StatelessWidget {
       style: MyTextStyles.description
     ));
 
-    // location
-    listInfo.add(Text(
-      spot.location,
-      style: MyTextStyles.description
-    ));
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: listInfo,
