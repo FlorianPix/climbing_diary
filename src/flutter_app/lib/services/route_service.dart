@@ -45,6 +45,8 @@ class RouteService {
             background: Colors.red,
           );
         }
+      } else {
+        print(e);
       }
     }
     return [];

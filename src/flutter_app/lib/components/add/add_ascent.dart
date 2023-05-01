@@ -4,13 +4,16 @@ import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/ascent/create_ascent.dart';
 import '../../interfaces/ascent/ascent.dart';
+import '../../interfaces/pitch/pitch.dart';
 import '../../services/ascent_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../../services/ascent_service.dart';
 
 class AddAscent extends StatefulWidget {
-  const AddAscent({super.key});
+  const AddAscent({super.key, required this.pitches});
+
+  final List<Pitch> pitches;
 
   @override
   State<StatefulWidget> createState() => _AddAscentState();
@@ -24,6 +27,8 @@ class _AddAscentState extends State<AddAscent>{
   final TextEditingController controllerDate = TextEditingController();
   final TextEditingController controllerStyle = TextEditingController();
   final TextEditingController controllerType = TextEditingController();
+
+  Pitch? dropdownValue;
 
   @override
   void initState(){
@@ -44,10 +49,19 @@ class _AddAscentState extends State<AddAscent>{
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextFormField(
-                controller: controllerPitchId,
-                decoration: const InputDecoration(
-                    hintText: "pitch id", labelText: "pitch id"),
+              DropdownButton<Pitch>(
+                  value: dropdownValue,
+                  items: widget.pitches.map<DropdownMenuItem<Pitch>>((Pitch pitch) {
+                    return DropdownMenuItem<Pitch>(
+                      value: pitch,
+                      child: Text(pitch.name),
+                    );
+                  }).toList(),
+                  onChanged: (Pitch? pitch) {
+                    setState(() {
+                      dropdownValue = pitch!;
+                    });
+                  }
               ),
               TextFormField(
                 controller: controllerComment,
@@ -101,7 +115,10 @@ class _AddAscentState extends State<AddAscent>{
                   type: int.parse(controllerType.text),
                 );
                 Navigator.of(context).pop();
-                Ascent? createdAscent = await ascentService.createAscent(controllerPitchId.text, ascent, result);
+                final dropdownValue = this.dropdownValue;
+                if (dropdownValue != null) {
+                  Ascent? createdAscent = await ascentService.createAscent(dropdownValue.id, ascent, result);
+                }
               }
             },
             child: const Text("Save"))

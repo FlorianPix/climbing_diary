@@ -1,3 +1,4 @@
+import 'package:climbing_diary/interfaces/route/route.dart';
 import 'package:climbing_diary/pages/save_location_no_connection.dart';
 import 'package:flutter/material.dart';
 
@@ -6,7 +7,12 @@ import '../components/add/add_pitch.dart';
 import '../components/add/add_route.dart';
 import '../components/add/add_trip.dart';
 import '../components/spot_details.dart';
+import '../interfaces/pitch/pitch.dart';
+import '../services/ascent_service.dart';
 import '../services/cache.dart';
+import '../services/pitch_service.dart';
+import '../services/route_service.dart';
+import '../services/trip_service.dart';
 import 'navigation_screen_page.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -25,10 +31,13 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  final AscentService ascentService = AscentService();
+  final PitchService pitchService = PitchService();
+  final RouteService routeService = RouteService();
   final SpotService spotService = SpotService();
+  final TripService tripService = TripService();
   AddItem? selectedMenu;
 
-  late Future<List<Spot>> futureSpots;
   bool online = false;
 
   Future<bool> checkConnection() async {
@@ -51,12 +60,17 @@ class _MapPageState extends State<MapPage> {
             deleteQueuedSpots();
             editQueuedSpots();
             uploadQueuedSpots();
-            futureSpots = spotService.getSpots();
-            return FutureBuilder<List<Spot>>(
-              future: futureSpots,
+            return FutureBuilder(
+              future: Future.wait([
+                spotService.getSpots(),
+                routeService.getRoutes(),
+                pitchService.getPitches()
+              ]),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  var spots = snapshot.data!;
+                  List<Spot> spots = snapshot.data![0] as List<Spot>;
+                  List<ClimbingRoute> routes = snapshot.data![1] as List<ClimbingRoute>;
+                  List<Pitch> pitches = snapshot.data![2] as List<Pitch>;
 
                   addSpotCallback(Spot spot) {
                     spots.add(spot);
@@ -203,7 +217,7 @@ class _MapPageState extends State<MapPage> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const AddAscent(),
+                                      builder: (context) => AddAscent(pitches: pitches),
                                     )
                                 );
                               },
@@ -218,7 +232,7 @@ class _MapPageState extends State<MapPage> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => const AddPitch(),
+                                      builder: (context) => AddPitch(routes: routes),
                                     )
                                 );
                               },

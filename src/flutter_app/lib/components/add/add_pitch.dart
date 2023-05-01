@@ -4,13 +4,16 @@ import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/pitch/create_pitch.dart';
 import '../../interfaces/pitch/pitch.dart';
+import '../../interfaces/route/route.dart';
 import '../../services/pitch_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../../services/pitch_service.dart';
 
 class AddPitch extends StatefulWidget {
-  const AddPitch({super.key});
+  const AddPitch({super.key, required this.routes});
+
+  final List<ClimbingRoute> routes;
 
   @override
   State<StatefulWidget> createState() => _AddPitchState();
@@ -19,7 +22,6 @@ class AddPitch extends StatefulWidget {
 class _AddPitchState extends State<AddPitch>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final PitchService pitchService = PitchService();
-  final TextEditingController controllerRouteId = TextEditingController();
   final TextEditingController controllerComment = TextEditingController();
   final TextEditingController controllerGrade = TextEditingController();
   final TextEditingController controllerLength = TextEditingController();
@@ -28,6 +30,7 @@ class _AddPitchState extends State<AddPitch>{
   final TextEditingController controllerRating = TextEditingController();
 
   double currentSliderValue = 0;
+  ClimbingRoute? dropdownValue;
 
   @override
   void initState(){
@@ -47,10 +50,19 @@ class _AddPitchState extends State<AddPitch>{
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextFormField(
-                controller: controllerRouteId,
-                decoration: const InputDecoration(
-                    hintText: "route id", labelText: "route id"),
+              DropdownButton<ClimbingRoute>(
+                  value: dropdownValue,
+                  items: widget.routes.map<DropdownMenuItem<ClimbingRoute>>((ClimbingRoute route) {
+                    return DropdownMenuItem<ClimbingRoute>(
+                      value: route,
+                      child: Text(route.name),
+                    );
+                  }).toList(),
+                  onChanged: (ClimbingRoute? route) {
+                    setState(() {
+                      dropdownValue = route!;
+                    });
+                  }
               ),
               TextFormField(
                 validator: (value) {
@@ -124,7 +136,10 @@ class _AddPitchState extends State<AddPitch>{
                   rating: currentSliderValue.toInt(),
                 );
                 Navigator.of(context).pop();
-                Pitch? createdPitch = await pitchService.createPitch(pitch, controllerRouteId.text, result);
+                final dropdownValue = this.dropdownValue;
+                if (dropdownValue != null) {
+                  Pitch? createdPitch = await pitchService.createPitch(pitch, dropdownValue.id, result);
+                }
               }
             },
             child: const Text("Save"))

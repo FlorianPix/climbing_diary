@@ -25,17 +25,17 @@ class PitchService {
 
       if (response.statusCode == 200) {
         // If the server did return a 200 OK response, then parse the JSON.
-        List<Pitch> pitchs = [];
+        List<Pitch> pitches = [];
         // save to cache
-        Box box = Hive.box('pitchs');
+        Box box = Hive.box('pitches');
         response.data.forEach((s) {
           Pitch pitch = Pitch.fromJson(s);
           if (!box.containsKey(pitch.id)) {
             box.put(pitch.id, pitch.toJson());
           }
-          pitchs.add(pitch);
+          pitches.add(pitch);
         });
-        return pitchs;
+        return pitches;
       }
     } catch (e) {
       if (e is DioError) {
@@ -144,7 +144,7 @@ class PitchService {
       if (response.statusCode == 201) {
         return Pitch.fromJson(response.data);
       } else {
-        throw Exception('Failed to create pitch');
+        throw Exception('Failed to create pitch $response');
       }
     } catch (e) {
       if (e is DioError) {
@@ -158,7 +158,7 @@ class PitchService {
               );
               break;
             default:
-              throw Exception('Failed to create pitch');
+              throw Exception('Failed to create pitch $response');
           }
         }
       }
