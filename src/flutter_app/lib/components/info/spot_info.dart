@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/spot/spot.dart';
+import '../MyTextStyles.dart';
 
 class SpotInfo extends StatelessWidget {
   const SpotInfo({super.key,
@@ -17,31 +18,19 @@ class SpotInfo extends StatelessWidget {
     // name
     listInfo.add(Text(
       spot.name,
-      style: const TextStyle(
-          color: Color(0xff444444),
-          fontSize: 18.0,
-          fontWeight: FontWeight.w800
-      ),
+      style: MyTextStyles.title,
     ));
 
     // coordinates
     listInfo.add(Text(
       '${round(spot.coordinates[0], decimals: 8)}, ${round(spot.coordinates[1], decimals: 8)}',
-      style: const TextStyle(
-        color: Color(0xff9b9b9b),
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
+      style: MyTextStyles.description
     ));
 
     // location
     listInfo.add(Text(
       spot.location,
-      style: const TextStyle(
-        color: Color(0xff9b9b9b),
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
-      ),
+      style: MyTextStyles.description
     ));
 
     return Column(

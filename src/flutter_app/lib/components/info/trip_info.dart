@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/trip/trip.dart';
+import '../MyTextStyles.dart';
 
 class TripInfo extends StatelessWidget {
   const TripInfo({super.key,
@@ -17,29 +18,17 @@ class TripInfo extends StatelessWidget {
     // name
     listInfo.add(Text(
       trip.name,
-      style: const TextStyle(
-          color: Color(0xff444444),
-          fontSize: 18.0,
-          fontWeight: FontWeight.w800
-      ),
+      style: MyTextStyles.title,
     ));
 
     listInfo.add(Text(
       "${trip.startDate} ${trip.endDate}",
-      style: const TextStyle(
-          color: Color(0xff989898),
-          fontSize: 12.0,
-          fontWeight: FontWeight.w400
-      ),
+      style: MyTextStyles.description,
     ));
 
     listInfo.add(Text(
       trip.comment,
-      style: const TextStyle(
-          color: Color(0xff989898),
-          fontSize: 12.0,
-          fontWeight: FontWeight.w400
-      ),
+      style: MyTextStyles.description,
     ));
 
     return Column(
