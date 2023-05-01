@@ -193,67 +193,92 @@ class _MapPageState extends State<MapPage> {
                         itemBuilder: (BuildContext context) => <PopupMenuEntry<AddItem>>[
                           PopupMenuItem<AddItem>(
                               value: AddItem.addAscent,
-                              child: IconButton(
-                                icon: const Icon(Icons.adjust, size: 30.0),
-                                onPressed: () {
-                                  print("addAscent");
-                                },
-                              )
+                              child: Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.adjust, size: 30.0),
+                                      onPressed: () {
+                                        print("addAscent");
+                                      },
+                                    ),
+                                    Text("Ascent"),
+                                   ]
+                              ),
                           ),
                           PopupMenuItem<AddItem>(
                               value: AddItem.addPitch,
-                              child: IconButton(
-                                icon: const Icon(Icons.linear_scale, size: 30.0),
-                                onPressed: () {
-                                  print("addPitch");
-                                },
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.linear_scale, size: 30.0),
+                                    onPressed: () {
+                                      print("addPitch");
+                                    },
+                                  ),
+                                  const Text("Pitch")
+                                ],
                               )
                           ),
                           PopupMenuItem<AddItem>(
                               value: AddItem.addRoute,
-                              child: IconButton(
-                                icon: const Icon(Icons.route, size: 30.0),
-                                onPressed: () {
-                                  print("addRoute");
-                                },
-                              )
+                              child: Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.route, size: 30.0),
+                                      onPressed: () {
+                                        print("addRoute");
+                                      },
+                                    ),
+                                    const Text("Route"),
+                                  ]
+                              ),
                           ),
                           PopupMenuItem<AddItem>(
                               value: AddItem.addSpot,
-                              child: IconButton(
-                                icon: const Icon(Icons.location_on, size: 30.0),
-                                onPressed: () {
-                                  if (online) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (
-                                              context) => NavigationScreenPage(onAdd: addSpotCallback)),
-                                    );
-                                  } else {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (
-                                              context) => SaveLocationNoConnectionPage(onAdd: addSpotCallback)),
-                                    );
-                                  }
-                                },
-                              )
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.location_on, size: 30.0),
+                                    onPressed: () {
+                                      if (online) {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (
+                                                  context) => NavigationScreenPage(onAdd: addSpotCallback)),
+                                        );
+                                      } else {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (
+                                                  context) => SaveLocationNoConnectionPage(onAdd: addSpotCallback)),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                  const Text("Spot"),
+                                ],
+                              ),
                           ),
                           PopupMenuItem<AddItem>(
                               value: AddItem.addTrip,
-                              child: IconButton(
-                                icon: const Icon(Icons.explore, size: 30.0),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => const AddTrip(),
-                                    )
-                                  );
-                                },
-                              )
+                              child: Row(
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.explore, size: 30.0),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => const AddTrip(),
+                                        )
+                                      );
+                                    },
+                                  ),
+                                  const Text("Trip"),
+                                ]
+                              ),
                           )
                         ],
                       ),
