@@ -3,39 +3,39 @@ import 'package:hive/hive.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 import '../config/environment.dart';
-import '../interfaces/spot/create_spot.dart';
+import '../interfaces/ascent/create_ascent.dart';
 import 'package:dio/dio.dart';
 
 import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
-import '../interfaces/spot.dart';
-import '../interfaces/spot/update_spot.dart';
+import '../interfaces/ascent/ascent.dart';
+import '../interfaces/ascent/update_ascent.dart';
 import 'cache.dart';
 import 'locator.dart';
 
-class SpotService {
+class AscentService {
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<List<Spot>> getSpots() async {
+  Future<List<Ascent>> getAscents() async {
     try {
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
+      final Response response = await netWorkLocator.dio.get('$climbingApiHost/ascent');
 
       if (response.statusCode == 200) {
         // If the server did return a 200 OK response, then parse the JSON.
-        List<Spot> spots = [];
+        List<Ascent> ascents = [];
         // save to cache
-        Box box = Hive.box('spots');
+        Box box = Hive.box('ascents');
         response.data.forEach((s) {
-          Spot spot = Spot.fromJson(s);
-          if (!box.containsKey(spot.id)) {
-            box.put(spot.id, spot.toJson());
+          Ascent ascent = Ascent.fromJson(s);
+          if (!box.containsKey(ascent.id)) {
+            box.put(ascent.id, ascent.toJson());
           }
-          spots.add(spot);
+          ascents.add(ascent);
         });
-        return spots;
+        return ascents;
       }
     } catch (e) {
       if (e is DioError) {
@@ -50,71 +50,63 @@ class SpotService {
     return [];
   }
 
-  Future<Spot> getSpot(String spotId) async {
+  Future<Ascent> getAscent(String ascentId) async {
     final Response response =
-        await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
+        await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
     if (response.statusCode == 200) {
-      return Spot.fromJson(response.data);
+      return Ascent.fromJson(response.data);
     } else {
-      throw Exception('Failed to load spot');
+      throw Exception('Failed to load ascent');
     }
   }
 
-  Future<Spot?> createSpot(CreateSpot createSpot, bool hasConnection) async {
-    CreateSpot spot = CreateSpot(
-      date: createSpot.date,
-      name: createSpot.name,
-      coordinates: createSpot.coordinates,
-      location: createSpot.location,
-      rating: createSpot.rating,
-      comment: (createSpot.comment != null) ? createSpot.comment! : "",
-      distanceParking: (createSpot.distanceParking != null)
-          ? createSpot.distanceParking!
-          : 0,
-      distancePublicTransport: (createSpot.distancePublicTransport != null)
-          ? createSpot.distancePublicTransport!
-          : 0,
+  Future<Ascent?> createAscent(String pitchId, CreateAscent createAscent, bool hasConnection) async {
+    CreateAscent ascent = CreateAscent(
+      comment: (createAscent.comment != null) ? createAscent.comment! : "",
+      date: createAscent.date,
+      style: createAscent.style,
+      type: createAscent.type,
     );
     if (hasConnection) {
-      var data = spot.toJson();
-      return uploadSpot(data);
+      var data = ascent.toJson();
+      return uploadAscent(pitchId, data);
     } else {
       // save to cache
-      Box box = Hive.box('upload_later_spots');
-      Map spotJson = spot.toJson();
-      box.put(spotJson.hashCode, spotJson);
+      Box box = Hive.box('upload_later_ascents');
+      Map ascentJson = ascent.toJson();
+      box.put(ascentJson.hashCode, ascentJson);
     }
     return null;
   }
 
-  Future<Spot?> editSpot(UpdateSpot spot) async {
+  Future<Ascent?> editAscent(UpdateAscent ascent) async {
     try {
       final Response response = await netWorkLocator.dio
-          .put('$climbingApiHost/spot/${spot.id}', data: spot.toJson());
+          .put('$climbingApiHost/pitch/${ascent.id}', data: ascent.toJson());
       if (response.statusCode == 200) {
-        deleteSpotFromEditQueue(spot.hashCode);
-        return Spot.fromJson(response.data);
+        // TODO deleteAscentFromEditQueue(ascent.hashCode);
+        return Ascent.fromJson(response.data);
       } else {
-        throw Exception('Failed to edit spot');
+        throw Exception('Failed to edit ascent');
       }
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this spot and edit later
-          Box box = Hive.box('edit_later_spots');
-          Map spotJson = spot.toJson();
-          box.put(spotJson.hashCode, spotJson);
+          // this means we are offline so queue this ascent and edit later
+          Box box = Hive.box('edit_later_ascents');
+          Map ascentJson = ascent.toJson();
+          box.put(ascentJson.hashCode, ascentJson);
         }
       }
     } finally {
-      editSpotFromCache(spot);
+      // TODO editAscentFromCache(ascent);
     }
     return null;
   }
 
-  Future<void> deleteSpot(Spot spot) async {
+  Future<void> deleteAscent(Ascent ascent) async {
     try {
-      for (var id in spot.mediaIds) {
+      for (var id in ascent.mediaIds) {
         final Response mediaResponse =
         await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
         if (mediaResponse.statusCode != 204) {
@@ -122,35 +114,35 @@ class SpotService {
         }
       }
 
-      final Response spotResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
-      if (spotResponse.statusCode != 204) {
-        throw Exception('Failed to delete spot');
+      final Response ascentResponse =
+      await netWorkLocator.dio.delete('$climbingApiHost/pitch/${ascent.id}');
+      if (ascentResponse.statusCode != 204) {
+        throw Exception('Failed to delete ascent');
       }
-      deleteSpotFromDeleteQueue(spot.toJson().hashCode);
-      return spotResponse.data;
+      // TODO deleteAscentFromDeleteQueue(ascent.toJson().hashCode);
+      return ascentResponse.data;
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this spot and delete later
-          Box box = Hive.box('delete_later_spots');
-          Map spotJson = spot.toJson();
-          box.put(spotJson.hashCode, spotJson);
+          // this means we are offline so queue this ascent and delete later
+          Box box = Hive.box('delete_later_ascents');
+          Map ascentJson = ascent.toJson();
+          box.put(ascentJson.hashCode, ascentJson);
         }
       }
     } finally {
-      deleteSpotFromCache(spot.id);
+      // TODO deleteAscentFromCache(ascent.id);
     }
   }
 
-  Future<Spot?> uploadSpot(Map data) async {
+  Future<Ascent?> uploadAscent(String pitchId, Map data) async {
     try {
       final Response response = await netWorkLocator.dio
-          .post('$climbingApiHost/spot', data: data);
+          .post('$climbingApiHost/pitch/$pitchId', data: data);
       if (response.statusCode == 201) {
-        return Spot.fromJson(response.data);
+        return Ascent.fromJson(response.data);
       } else {
-        throw Exception('Failed to create spot');
+        throw Exception('Failed to create ascent');
       }
     } catch (e) {
       if (e is DioError) {
@@ -159,17 +151,17 @@ class SpotService {
           switch (response.statusCode) {
             case 409:
               showSimpleNotification(
-                const Text('This spot already exists!'),
+                const Text('This ascent already exists!'),
                 background: Colors.red,
               );
               break;
             default:
-              throw Exception('Failed to create spot');
+              throw Exception('Failed to create ascent');
           }
         }
       }
     } finally {
-      deleteSpotFromUploadQueue(data.hashCode);
+      // TODO deleteAscentFromUploadQueue(data.hashCode);
     }
     return null;
   }

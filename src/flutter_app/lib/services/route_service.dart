@@ -3,39 +3,39 @@ import 'package:hive/hive.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 import '../config/environment.dart';
-import '../interfaces/spot/create_spot.dart';
+import '../interfaces/route/create_route.dart';
 import 'package:dio/dio.dart';
 
 import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
-import '../interfaces/spot/spot.dart';
-import '../interfaces/spot/update_spot.dart';
+import '../interfaces/route/route.dart';
+import '../interfaces/route/update_route.dart';
 import 'cache.dart';
 import 'locator.dart';
 
-class SpotService {
+class RouteService {
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<List<Spot>> getSpots() async {
+  Future<List<ClimbingRoute>> getRoutes() async {
     try {
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
+      final Response response = await netWorkLocator.dio.get('$climbingApiHost/route');
 
       if (response.statusCode == 200) {
         // If the server did return a 200 OK response, then parse the JSON.
-        List<Spot> spots = [];
+        List<ClimbingRoute> routes = [];
         // save to cache
-        Box box = Hive.box('spots');
+        Box box = Hive.box('routes');
         response.data.forEach((s) {
-          Spot spot = Spot.fromJson(s);
-          if (!box.containsKey(spot.id)) {
-            box.put(spot.id, spot.toJson());
+          ClimbingRoute route = ClimbingRoute.fromJson(s);
+          if (!box.containsKey(route.id)) {
+            box.put(route.id, route.toJson());
           }
-          spots.add(spot);
+          routes.add(route);
         });
-        return spots;
+        return routes;
       }
     } catch (e) {
       if (e is DioError) {
@@ -50,71 +50,63 @@ class SpotService {
     return [];
   }
 
-  Future<Spot> getSpot(String spotId) async {
+  Future<ClimbingRoute> getRoute(String routeId) async {
     final Response response =
-        await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
+        await netWorkLocator.dio.get('$climbingApiHost/route/$routeId');
     if (response.statusCode == 200) {
-      return Spot.fromJson(response.data);
+      return ClimbingRoute.fromJson(response.data);
     } else {
-      throw Exception('Failed to load spot');
+      throw Exception('Failed to load route');
     }
   }
 
-  Future<Spot?> createSpot(CreateSpot createSpot, bool hasConnection) async {
-    CreateSpot spot = CreateSpot(
-      date: createSpot.date,
-      name: createSpot.name,
-      coordinates: createSpot.coordinates,
-      location: createSpot.location,
-      rating: createSpot.rating,
-      comment: (createSpot.comment != null) ? createSpot.comment! : "",
-      distanceParking: (createSpot.distanceParking != null)
-          ? createSpot.distanceParking!
-          : 0,
-      distancePublicTransport: (createSpot.distancePublicTransport != null)
-          ? createSpot.distancePublicTransport!
-          : 0,
+  Future<ClimbingRoute?> createRoute(CreateClimbingRoute createRoute, String spotId, bool hasConnection) async {
+    CreateClimbingRoute route = CreateClimbingRoute(
+      comment: (createRoute.comment != null) ? createRoute.comment! : "",
+      location: createRoute.location,
+      name: createRoute.name,
+      rating: createRoute.rating,
     );
     if (hasConnection) {
-      var data = spot.toJson();
-      return uploadSpot(data);
+      var data = route.toJson();
+      return uploadRoute(spotId, data);
     } else {
       // save to cache
-      Box box = Hive.box('upload_later_spots');
-      Map spotJson = spot.toJson();
-      box.put(spotJson.hashCode, spotJson);
+      Box box = Hive.box('upload_later_routes');
+      Map routeJson = route.toJson();
+      box.put(routeJson.hashCode, routeJson);
     }
     return null;
   }
 
-  Future<Spot?> editSpot(UpdateSpot spot) async {
+  Future<ClimbingRoute?> editRoute(UpdateClimbingRoute route) async {
     try {
       final Response response = await netWorkLocator.dio
-          .put('$climbingApiHost/spot/${spot.id}', data: spot.toJson());
+          .put('$climbingApiHost/route/${route.id}', data: route.toJson());
       if (response.statusCode == 200) {
-        deleteSpotFromEditQueue(spot.hashCode);
-        return Spot.fromJson(response.data);
+        // TODO deleteRouteFromEditQueue(route.hashCode);
+        return ClimbingRoute.fromJson(response.data);
       } else {
-        throw Exception('Failed to edit spot');
+        throw Exception('Failed to edit route');
       }
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this spot and edit later
-          Box box = Hive.box('edit_later_spots');
-          Map spotJson = spot.toJson();
-          box.put(spotJson.hashCode, spotJson);
+          // this means we are offline so queue this route and edit later
+          Box box = Hive.box('edit_later_routes');
+          Map routeJson = route.toJson();
+          box.put(routeJson.hashCode, routeJson);
         }
       }
     } finally {
-      editSpotFromCache(spot);
+      // TODO editRouteFromCache(route);
     }
     return null;
   }
 
-  Future<void> deleteSpot(Spot spot) async {
+  Future<void> deleteRoute(ClimbingRoute route) async {
     try {
-      for (var id in spot.mediaIds) {
+      for (var id in route.mediaIds) {
         final Response mediaResponse =
         await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
         if (mediaResponse.statusCode != 204) {
@@ -122,35 +114,35 @@ class SpotService {
         }
       }
 
-      final Response spotResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
-      if (spotResponse.statusCode != 204) {
-        throw Exception('Failed to delete spot');
+      final Response routeResponse =
+      await netWorkLocator.dio.delete('$climbingApiHost/route/${route.id}');
+      if (routeResponse.statusCode != 204) {
+        throw Exception('Failed to delete route');
       }
-      deleteSpotFromDeleteQueue(spot.toJson().hashCode);
-      return spotResponse.data;
+      // TODO deleteRouteFromDeleteQueue(route.toJson().hashCode);
+      return routeResponse.data;
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this spot and delete later
-          Box box = Hive.box('delete_later_spots');
-          Map spotJson = spot.toJson();
-          box.put(spotJson.hashCode, spotJson);
+          // this means we are offline so queue this route and delete later
+          Box box = Hive.box('delete_later_routes');
+          Map routeJson = route.toJson();
+          box.put(routeJson.hashCode, routeJson);
         }
       }
     } finally {
-      deleteSpotFromCache(spot.id);
+      // TODO deleteRouteFromCache(route.id);
     }
   }
 
-  Future<Spot?> uploadSpot(Map data) async {
+  Future<ClimbingRoute?> uploadRoute(String spotId, Map data) async {
     try {
       final Response response = await netWorkLocator.dio
-          .post('$climbingApiHost/spot', data: data);
+          .post('$climbingApiHost/spot/$spotId', data: data);
       if (response.statusCode == 201) {
-        return Spot.fromJson(response.data);
+        return ClimbingRoute.fromJson(response.data);
       } else {
-        throw Exception('Failed to create spot');
+        throw Exception('Failed to create route');
       }
     } catch (e) {
       if (e is DioError) {
@@ -159,17 +151,17 @@ class SpotService {
           switch (response.statusCode) {
             case 409:
               showSimpleNotification(
-                const Text('This spot already exists!'),
+                const Text('This route already exists!'),
                 background: Colors.red,
               );
               break;
             default:
-              throw Exception('Failed to create spot');
+              throw Exception('Failed to create route');
           }
         }
       }
     } finally {
-      deleteSpotFromUploadQueue(data.hashCode);
+      // TODO deleteRouteFromUploadQueue(data.hashCode);
     }
     return null;
   }

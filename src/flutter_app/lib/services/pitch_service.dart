@@ -3,39 +3,39 @@ import 'package:hive/hive.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 import '../config/environment.dart';
-import '../interfaces/spot/create_spot.dart';
+import '../interfaces/pitch/create_pitch.dart';
 import 'package:dio/dio.dart';
 
 import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
-import '../interfaces/spot/spot.dart';
-import '../interfaces/spot/update_spot.dart';
+import '../interfaces/pitch/pitch.dart';
+import '../interfaces/pitch/update_pitch.dart';
 import 'cache.dart';
 import 'locator.dart';
 
-class SpotService {
+class PitchService {
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<List<Spot>> getSpots() async {
+  Future<List<Pitch>> getPitches() async {
     try {
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
+      final Response response = await netWorkLocator.dio.get('$climbingApiHost/pitch');
 
       if (response.statusCode == 200) {
         // If the server did return a 200 OK response, then parse the JSON.
-        List<Spot> spots = [];
+        List<Pitch> pitchs = [];
         // save to cache
-        Box box = Hive.box('spots');
+        Box box = Hive.box('pitchs');
         response.data.forEach((s) {
-          Spot spot = Spot.fromJson(s);
-          if (!box.containsKey(spot.id)) {
-            box.put(spot.id, spot.toJson());
+          Pitch pitch = Pitch.fromJson(s);
+          if (!box.containsKey(pitch.id)) {
+            box.put(pitch.id, pitch.toJson());
           }
-          spots.add(spot);
+          pitchs.add(pitch);
         });
-        return spots;
+        return pitchs;
       }
     } catch (e) {
       if (e is DioError) {
@@ -50,71 +50,65 @@ class SpotService {
     return [];
   }
 
-  Future<Spot> getSpot(String spotId) async {
+  Future<Pitch> getPitch(String pitchId) async {
     final Response response =
-        await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
+        await netWorkLocator.dio.get('$climbingApiHost/pitch/$pitchId');
     if (response.statusCode == 200) {
-      return Spot.fromJson(response.data);
+      return Pitch.fromJson(response.data);
     } else {
-      throw Exception('Failed to load spot');
+      throw Exception('Failed to load pitch');
     }
   }
 
-  Future<Spot?> createSpot(CreateSpot createSpot, bool hasConnection) async {
-    CreateSpot spot = CreateSpot(
-      date: createSpot.date,
-      name: createSpot.name,
-      coordinates: createSpot.coordinates,
-      location: createSpot.location,
-      rating: createSpot.rating,
-      comment: (createSpot.comment != null) ? createSpot.comment! : "",
-      distanceParking: (createSpot.distanceParking != null)
-          ? createSpot.distanceParking!
-          : 0,
-      distancePublicTransport: (createSpot.distancePublicTransport != null)
-          ? createSpot.distancePublicTransport!
-          : 0,
+  Future<Pitch?> createPitch(CreatePitch createPitch, String routeId, bool hasConnection) async {
+    CreatePitch pitch = CreatePitch(
+      comment: (createPitch.comment != null) ? createPitch.comment! : "",
+      grade: createPitch.grade,
+      length: createPitch.length,
+      name: createPitch.name,
+      num: createPitch.num,
+      rating: createPitch.rating,
     );
     if (hasConnection) {
-      var data = spot.toJson();
-      return uploadSpot(data);
+      var data = pitch.toJson();
+      return uploadPitch(routeId, data);
     } else {
       // save to cache
-      Box box = Hive.box('upload_later_spots');
-      Map spotJson = spot.toJson();
-      box.put(spotJson.hashCode, spotJson);
+      Box box = Hive.box('upload_later_pitchs');
+      Map pitchJson = pitch.toJson();
+      box.put(pitchJson.hashCode, pitchJson);
     }
     return null;
   }
 
-  Future<Spot?> editSpot(UpdateSpot spot) async {
+  Future<Pitch?> editPitch(UpdatePitch pitch) async {
     try {
       final Response response = await netWorkLocator.dio
-          .put('$climbingApiHost/spot/${spot.id}', data: spot.toJson());
+          .put('$climbingApiHost/pitch/${pitch.id}', data: pitch.toJson());
       if (response.statusCode == 200) {
-        deleteSpotFromEditQueue(spot.hashCode);
-        return Spot.fromJson(response.data);
+        // TODO deletePitchFromEditQueue(pitch.hashCode);
+        return Pitch.fromJson(response.data);
       } else {
-        throw Exception('Failed to edit spot');
+        throw Exception('Failed to edit pitch');
       }
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this spot and edit later
-          Box box = Hive.box('edit_later_spots');
-          Map spotJson = spot.toJson();
-          box.put(spotJson.hashCode, spotJson);
+          // this means we are offline so queue this pitch and edit later
+          Box box = Hive.box('edit_later_pitchs');
+          Map pitchJson = pitch.toJson();
+          box.put(pitchJson.hashCode, pitchJson);
         }
       }
     } finally {
-      editSpotFromCache(spot);
+      // TODO editPitchFromCache(pitch);
     }
     return null;
   }
 
-  Future<void> deleteSpot(Spot spot) async {
+  Future<void> deletePitch(Pitch pitch) async {
     try {
-      for (var id in spot.mediaIds) {
+      for (var id in pitch.mediaIds) {
         final Response mediaResponse =
         await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
         if (mediaResponse.statusCode != 204) {
@@ -122,35 +116,35 @@ class SpotService {
         }
       }
 
-      final Response spotResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
-      if (spotResponse.statusCode != 204) {
-        throw Exception('Failed to delete spot');
+      final Response pitchResponse =
+      await netWorkLocator.dio.delete('$climbingApiHost/pitch/${pitch.id}');
+      if (pitchResponse.statusCode != 204) {
+        throw Exception('Failed to delete pitch');
       }
-      deleteSpotFromDeleteQueue(spot.toJson().hashCode);
-      return spotResponse.data;
+      // TODO deletePitchFromDeleteQueue(pitch.toJson().hashCode);
+      return pitchResponse.data;
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this spot and delete later
-          Box box = Hive.box('delete_later_spots');
-          Map spotJson = spot.toJson();
-          box.put(spotJson.hashCode, spotJson);
+          // this means we are offline so queue this pitch and delete later
+          Box box = Hive.box('delete_later_pitchs');
+          Map pitchJson = pitch.toJson();
+          box.put(pitchJson.hashCode, pitchJson);
         }
       }
     } finally {
-      deleteSpotFromCache(spot.id);
+      // TODO deletePitchFromCache(pitch.id);
     }
   }
 
-  Future<Spot?> uploadSpot(Map data) async {
+  Future<Pitch?> uploadPitch(String routeId, Map data) async {
     try {
       final Response response = await netWorkLocator.dio
-          .post('$climbingApiHost/spot', data: data);
+          .post('$climbingApiHost/route/$routeId', data: data);
       if (response.statusCode == 201) {
-        return Spot.fromJson(response.data);
+        return Pitch.fromJson(response.data);
       } else {
-        throw Exception('Failed to create spot');
+        throw Exception('Failed to create pitch');
       }
     } catch (e) {
       if (e is DioError) {
@@ -159,17 +153,17 @@ class SpotService {
           switch (response.statusCode) {
             case 409:
               showSimpleNotification(
-                const Text('This spot already exists!'),
+                const Text('This pitch already exists!'),
                 background: Colors.red,
               );
               break;
             default:
-              throw Exception('Failed to create spot');
+              throw Exception('Failed to create pitch');
           }
         }
       }
     } finally {
-      deleteSpotFromUploadQueue(data.hashCode);
+      // TODO deletePitchFromUploadQueue(data.hashCode);
     }
     return null;
   }
