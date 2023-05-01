@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../interfaces/spot.dart';
+import '../../interfaces/spot/spot.dart';
 
 class SpotInfo extends StatelessWidget {
   const SpotInfo({super.key,

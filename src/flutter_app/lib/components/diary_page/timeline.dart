@@ -4,7 +4,7 @@ import 'package:climbing_diary/components/diary_page/spot_info.dart';
 import 'package:flutter/material.dart';
 import 'package:timelines/timelines.dart';
 
-import '../../interfaces/spot.dart';
+import '../../interfaces/spot/spot.dart';
 import '../spot_details.dart';
 import 'inner_timeline.dart';
 

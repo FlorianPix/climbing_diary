@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../interfaces/spot.dart';
-import '../interfaces/update_spot.dart';
+import '../interfaces/spot/spot.dart';
+import '../interfaces/spot/update_spot.dart';
 import '../services/spot_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 

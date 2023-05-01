@@ -1,4 +1,4 @@
-import 'package:climbing_diary/interfaces/update_spot.dart';
+import 'package:climbing_diary/interfaces/spot/update_spot.dart';
 
 class Spot {
   final List<String> mediaIds;

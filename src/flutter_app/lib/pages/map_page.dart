@@ -1,6 +1,7 @@
 import 'package:climbing_diary/pages/save_location_no_connection.dart';
 import 'package:flutter/material.dart';
 
+import '../components/add/add_trip.dart';
 import '../components/spot_details.dart';
 import '../services/cache.dart';
 import 'navigation_screen_page.dart';
@@ -8,7 +9,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../interfaces/spot.dart';
+import '../interfaces/spot/spot.dart';
 import '../services/spot_service.dart';
 
 enum AddItem { addTrip, addSpot, addRoute, addPitch, addAscent }
@@ -245,7 +246,12 @@ class _MapPageState extends State<MapPage> {
                               child: IconButton(
                                 icon: const Icon(Icons.explore, size: 30.0),
                                 onPressed: () {
-                                  print("addTrip");
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => const AddTrip(),
+                                    )
+                                  );
                                 },
                               )
                           )

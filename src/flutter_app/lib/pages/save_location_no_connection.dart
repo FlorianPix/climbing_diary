@@ -3,7 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import '../components/add/add_spot.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../interfaces/spot.dart';
+import '../interfaces/spot/spot.dart';
 import '../services/location_service.dart';
 
 class SaveLocationNoConnectionPage extends StatefulWidget {

@@ -3,39 +3,39 @@ import 'package:hive/hive.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 import '../config/environment.dart';
-import '../interfaces/create_spot.dart';
+import '../interfaces/trip/create_trip.dart';
 import 'package:dio/dio.dart';
 
 import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
-import '../interfaces/spot.dart';
-import '../interfaces/update_spot.dart';
+import '../interfaces/trip/trip.dart';
+import '../interfaces/trip/update_trip.dart';
 import 'cache.dart';
 import 'locator.dart';
 
-class SpotService {
+class TripService {
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<List<Spot>> getSpots() async {
+  Future<List<Trip>> getTrips() async {
     try {
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
+      final Response response = await netWorkLocator.dio.get('$climbingApiHost/trip');
 
       if (response.statusCode == 200) {
         // If the server did return a 200 OK response, then parse the JSON.
-        List<Spot> spots = [];
+        List<Trip> trips = [];
         // save to cache
-        Box box = Hive.box('spots');
+        Box box = Hive.box('trips');
         response.data.forEach((s) {
-          Spot spot = Spot.fromJson(s);
-          if (!box.containsKey(spot.id)) {
-            box.put(spot.id, spot.toJson());
+          Trip trip = Trip.fromJson(s);
+          if (!box.containsKey(trip.id)) {
+            box.put(trip.id, trip.toJson());
           }
-          spots.add(spot);
+          trips.add(trip);
         });
-        return spots;
+        return trips;
       }
     } catch (e) {
       if (e is DioError) {
@@ -50,71 +50,64 @@ class SpotService {
     return [];
   }
 
-  Future<Spot> getSpot(String spotId) async {
+  Future<Trip> getTrip(String tripId) async {
     final Response response =
-        await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
+        await netWorkLocator.dio.get('$climbingApiHost/trip/$tripId');
     if (response.statusCode == 200) {
-      return Spot.fromJson(response.data);
+      return Trip.fromJson(response.data);
     } else {
-      throw Exception('Failed to load spot');
+      throw Exception('Failed to load trip');
     }
   }
 
-  Future<Spot?> createSpot(CreateSpot createSpot, bool hasConnection) async {
-    CreateSpot spot = CreateSpot(
-      date: createSpot.date,
-      name: createSpot.name,
-      coordinates: createSpot.coordinates,
-      location: createSpot.location,
-      rating: createSpot.rating,
-      comment: (createSpot.comment != null) ? createSpot.comment! : "",
-      distanceParking: (createSpot.distanceParking != null)
-          ? createSpot.distanceParking!
-          : 0,
-      distancePublicTransport: (createSpot.distancePublicTransport != null)
-          ? createSpot.distancePublicTransport!
-          : 0,
+  Future<Trip?> createTrip(CreateTrip createTrip, bool hasConnection) async {
+    CreateTrip trip = CreateTrip(
+      comment: (createTrip.comment != null) ? createTrip.comment! : "",
+      endDate: createTrip.endDate,
+      name: createTrip.name,
+      rating: createTrip.rating,
+      startDate: createTrip.startDate,
     );
     if (hasConnection) {
-      var data = spot.toJson();
-      return uploadSpot(data);
+      var data = trip.toJson();
+      return uploadTrip(data);
     } else {
       // save to cache
-      Box box = Hive.box('upload_later_spots');
-      Map spotJson = spot.toJson();
-      box.put(spotJson.hashCode, spotJson);
+      Box box = Hive.box('upload_later_trips');
+      Map tripJson = trip.toJson();
+      box.put(tripJson.hashCode, tripJson);
     }
     return null;
   }
 
-  Future<Spot?> editSpot(UpdateSpot spot) async {
+  Future<Trip?> editTrip(UpdateTrip trip) async {
     try {
       final Response response = await netWorkLocator.dio
-          .put('$climbingApiHost/spot/${spot.id}', data: spot.toJson());
+          .put('$climbingApiHost/trip/${trip.id}', data: trip.toJson());
       if (response.statusCode == 200) {
-        deleteSpotFromEditQueue(spot.hashCode);
-        return Spot.fromJson(response.data);
+        // TODO deleteTripFromEditQueue(trip.hashCode);
+        return Trip.fromJson(response.data);
       } else {
-        throw Exception('Failed to edit spot');
+        throw Exception('Failed to edit trip');
       }
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this spot and edit later
-          Box box = Hive.box('edit_later_spots');
-          Map spotJson = spot.toJson();
-          box.put(spotJson.hashCode, spotJson);
+          // this means we are offline so queue this trip and edit later
+          Box box = Hive.box('edit_later_trips');
+          Map tripJson = trip.toJson();
+          box.put(tripJson.hashCode, tripJson);
         }
       }
     } finally {
-      editSpotFromCache(spot);
+      // TODO editTripFromCache(trip);
     }
     return null;
   }
 
-  Future<void> deleteSpot(Spot spot) async {
+  Future<void> deleteTrip(Trip trip) async {
     try {
-      for (var id in spot.mediaIds) {
+      for (var id in trip.mediaIds) {
         final Response mediaResponse =
         await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
         if (mediaResponse.statusCode != 204) {
@@ -122,35 +115,35 @@ class SpotService {
         }
       }
 
-      final Response spotResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
-      if (spotResponse.statusCode != 204) {
-        throw Exception('Failed to delete spot');
+      final Response tripResponse =
+      await netWorkLocator.dio.delete('$climbingApiHost/trip/${trip.id}');
+      if (tripResponse.statusCode != 204) {
+        throw Exception('Failed to delete trip');
       }
-      deleteSpotFromDeleteQueue(spot.toJson().hashCode);
-      return spotResponse.data;
+      // TODO deleteTripFromDeleteQueue(trip.toJson().hashCode);
+      return tripResponse.data;
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this spot and delete later
-          Box box = Hive.box('delete_later_spots');
-          Map spotJson = spot.toJson();
-          box.put(spotJson.hashCode, spotJson);
+          // this means we are offline so queue this trip and delete later
+          Box box = Hive.box('delete_later_trips');
+          Map tripJson = trip.toJson();
+          box.put(tripJson.hashCode, tripJson);
         }
       }
     } finally {
-      deleteSpotFromCache(spot.id);
+      // TODO deleteTripFromCache(trip.id);
     }
   }
 
-  Future<Spot?> uploadSpot(Map data) async {
+  Future<Trip?> uploadTrip(Map data) async {
     try {
       final Response response = await netWorkLocator.dio
-          .post('$climbingApiHost/spot', data: data);
+          .post('$climbingApiHost/trip', data: data);
       if (response.statusCode == 201) {
-        return Spot.fromJson(response.data);
+        return Trip.fromJson(response.data);
       } else {
-        throw Exception('Failed to create spot');
+        throw Exception('Failed to create trip');
       }
     } catch (e) {
       if (e is DioError) {
@@ -159,17 +152,17 @@ class SpotService {
           switch (response.statusCode) {
             case 409:
               showSimpleNotification(
-                const Text('This spot already exists!'),
+                const Text('This trip already exists!'),
                 background: Colors.red,
               );
               break;
             default:
-              throw Exception('Failed to create spot');
+              throw Exception('Failed to create trip');
           }
         }
       }
     } finally {
-      deleteSpotFromUploadQueue(data.hashCode);
+      // TODO deleteTripFromUploadQueue(data.hashCode);
     }
     return null;
   }

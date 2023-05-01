@@ -3,13 +3,13 @@ import 'package:hive/hive.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 import '../config/environment.dart';
-import '../interfaces/create_spot.dart';
+import '../interfaces/spot/create_spot.dart';
 import 'package:dio/dio.dart';
 
 import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
-import '../interfaces/spot.dart';
-import '../interfaces/update_spot.dart';
+import '../interfaces/spot/spot.dart';
+import '../interfaces/spot/update_spot.dart';
 import 'cache.dart';
 import 'locator.dart';
 
