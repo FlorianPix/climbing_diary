@@ -103,12 +103,15 @@ class RouteTimelineState extends State<RouteTimeline> {
                             // pitches
                             if (routes[index].pitchIds.isNotEmpty){
                               if (routes[index].pitchIds.length > 1) {
+                                // multi pitch
                                 elements.add(
-                                  PitchTimeline(
-                                    pitchIds: routes[index].pitchIds
-                                  )
+                                  MultiPitchInfo(pitchIds: routes[index].pitchIds)
+                                );
+                                elements.add(
+                                  PitchTimeline(pitchIds: routes[index].pitchIds)
                                 );
                               } else {
+                                // single pitch
                                 elements.add(
                                   FutureBuilder<Pitch>(
                                     future: pitchService.getPitch(routes[index].pitchIds[0]),
