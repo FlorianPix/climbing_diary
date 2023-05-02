@@ -23,18 +23,18 @@ class _EditPitchState extends State<EditPitch>{
   final PitchService pitchService = PitchService();
   final TextEditingController controllerComment = TextEditingController();
   final TextEditingController controllerGrade = TextEditingController();
-  final TextEditingController controllerSystem = TextEditingController();
   final TextEditingController controllerLength = TextEditingController();
   final TextEditingController controllerName = TextEditingController();
   final TextEditingController controllerNum = TextEditingController();
 
   int currentSliderValue = 0;
+  GradingSystem? gradingSystem;
 
   @override
   void initState(){
     controllerComment.text = widget.pitch.comment;
     controllerGrade.text = widget.pitch.grade.grade;
-    controllerSystem.text = widget.pitch.grade.system.toString();
+    gradingSystem = widget.pitch.grade.system;
     controllerLength.text = widget.pitch.length.toString();
     controllerName.text = widget.pitch.name;
     controllerNum.text = widget.pitch.num.toString();
@@ -74,6 +74,20 @@ class _EditPitchState extends State<EditPitch>{
                 controller: controllerGrade,
                 decoration: const InputDecoration(
                     hintText: "grade", labelText: "grade"),
+              ),
+              DropdownButton<GradingSystem>(
+                value: gradingSystem,
+                items: GradingSystem.values.map<DropdownMenuItem<GradingSystem>>((GradingSystem value) {
+                  return DropdownMenuItem<GradingSystem>(
+                      value: value,
+                      child: Text(value.toShortString())
+                  );
+                }).toList(),
+                onChanged: (GradingSystem? value) {
+                  setState(() {
+                    gradingSystem = value!;
+                  });
+                },
               ),
               TextFormField(
                 controller: controllerLength,
@@ -121,7 +135,7 @@ class _EditPitchState extends State<EditPitch>{
               UpdatePitch pitch = UpdatePitch(
                 id: widget.pitch.id,
                 comment: controllerComment.text,
-                grade: Grade(grade: controllerGrade.text, system: GradingSystem.values[int.parse(controllerSystem.text)]),
+                grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
                 length: int.parse(controllerLength.text),
                 name: controllerName.text,
                 num: int.parse(controllerNum.text),

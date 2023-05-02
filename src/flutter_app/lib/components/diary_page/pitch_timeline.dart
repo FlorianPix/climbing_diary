@@ -46,6 +46,13 @@ class PitchTimelineState extends State<PitchTimeline> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   List<Pitch> pitches = snapshot.data!;
+                  pitches.sort((a, b) {
+                    if (a.num > b.num) {
+                      return 1;
+                    } else {
+                      return a.num < b.num ? -1 : 0;
+                    }
+                  });
 
                   updatePitchCallback(Pitch pitch) {
                     var index = -1;

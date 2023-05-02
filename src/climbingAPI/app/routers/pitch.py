@@ -37,6 +37,7 @@ async def retrieve_pitch(pitch_id: str, user: Auth0User = Security(auth.get_user
 async def update_pitch(pitch_id: str, pitch: UpdatePitchModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     pitch = {k: v for k, v in pitch.dict().items() if v is not None}
+    pitch['grade']['system'] = pitch['grade']['system'].value
 
     if len(pitch) >= 1:
         update_result = await db["pitch"].update_one({"_id": ObjectId(pitch_id)}, {"$set": pitch})

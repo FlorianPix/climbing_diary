@@ -1,3 +1,4 @@
+import 'package:climbing_diary/components/info/pitch_info.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
@@ -7,6 +8,7 @@ import '../../interfaces/pitch/pitch.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../edit/edit_pitch.dart';
+import '../info/single_pitch_info.dart';
 
 class PitchDetails extends StatefulWidget {
   const PitchDetails({super.key, required this.routeId, required this.pitch, required this.onDelete, required this.onUpdate });
@@ -109,23 +111,25 @@ class _PitchDetailsState extends State<PitchDetails>{
 
   @override
   Widget build(BuildContext context) {
+    Pitch pitch = widget.pitch;
     List<Widget> elements = [];
 
     // general info
     elements.addAll([
       Text(
-        widget.pitch.name,
+        pitch.name,
         style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600
         ),
       ),
+      SinglePitchInfo(pitch: pitch),
     ]);
     // rating
     List<Widget> ratingRowElements = [];
 
     for (var i = 0; i < 5; i++){
-      if (widget.pitch.rating > i) {
+      if (pitch.rating > i) {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
       } else {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
@@ -140,7 +144,7 @@ class _PitchDetailsState extends State<PitchDetails>{
         )
     )));
 
-    if (widget.pitch.comment.isNotEmpty) {
+    if (pitch.comment.isNotEmpty) {
       elements.add(Container(
           margin: const EdgeInsets.all(15.0),
           padding: const EdgeInsets.all(5.0),
@@ -149,12 +153,12 @@ class _PitchDetailsState extends State<PitchDetails>{
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            widget.pitch.comment,
+            pitch.comment,
           )
       ));
     }
     // images
-    if (widget.pitch.mediaIds.isNotEmpty) {
+    if (pitch.mediaIds.isNotEmpty) {
       List<Widget> imageWidgets = [];
       Future<List<String>> futureMediaUrls = fetchURLs();
 
@@ -203,7 +207,7 @@ class _PitchDetailsState extends State<PitchDetails>{
               );
             }
             List<Widget> skeletons = [];
-            for (var i = 0; i < widget.pitch.mediaIds.length; i++){
+            for (var i = 0; i < pitch.mediaIds.length; i++){
               skeletons.add(skeleton);
             }
             return Container(
@@ -249,8 +253,8 @@ class _PitchDetailsState extends State<PitchDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                pitchService.deletePitch(widget.routeId, widget.pitch);
-                widget.onDelete.call(widget.pitch);
+                pitchService.deletePitch(widget.routeId, pitch);
+                widget.onDelete.call(pitch);
               },
               icon: const Icon(Icons.delete),
             ),

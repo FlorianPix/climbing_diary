@@ -41,7 +41,7 @@ class CreatePitch {
 
   Map toJson() => {
     "comment": comment,
-    "grade": grade,
+    "grade": grade.toJson(),
     "length": length,
     "name": name,
     "num": num,

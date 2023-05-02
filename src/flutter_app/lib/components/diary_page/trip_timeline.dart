@@ -40,6 +40,7 @@ class TripTimelineState extends State<TripTimeline> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   List<Trip> trips = snapshot.data!;
+                  trips.sort((a, b) => DateTime.parse(b.startDate).compareTo(DateTime.parse(a.startDate)));
 
                   updateTripCallback(Trip trip) {
                     var index = -1;

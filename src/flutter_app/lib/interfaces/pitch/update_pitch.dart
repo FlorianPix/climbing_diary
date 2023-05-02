@@ -61,7 +61,7 @@ class UpdatePitch {
     "_id": id,
     "user_id": userId,
     "comment": comment,
-    "grade": grade,
+    "grade": grade?.toJson(),
     "length": length,
     "name": name,
     "num": num,

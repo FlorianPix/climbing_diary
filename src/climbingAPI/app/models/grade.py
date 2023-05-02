@@ -17,6 +17,6 @@ class Grade(BaseModel):
         schema_extra = {
             "example": {
                 "grade": "",
-                "system": 3,
+                "system": GradingSystem.FRENCH,
             }
         }
