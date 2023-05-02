@@ -108,3 +108,24 @@ async def delete_ascent(pitch_id: str, ascent_id: str, user: Auth0User = Securit
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Pitch {pitch_id} not found")
+
+
+@router.delete('/{pitch_id}', description="Delete a pitch", dependencies=[Depends(auth.implicit_scheme)])
+async def delete_pitch(pitch_id: str, user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    db = await get_db()
+    pitch = await db["pitch"].find_one({"_id": ObjectId(pitch_id), "user_id": user.id})
+    if pitch is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Pitch {pitch_id} not found")
+    # pitch was found
+    delete_result = await db["ascent"].delete_many({"_id": {"$in": pitch["ascent_ids"]}})
+    if not delete_result.acknowledged:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Ascents could not be deleted")
+    # all ascents were deleted
+    delete_result = await db["pitch"].delete_one({"_id": ObjectId(pitch_id)})
+    if delete_result.deleted_count != 1:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Pitch {pitch_id} could not be deleted")
+    # pitch was deleted
+    return JSONResponse(status_code=status.HTTP_204_NO_CONTENT)

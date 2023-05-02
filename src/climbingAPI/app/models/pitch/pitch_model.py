@@ -5,6 +5,8 @@ from typing import List
 
 from app.models.py_object_id import PyObjectId
 
+from ..grade import Grade
+
 
 class PitchModel(BaseModel):
     ascent_ids: List[PyObjectId] = []
@@ -13,7 +15,7 @@ class PitchModel(BaseModel):
     user_id: str = Field(...)
 
     comment: str = Field(...)
-    grade: str = Field(...)
+    grade: Grade = Field(...)
     length: int = Field(...)
     name: str = Field(...)
     num: int = Field(..., ge=1)
@@ -30,7 +32,7 @@ class PitchModel(BaseModel):
                 "media_ids": [],
                 "user_id": "",
                 "comment": "Top Pitch",
-                "grade": "6a",
+                "grade": {"6a", 3},
                 "length": 35,
                 "name": "Pitch 1 vom Falkensteiner Riss",
                 "num": 1,

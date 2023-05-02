@@ -5,10 +5,12 @@ from typing import List, Optional
 
 from app.models.py_object_id import PyObjectId
 
+from ..grade import Grade
+
 
 class CreatePitchModel(BaseModel):
     comment: Optional[str]
-    grade: str = Field(...)
+    grade: Grade = Field(...)
     length: int = Field(..., ge=0)
     name: str = Field(...)
     num: int = Field(..., ge=1)
@@ -21,7 +23,7 @@ class CreatePitchModel(BaseModel):
         schema_extra = {
             "example": {
                 "comment": "Top Pitch",
-                "grade": "6a",
+                "grade": {"6a", 3},
                 "length": 35,
                 "name": "Pitch 1 vom Falkensteiner Riss",
                 "num": 1,
