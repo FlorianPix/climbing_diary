@@ -1,3 +1,4 @@
+import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -22,7 +23,7 @@ class PitchInfo extends StatelessWidget {
     ));
 
     listInfo.add(Text(
-      "#️ ${pitch.num} 📖 ${pitch.grade} 📏 ${pitch.length}m",
+      "#️ ${pitch.num} 📖 ${pitch.grade.grade} ${pitch.grade.system.toShortString()} 📏 ${pitch.length}m",
       style: MyTextStyles.description,
     ));
 

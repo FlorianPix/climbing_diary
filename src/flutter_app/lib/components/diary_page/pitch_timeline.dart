@@ -14,8 +14,9 @@ import '../info/pitch_info.dart';
 import '../info/trip_info.dart';
 
 class PitchTimeline extends StatefulWidget {
-  PitchTimeline({super.key, required this.pitchIds});
+  PitchTimeline({super.key, required this.routeId, required this.pitchIds});
 
+  String routeId;
   List<String> pitchIds;
 
   @override
@@ -101,7 +102,7 @@ class PitchTimelineState extends State<PitchTimeline> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(20),
                                             ),
-                                            child: PitchDetails(pitch: pitches[index],
+                                            child: PitchDetails(routeId: widget.routeId, pitch: pitches[index],
                                                 onDelete: deletePitchCallback,
                                                 onUpdate: updatePitchCallback)
                                         ),

@@ -9,8 +9,9 @@ import '../../services/pitch_service.dart';
 import '../edit/edit_pitch.dart';
 
 class PitchDetails extends StatefulWidget {
-  const PitchDetails({super.key, required this.pitch, required this.onDelete, required this.onUpdate });
+  const PitchDetails({super.key, required this.routeId, required this.pitch, required this.onDelete, required this.onUpdate });
 
+  final String routeId;
   final Pitch pitch;
   final ValueSetter<Pitch> onDelete;
   final ValueSetter<Pitch> onUpdate;
@@ -248,7 +249,7 @@ class _PitchDetailsState extends State<PitchDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                pitchService.deletePitch(widget.pitch);
+                pitchService.deletePitch(widget.routeId, widget.pitch);
                 widget.onDelete.call(widget.pitch);
               },
               icon: const Icon(Icons.delete),

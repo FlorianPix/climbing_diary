@@ -13,6 +13,7 @@ import '../../services/route_service.dart';
 import '../../services/trip_service.dart';
 import '../detail/route_details.dart';
 import '../detail/trip_details.dart';
+import '../info/multi_pitch_info.dart';
 import '../info/pitch_info.dart';
 import '../info/route_info.dart';
 import '../info/single_pitch_info.dart';
@@ -108,7 +109,7 @@ class RouteTimelineState extends State<RouteTimeline> {
                                   MultiPitchInfo(pitchIds: routes[index].pitchIds)
                                 );
                                 elements.add(
-                                  PitchTimeline(pitchIds: routes[index].pitchIds)
+                                  PitchTimeline(routeId: routes[index].id, pitchIds: routes[index].pitchIds)
                                 );
                               } else {
                                 // single pitch

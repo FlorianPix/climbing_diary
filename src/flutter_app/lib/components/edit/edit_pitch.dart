@@ -1,6 +1,8 @@
+import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../interfaces/grade.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/pitch/update_pitch.dart';
 import '../../services/pitch_service.dart';
@@ -21,6 +23,7 @@ class _EditPitchState extends State<EditPitch>{
   final PitchService pitchService = PitchService();
   final TextEditingController controllerComment = TextEditingController();
   final TextEditingController controllerGrade = TextEditingController();
+  final TextEditingController controllerSystem = TextEditingController();
   final TextEditingController controllerLength = TextEditingController();
   final TextEditingController controllerName = TextEditingController();
   final TextEditingController controllerNum = TextEditingController();
@@ -30,7 +33,8 @@ class _EditPitchState extends State<EditPitch>{
   @override
   void initState(){
     controllerComment.text = widget.pitch.comment;
-    controllerGrade.text = widget.pitch.grade;
+    controllerGrade.text = widget.pitch.grade.grade;
+    controllerSystem.text = widget.pitch.grade.system.toString();
     controllerLength.text = widget.pitch.length.toString();
     controllerName.text = widget.pitch.name;
     controllerNum.text = widget.pitch.num.toString();
@@ -117,7 +121,7 @@ class _EditPitchState extends State<EditPitch>{
               UpdatePitch pitch = UpdatePitch(
                 id: widget.pitch.id,
                 comment: controllerComment.text,
-                grade: controllerGrade.text,
+                grade: Grade(grade: controllerGrade.text, system: GradingSystem.values[int.parse(controllerSystem.text)]),
                 length: int.parse(controllerLength.text),
                 name: controllerName.text,
                 num: int.parse(controllerNum.text),

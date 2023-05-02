@@ -106,7 +106,7 @@ class PitchService {
     return null;
   }
 
-  Future<void> deletePitch(Pitch pitch) async {
+  Future<void> deletePitch(String routeId, Pitch pitch) async {
     try {
       for (var id in pitch.mediaIds) {
         final Response mediaResponse =
@@ -117,7 +117,7 @@ class PitchService {
       }
 
       final Response pitchResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/pitch/${pitch.id}');
+      await netWorkLocator.dio.delete('$climbingApiHost/route/$routeId/pitch/${pitch.id}');
       if (pitchResponse.statusCode != 204) {
         throw Exception('Failed to delete pitch');
       }

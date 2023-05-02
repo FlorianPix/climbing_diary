@@ -1,7 +1,9 @@
+import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:climbing_diary/services/pitch_service.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../interfaces/grade.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../MyTextStyles.dart';
 
@@ -20,22 +22,25 @@ class MultiPitchInfo extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<Pitch> pitches = snapshot.data!;
-          String grade = "1";
+          Grade grade = Grade(grade: "1", system: GradingSystem.french);
           int length = 0;
           pitches.forEach((pitch) {
-            grade += pitch.grade;
+            Grade otherGrade = pitch.grade;
+            grade += otherGrade;
             length += pitch.length;
           });
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-              "📖 ${grade} 📏 ${length}m",
+              "📖 ${grade.grade} ${grade.system.toShortString()} 📏 ${length}m",
                 style: MyTextStyles.description,
-              ));
+              ),
             ],
           );
 
+        } else {
+          return const CircularProgressIndicator();
         }
       },
     );   // info

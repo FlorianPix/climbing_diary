@@ -1,10 +1,12 @@
+import '../grade.dart';
+
 class UpdatePitch {
   List<String>? ascentIds;
   List<String>? mediaIds;
   final String id;
   String? userId;
   String? comment;
-  String? grade;
+  Grade? grade;
   int? length;
   String? name;
   int? num;

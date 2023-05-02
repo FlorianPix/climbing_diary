@@ -1,4 +1,10 @@
 
 enum GradingSystem {
-  USA, UKTech, UKADJ, French, UIAA, Australien,	Sachsen, Skandinavien, Brasilien,	Fb
+  usa, ukTech, ukAdj, french, uiaa, australia,	saxony, scandinavian, brasil,	fb
+}
+
+extension ToString on GradingSystem {
+  String toShortString() {
+    return toString().split('.').last;
+  }
 }

@@ -1,5 +1,7 @@
 import 'package:climbing_diary/interfaces/pitch/update_pitch.dart';
 
+import '../grade.dart';
+
 class Pitch {
   final List<String> ascentIds;
   final List<String> mediaIds;
@@ -7,7 +9,7 @@ class Pitch {
   final String userId;
 
   final String comment;
-  final String grade;
+  final Grade grade;
   final int length;
   final String name;
   final int num;
@@ -33,7 +35,7 @@ class Pitch {
       id: json['_id'],
       userId: json['user_id'],
       comment: json['comment'],
-      grade: json['grade'],
+      grade: Grade.fromJson(json['grade']),
       length: json['length'],
       name: json['name'],
       num: json['num'],
@@ -62,7 +64,7 @@ class Pitch {
     "_id": id,
     "user_id": userId,
     "comment": comment,
-    "grade": grade,
+    "grade": grade.toJson(),
     "length": length,
     "name": name,
     "num": num,

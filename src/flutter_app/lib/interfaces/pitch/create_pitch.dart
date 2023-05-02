@@ -1,6 +1,8 @@
+import '../grade.dart';
+
 class CreatePitch {
   final String? comment;
-  final String grade;
+  final Grade grade;
   final int length;
   final String name;
   final int num;

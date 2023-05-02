@@ -1,7 +1,9 @@
+import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../interfaces/grade.dart';
 import '../../interfaces/pitch/create_pitch.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/route/route.dart';
@@ -31,6 +33,7 @@ class _AddPitchState extends State<AddPitch>{
 
   double currentSliderValue = 0;
   ClimbingRoute? dropdownValue;
+  GradingSystem? gradingSystem;
 
   @override
   void initState(){
@@ -84,6 +87,20 @@ class _AddPitchState extends State<AddPitch>{
                 decoration: const InputDecoration(
                     hintText: "grade", labelText: "grade"),
               ),
+              DropdownButton<GradingSystem>(
+                value: gradingSystem,
+                items: GradingSystem.values.map<DropdownMenuItem<GradingSystem>>((GradingSystem value) {
+                  return DropdownMenuItem<GradingSystem>(
+                    value: value,
+                    child: Text(value.toShortString())
+                  );
+                }).toList(),
+                onChanged: (GradingSystem? value) {
+                  setState(() {
+                    gradingSystem = value!;
+                  });
+                },
+              ),
               TextFormField(
                 controller: controllerLength,
                 decoration: const InputDecoration(
@@ -129,7 +146,7 @@ class _AddPitchState extends State<AddPitch>{
               if (_formKey.currentState!.validate()) {
                 CreatePitch pitch = CreatePitch(
                   comment: controllerComment.text,
-                  grade: controllerGrade.text,
+                  grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
                   length: int.parse(controllerLength.text),
                   name: controllerName.text,
                   num: int.parse(controllerNum.text),
