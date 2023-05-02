@@ -3,10 +3,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
+import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/route/route.dart';
 import '../../services/media_service.dart';
+import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
+import '../diary_page/pitch_timeline.dart';
 import '../edit/edit_route.dart';
+import '../info/multi_pitch_info.dart';
+import '../info/single_pitch_info.dart';
 
 class RouteDetails extends StatefulWidget {
   const RouteDetails({super.key, required this.route, required this.onDelete, required this.onUpdate });
@@ -22,6 +27,7 @@ class RouteDetails extends StatefulWidget {
 class _RouteDetailsState extends State<RouteDetails>{
   final MediaService mediaService = MediaService();
   final RouteService routeService = RouteService();
+  final PitchService pitchService = PitchService();
 
   Future<List<String>> fetchURLs() {
     List<Future<String>> futures = [];
@@ -109,18 +115,19 @@ class _RouteDetailsState extends State<RouteDetails>{
   @override
   Widget build(BuildContext context) {
     List<Widget> elements = [];
+    ClimbingRoute route = widget.route;
 
     // general info
     elements.addAll([
       Text(
-        widget.route.name,
+        route.name,
         style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600
         ),
       ),
       Text(
-        widget.route.location,
+        route.location,
         style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400
@@ -130,7 +137,7 @@ class _RouteDetailsState extends State<RouteDetails>{
     List<Widget> ratingRowElements = [];
 
     for (var i = 0; i < 5; i++){
-      if (widget.route.rating > i) {
+      if (route.rating > i) {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
       } else {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
@@ -138,14 +145,14 @@ class _RouteDetailsState extends State<RouteDetails>{
     }
 
     elements.add(Center(child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.only(top: 10),
         child:Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: ratingRowElements,
         )
     )));
 
-    if (widget.route.comment.isNotEmpty) {
+    if (route.comment.isNotEmpty) {
       elements.add(Container(
           margin: const EdgeInsets.all(15.0),
           padding: const EdgeInsets.all(5.0),
@@ -154,12 +161,12 @@ class _RouteDetailsState extends State<RouteDetails>{
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            widget.route.comment,
+            route.comment,
           )
       ));
     }
     // images
-    if (widget.route.mediaIds.isNotEmpty) {
+    if (route.mediaIds.isNotEmpty) {
       List<Widget> imageWidgets = [];
       Future<List<String>> futureMediaUrls = fetchURLs();
 
@@ -208,7 +215,7 @@ class _RouteDetailsState extends State<RouteDetails>{
               );
             }
             List<Widget> skeletons = [];
-            for (var i = 0; i < widget.route.mediaIds.length; i++){
+            for (var i = 0; i < route.mediaIds.length; i++){
               skeletons.add(skeleton);
             }
             return Container(
@@ -246,6 +253,36 @@ class _RouteDetailsState extends State<RouteDetails>{
         ),
       );
     }
+    // pitches
+    if (route.pitchIds.isNotEmpty){
+      if (route.pitchIds.length > 1) {
+        // multi pitch
+        elements.add(
+            Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: MultiPitchInfo(pitchIds: route.pitchIds)
+            )
+        );
+        elements.add(
+            PitchTimeline(routeId: route.id, pitchIds: route.pitchIds)
+        );
+      } else {
+        // single pitch
+        elements.add(
+            FutureBuilder<Pitch>(
+                future: pitchService.getPitch(route.pitchIds[0]),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    Pitch pitch = snapshot.data!;
+                    return SinglePitchInfo(pitch: pitch);
+                  } else {
+                    return const Text("fml");
+                  }
+                }
+            )
+        );
+      }
+    }
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -254,8 +291,8 @@ class _RouteDetailsState extends State<RouteDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                routeService.deleteRoute(widget.route);
-                widget.onDelete.call(widget.route);
+                routeService.deleteRoute(route);
+                widget.onDelete.call(route);
               },
               icon: const Icon(Icons.delete),
             ),
