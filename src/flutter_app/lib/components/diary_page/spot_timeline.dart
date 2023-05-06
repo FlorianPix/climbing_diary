@@ -96,7 +96,7 @@ class SpotTimelineState extends State<SpotTimeline> {
                             // routes
                             if (spots[index].routeIds.isNotEmpty){
                               elements.add(
-                                  RouteTimeline(routeIds: spots[index].routeIds)
+                                  RouteTimeline(routeIds: spots[index].routeIds, spotId: spots[index].id)
                               );
                             }
                             return InkWell(

@@ -20,9 +20,10 @@ import '../info/single_pitch_info.dart';
 import '../info/trip_info.dart';
 
 class RouteTimeline extends StatefulWidget {
-  RouteTimeline({super.key, required this.routeIds});
+  RouteTimeline({super.key, required this.routeIds, required this.spotId});
 
   List<String> routeIds;
+  String spotId;
 
   @override
   State<StatefulWidget> createState() => RouteTimelineState();
@@ -139,7 +140,8 @@ class RouteTimelineState extends State<RouteTimeline> {
                                             ),
                                             child: RouteDetails(route: routes[index],
                                                 onDelete: deleteRouteCallback,
-                                                onUpdate: updateRouteCallback)
+                                                onUpdate: updateRouteCallback,
+                                                spotId: widget.spotId)
                                         ),
                                   ),
                               child: Ink(

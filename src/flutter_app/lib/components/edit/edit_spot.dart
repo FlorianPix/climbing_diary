@@ -20,7 +20,6 @@ class _EditSpotState extends State<EditSpot>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final SpotService spotService = SpotService();
   final TextEditingController controllerTitle = TextEditingController();
-  final TextEditingController controllerDate = TextEditingController();
   final TextEditingController controllerAddress = TextEditingController();
   final TextEditingController controllerLat = TextEditingController();
   final TextEditingController controllerLong = TextEditingController();
@@ -33,7 +32,6 @@ class _EditSpotState extends State<EditSpot>{
   @override
   void initState(){
     controllerTitle.text = widget.spot.name;
-    controllerDate.text = widget.spot.date;
     controllerAddress.text = widget.spot.location;
     controllerLat.text = widget.spot.coordinates[0].toString();
     controllerLong.text = widget.spot.coordinates[1].toString();
@@ -66,27 +64,6 @@ class _EditSpotState extends State<EditSpot>{
                 controller: controllerTitle,
                 decoration: const InputDecoration(
                     hintText: "Name of the spot", labelText: "Title"),
-              ),
-              TextFormField(
-                controller: controllerDate,
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.calendar_today),
-                  labelText: "Enter Date"
-                ),
-                readOnly: true,
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                      context: context, initialDate: DateTime.now(),
-                      firstDate: DateTime(1923),
-                      lastDate: DateTime(2123)
-                  );
-                  if(pickedDate != null ){
-                    String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-                    setState(() {
-                      controllerDate.text = formattedDate; //set output date to TextField value.
-                    });
-                  }
-                },
               ),
               TextFormField(
                 controller: controllerAddress,

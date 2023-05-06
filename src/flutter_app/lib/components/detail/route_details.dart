@@ -14,11 +14,12 @@ import '../info/multi_pitch_info.dart';
 import '../info/single_pitch_info.dart';
 
 class RouteDetails extends StatefulWidget {
-  const RouteDetails({super.key, required this.route, required this.onDelete, required this.onUpdate });
+  const RouteDetails({super.key, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
 
   final ClimbingRoute route;
   final ValueSetter<ClimbingRoute> onDelete;
   final ValueSetter<ClimbingRoute> onUpdate;
+  final String spotId;
 
   @override
   State<StatefulWidget> createState() => _RouteDetailsState();
@@ -291,7 +292,7 @@ class _RouteDetailsState extends State<RouteDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                routeService.deleteRoute(route);
+                routeService.deleteRoute(route, widget.spotId);
                 widget.onDelete.call(route);
               },
               icon: const Icon(Icons.delete),
