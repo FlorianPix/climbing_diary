@@ -8,6 +8,7 @@ import '../../interfaces/route/route.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
+import '../MyButtonStyles.dart';
 import '../diary_page/pitch_timeline.dart';
 import '../edit/edit_route.dart';
 import '../info/multi_pitch_info.dart';
@@ -230,11 +231,12 @@ class _RouteDetailsState extends State<RouteDetails>{
         )
       );
       imageWidgets.add(
-        IconButton(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => addImageDialog()
-        )
+        ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+            label: const Text('Add image'),
+            onPressed: () => addImageDialog(),
+            style: MyButtonStyles.rounded
+        ),
       );
       elements.add(
         SizedBox(
@@ -247,13 +249,38 @@ class _RouteDetailsState extends State<RouteDetails>{
       );
     } else {
       elements.add(
-        IconButton(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => addImageDialog()
+        ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+            label: const Text('Add image'),
+            onPressed: () => addImageDialog(),
+            style: MyButtonStyles.rounded
         ),
       );
     }
+    elements.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // delete route button
+            IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+                routeService.deleteRoute(route, widget.spotId);
+                widget.onDelete.call(route);
+              },
+              icon: const Icon(Icons.delete),
+            ),
+            IconButton(
+              onPressed: () => editRouteDialog(),
+              icon: const Icon(Icons.edit),
+            ),
+            IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.close),
+            ),
+          ],
+        )
+    );
     // pitches
     if (route.pitchIds.isNotEmpty){
       if (route.pitchIds.length > 1) {
@@ -284,37 +311,12 @@ class _RouteDetailsState extends State<RouteDetails>{
         );
       }
     }
-    elements.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // delete route button
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-                routeService.deleteRoute(route, widget.spotId);
-                widget.onDelete.call(route);
-              },
-              icon: const Icon(Icons.delete),
-            ),
-            IconButton(
-              onPressed: () => editRouteDialog(),
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        )
-    );
 
     return Stack(
         children: <Widget>[
-          Container(
+          Padding(
               padding: const EdgeInsets.all(20),
-              child: Column(
-                  mainAxisSize: MainAxisSize.min,
+              child: ListView(
                   children: elements
               )
           )
