@@ -118,7 +118,7 @@ class PitchService {
       }
 
       final Response pitchResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/route/$routeId/pitch/${pitch.id}');
+      await netWorkLocator.dio.delete('$climbingApiHost/pitch/${pitch.id}/route/$routeId');
       if (pitchResponse.statusCode != 204) {
         throw Exception('Failed to delete pitch');
       }
@@ -141,7 +141,7 @@ class PitchService {
   Future<Pitch?> uploadPitch(String routeId, Map data) async {
     try {
       final Response response = await netWorkLocator.dio
-          .post('$climbingApiHost/route/$routeId', data: data);
+          .post('$climbingApiHost/pitch/route/$routeId', data: data);
       if (response.statusCode == 201) {
         return Pitch.fromJson(response.data);
       } else {

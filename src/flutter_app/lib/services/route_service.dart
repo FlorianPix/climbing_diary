@@ -106,7 +106,7 @@ class RouteService {
     return null;
   }
 
-  Future<void> deleteRoute(ClimbingRoute route) async {
+  Future<void> deleteRoute(ClimbingRoute route, String spotId) async {
     try {
       for (var id in route.mediaIds) {
         final Response mediaResponse =
@@ -117,7 +117,7 @@ class RouteService {
       }
 
       final Response routeResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/route/${route.id}');
+      await netWorkLocator.dio.delete('$climbingApiHost/route/${route.id}/spot/$spotId');
       if (routeResponse.statusCode != 204) {
         throw Exception('Failed to delete route');
       }
@@ -140,7 +140,7 @@ class RouteService {
   Future<ClimbingRoute?> uploadRoute(String spotId, Map data) async {
     try {
       final Response response = await netWorkLocator.dio
-          .post('$climbingApiHost/spot/$spotId', data: data);
+          .post('$climbingApiHost/route/spot/$spotId', data: data);
       if (response.statusCode == 201) {
         return ClimbingRoute.fromJson(response.data);
       } else {

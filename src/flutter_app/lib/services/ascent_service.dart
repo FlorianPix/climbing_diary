@@ -104,7 +104,7 @@ class AscentService {
     return null;
   }
 
-  Future<void> deleteAscent(Ascent ascent) async {
+  Future<void> deleteAscent(Ascent ascent, String pitchId) async {
     try {
       for (var id in ascent.mediaIds) {
         final Response mediaResponse =
@@ -115,7 +115,7 @@ class AscentService {
       }
 
       final Response ascentResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/pitch/${ascent.id}');
+      await netWorkLocator.dio.delete('$climbingApiHost/ascent/${ascent.id}/pitch/$pitchId');
       if (ascentResponse.statusCode != 204) {
         throw Exception('Failed to delete ascent');
       }
@@ -138,7 +138,7 @@ class AscentService {
   Future<Ascent?> uploadAscent(String pitchId, Map data) async {
     try {
       final Response response = await netWorkLocator.dio
-          .post('$climbingApiHost/pitch/$pitchId', data: data);
+          .post('$climbingApiHost/ascent/pitch/$pitchId', data: data);
       if (response.statusCode == 201) {
         return Ascent.fromJson(response.data);
       } else {
