@@ -1,12 +1,16 @@
 import 'package:climbing_diary/components/MyButtonStyles.dart';
+import 'package:climbing_diary/components/detail/spot_details.dart';
 import 'package:climbing_diary/components/info/trip_info.dart';
+import 'package:climbing_diary/components/select/select_spot.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
+import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
 import '../../pages/navigation_screen_page.dart';
+import '../../services/cache.dart';
 import '../../services/media_service.dart';
 import '../../services/trip_service.dart';
 import '../add/add_spot.dart';
@@ -180,11 +184,10 @@ class _TripDetailsState extends State<TripDetails>{
     // images
     if (trip.mediaIds.isNotEmpty) {
       List<Widget> imageWidgets = [];
-      Future<List<String>> futureMediaUrls = fetchURLs();
 
       imageWidgets.add(
         FutureBuilder<List<String>>(
-          future: futureMediaUrls,
+          future: fetchURLs(),
           builder: (context, snapshot) {
             Widget skeleton = const Padding(
                 padding: EdgeInsets.all(5),
@@ -271,12 +274,27 @@ class _TripDetailsState extends State<TripDetails>{
     elements.add(
       ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add spot'),
+          label: const Text('Add new spot'),
           onPressed: () {
             Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => NavigationScreenPage(onAdd: (spot) {},),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add existing spot'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SelectSpot(trip: widget.trip),
                 )
             );
           },
