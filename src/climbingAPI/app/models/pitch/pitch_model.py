@@ -1,19 +1,25 @@
+from bson import ObjectId
 from datetime import date
 from pydantic import BaseModel, Field
-from bson import ObjectId
+from typing import List
 
 from app.models.py_object_id import PyObjectId
 
+from ..grade import Grade
+
 
 class PitchModel(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    date: date
+    ascent_ids: List[PyObjectId] = []
+    media_ids: List[str] = []
+    pitch_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    user_id: str = Field(...)
+
+    comment: str = Field(...)
+    grade: Grade = Field(...)
+    length: int = Field(...)
     name: str = Field(...)
-    total_pitch_number: int = Field(...)
-    pitch_number: int = Field(...)
-    grade: str = Field(...)
-    length: int = Field(...)  # m
-    description: str = Field(...)
+    num: int = Field(..., ge=1)
+    rating: int = Field(..., ge=0, le=5)
 
     class Config:
         allow_population_by_field_name = True
@@ -21,12 +27,15 @@ class PitchModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "date": "2022-10-08",
-                "name": "Pitch 1",
-                "total_pitch_number": 3,
-                "pitch_number": 1,
-                "grade": "3",
-                "length": 10,
-                "description": "very easy and can be combined with pitch two at the cost of rope drag",
+                "_id": "",
+                "ascent_ids": [],
+                "media_ids": [],
+                "user_id": "",
+                "comment": "Top Pitch",
+                "grade": {"6a", 3},
+                "length": 35,
+                "name": "Pitch 1 vom Falkensteiner Riss",
+                "num": 1,
+                "rating": 5,
             }
         }

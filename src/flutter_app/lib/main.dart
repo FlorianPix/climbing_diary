@@ -23,10 +23,26 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final applicationDocumentDir = await getApplicationDocumentsDirectory();
   await Hive.initFlutter(applicationDocumentDir.path);
+  await Hive.openBox('trips');
+  await Hive.openBox('delete_later_trips');
+  await Hive.openBox('edit_later_trips');
+  await Hive.openBox('upload_later_trips');
   await Hive.openBox('spots');
   await Hive.openBox('delete_later_spots');
   await Hive.openBox('edit_later_spots');
   await Hive.openBox('upload_later_spots');
+  await Hive.openBox('routes');
+  await Hive.openBox('delete_later_routes');
+  await Hive.openBox('edit_later_routes');
+  await Hive.openBox('upload_later_routes');
+  await Hive.openBox('pitches');
+  await Hive.openBox('delete_later_pitches');
+  await Hive.openBox('edit_later_pitches');
+  await Hive.openBox('upload_later_pitches');
+  await Hive.openBox('ascents');
+  await Hive.openBox('delete_later_ascents');
+  await Hive.openBox('edit_later_ascents');
+  await Hive.openBox('upload_later_ascents');
   await setup();
   runApp(const OverlaySupport.global(child: MyApp()));
 }

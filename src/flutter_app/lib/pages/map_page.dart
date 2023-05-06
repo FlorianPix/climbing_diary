@@ -1,15 +1,27 @@
+import 'package:climbing_diary/interfaces/route/route.dart';
 import 'package:climbing_diary/pages/save_location_no_connection.dart';
 import 'package:flutter/material.dart';
 
-import '../components/spot_details.dart';
+import '../components/add/add_ascent.dart';
+import '../components/add/add_pitch.dart';
+import '../components/add/add_route.dart';
+import '../components/add/add_trip.dart';
+import '../components/detail/spot_details.dart';
+import '../interfaces/pitch/pitch.dart';
+import '../services/ascent_service.dart';
 import '../services/cache.dart';
+import '../services/pitch_service.dart';
+import '../services/route_service.dart';
+import '../services/trip_service.dart';
 import 'navigation_screen_page.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../interfaces/spot.dart';
+import '../interfaces/spot/spot.dart';
 import '../services/spot_service.dart';
+
+enum AddItem { addTrip, addSpot, addRoute, addPitch, addAscent }
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -19,9 +31,13 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  final AscentService ascentService = AscentService();
+  final PitchService pitchService = PitchService();
+  final RouteService routeService = RouteService();
   final SpotService spotService = SpotService();
+  final TripService tripService = TripService();
+  AddItem? selectedMenu;
 
-  late Future<List<Spot>> futureSpots;
   bool online = false;
 
   Future<bool> checkConnection() async {
@@ -44,12 +60,17 @@ class _MapPageState extends State<MapPage> {
             deleteQueuedSpots();
             editQueuedSpots();
             uploadQueuedSpots();
-            futureSpots = spotService.getSpots();
-            return FutureBuilder<List<Spot>>(
-              future: futureSpots,
+            return FutureBuilder(
+              future: Future.wait([
+                spotService.getSpots(),
+                routeService.getRoutes(),
+                pitchService.getPitches()
+              ]),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  var spots = snapshot.data!;
+                  List<Spot> spots = snapshot.data![0] as List<Spot>;
+                  List<ClimbingRoute> routes = snapshot.data![1] as List<ClimbingRoute>;
+                  List<Pitch> pitches = snapshot.data![2] as List<Pitch>;
 
                   addSpotCallback(Spot spot) {
                     spots.add(spot);
@@ -96,25 +117,61 @@ class _MapPageState extends State<MapPage> {
                           ],
                         )
                       ),
-                      floatingActionButton: FloatingActionButton(
-                        onPressed: () async {
-                          if (online) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => NavigationScreenPage(onAdd: addSpotCallback)),
-                            );
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (
-                                  context) => SaveLocationNoConnectionPage(onAdd: addSpotCallback)),
-                            );
-                          }
+                      floatingActionButton: PopupMenuButton<AddItem>(
+                        initialValue: selectedMenu,
+                        onSelected: (AddItem item) {
+                          setState(() {
+                            selectedMenu = item;
+                          });
                         },
-                          child: const Icon(Icons.add)
-                      ), // This trailing comma makes auto-formatting nicer for build methods.
+                        itemBuilder: (BuildContext context) => <PopupMenuEntry<AddItem>>[
+                          PopupMenuItem<AddItem>(
+                            value: AddItem.addAscent,
+                            child: IconButton(
+                              icon: const Icon(Icons.adjust, size: 30.0),
+                              onPressed: () {
+                                print("asd");
+                              },
+                            )
+                          ),
+                          PopupMenuItem<AddItem>(
+                              value: AddItem.addPitch,
+                              child: IconButton(
+                                icon: const Icon(Icons.start, size: 30.0),
+                                onPressed: () {
+                                  print("asd");
+                                },
+                              )
+                          ),
+                          PopupMenuItem<AddItem>(
+                              value: AddItem.addRoute,
+                              child: IconButton(
+                                icon: const Icon(Icons.route, size: 30.0),
+                                onPressed: () {
+                                  print("asd");
+                                },
+                              )
+                          ),
+                          PopupMenuItem<AddItem>(
+                              value: AddItem.addSpot,
+                              child: IconButton(
+                                icon: const Icon(Icons.location_city, size: 30.0),
+                                onPressed: () {
+                                  print("asd");
+                                },
+                              )
+                          ),
+                          PopupMenuItem<AddItem>(
+                              value: AddItem.addTrip,
+                              child: IconButton(
+                                icon: const Icon(Icons.explore, size: 30.0),
+                                onPressed: () {
+                                  print("asd");
+                                },
+                              )
+                          )
+                        ],
+                      ) // This trailing comma makes auto-formatting nicer for build methods.
                     );
                   }
                   return Scaffold(
@@ -142,25 +199,100 @@ class _MapPageState extends State<MapPage> {
                         ],
                       )
                     ),
-                    floatingActionButton: FloatingActionButton(
-                      onPressed: () async {
-                        if (online) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (
-                                context) => NavigationScreenPage(onAdd: addSpotCallback)),
-                          );
-                        } else {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (
-                                context) => SaveLocationNoConnectionPage(onAdd: addSpotCallback)),
-                          );
-                        }
+                    floatingActionButton: PopupMenuButton<AddItem>(
+                      icon: const Icon(Icons.add, size: 50.0),
+                      initialValue: selectedMenu,
+                      onSelected: (AddItem item) {
+                        setState(() {
+                          selectedMenu = item;
+                        });
                       },
-                      child: const Icon(Icons.add)
+                      itemBuilder: (BuildContext context) => <PopupMenuEntry<AddItem>>[
+                        PopupMenuItem<AddItem>(
+                            value: AddItem.addAscent,
+                            child: IconButton(
+                              icon: const Icon(Icons.adjust, size: 30.0),
+                              tooltip: 'Ascent',
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddAscent(pitches: pitches),
+                                    )
+                                );
+                              },
+                            ),
+                        ),
+                        PopupMenuItem<AddItem>(
+                            value: AddItem.addPitch,
+                            child: IconButton(
+                              icon: const Icon(Icons.linear_scale, size: 30.0),
+                              tooltip: 'Pitch',
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddPitch(routes: routes),
+                                    )
+                                );
+                              },
+                            ),
+                        ),
+                        PopupMenuItem<AddItem>(
+                            value: AddItem.addRoute,
+                            child: IconButton(
+                              icon: const Icon(Icons.route, size: 30.0),
+                              tooltip: 'Route',
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddRoute(spots: spots),
+                                    )
+                                );
+                              },
+                            ),
+                        ),
+                        PopupMenuItem<AddItem>(
+                            value: AddItem.addSpot,
+                            child: IconButton(
+                              icon: const Icon(Icons.location_on, size: 30.0),
+                              tooltip: 'Spot',
+                              onPressed: () {
+                                if (online) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (
+                                            context) => NavigationScreenPage(onAdd: addSpotCallback)),
+                                  );
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (
+                                            context) => SaveLocationNoConnectionPage(onAdd: addSpotCallback)),
+                                  );
+                                }
+                              },
+                            ),
+                        ),
+                        PopupMenuItem<AddItem>(
+                            value: AddItem.addTrip,
+                            child: IconButton(
+                              icon: const Icon(Icons.explore, size: 30.0),
+                              tooltip: 'Trip',
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const AddTrip(),
+                                  )
+                                );
+                              },
+                            ),
+                        )
+                      ],
                     ),
                   );
                 } else if (snapshot.hasError) {
