@@ -92,7 +92,7 @@ class TripTimelineState extends State<TripTimeline> {
                             // spots
                             if (trips[index].spotIds.isNotEmpty){
                               elements.add(
-                                SpotTimeline(spotIds: trips[index].spotIds)
+                                SpotTimeline(trip: trips[index], spotIds: trips[index].spotIds)
                               );
                             }
                             return InkWell(

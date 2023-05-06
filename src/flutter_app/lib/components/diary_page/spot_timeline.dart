@@ -7,6 +7,7 @@ import 'package:timelines/timelines.dart';
 
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
+import '../../interfaces/trip/update_trip.dart';
 import '../../services/spot_service.dart';
 import '../../services/trip_service.dart';
 import '../detail/spot_details.dart';
@@ -15,8 +16,9 @@ import '../info/spot_info.dart';
 import '../info/trip_info.dart';
 
 class SpotTimeline extends StatefulWidget {
-  SpotTimeline({super.key, required this.spotIds});
+  SpotTimeline({super.key, required this.spotIds, required this.trip});
 
+  Trip trip;
   List<String> spotIds;
 
   @override
@@ -25,6 +27,7 @@ class SpotTimeline extends StatefulWidget {
 
 class SpotTimelineState extends State<SpotTimeline> {
   final SpotService spotService = SpotService();
+  final TripService tripService = TripService();
 
   @override
   void initState(){
@@ -61,6 +64,9 @@ class SpotTimelineState extends State<SpotTimeline> {
 
                   deleteSpotCallback(Spot spot) {
                     spots.remove(spot);
+                    widget.trip.spotIds.remove(spot.id);
+                    UpdateTrip editTrip = widget.trip.toUpdateTrip();
+                    tripService.editTrip(editTrip);
                     setState(() {});
                   }
 
