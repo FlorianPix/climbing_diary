@@ -33,7 +33,7 @@ class _EditSpotState extends State<EditSpot>{
   @override
   void initState(){
     controllerTitle.text = widget.spot.name;
-    controllerDate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    controllerDate.text = widget.spot.date;
     controllerAddress.text = widget.spot.location;
     controllerLat.text = widget.spot.coordinates[0].toString();
     controllerLong.text = widget.spot.coordinates[1].toString();
