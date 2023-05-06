@@ -7,6 +7,7 @@ import 'package:skeletons/skeletons.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
+import '../MyButtonStyles.dart';
 import '../edit/edit_pitch.dart';
 import '../info/single_pitch_info.dart';
 
@@ -221,11 +222,12 @@ class _PitchDetailsState extends State<PitchDetails>{
         )
       );
       imageWidgets.add(
-        IconButton(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => addImageDialog()
-        )
+        ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+            label: const Text('Add image'),
+            onPressed: () => addImageDialog(),
+            style: MyButtonStyles.rounded
+        ),
       );
       elements.add(
         SizedBox(
@@ -238,10 +240,11 @@ class _PitchDetailsState extends State<PitchDetails>{
       );
     } else {
       elements.add(
-        IconButton(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => addImageDialog()
+        ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+            label: const Text('Add image'),
+            onPressed: () => addImageDialog(),
+            style: MyButtonStyles.rounded
         ),
       );
     }
