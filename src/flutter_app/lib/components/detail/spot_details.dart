@@ -6,6 +6,7 @@ import 'package:skeletons/skeletons.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
+import '../MyButtonStyles.dart';
 import '../diary_page/route_timeline.dart';
 import '../edit/edit_spot.dart';
 
@@ -256,11 +257,12 @@ class _SpotDetailsState extends State<SpotDetails>{
         )
       );
       imageWidgets.add(
-        IconButton(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => addImageDialog()
-        )
+        ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+            label: const Text('Add image'),
+            onPressed: () => addImageDialog(),
+            style: MyButtonStyles.rounded
+        ),
       );
       elements.add(
         SizedBox(
@@ -273,10 +275,11 @@ class _SpotDetailsState extends State<SpotDetails>{
       );
     } else {
       elements.add(
-        IconButton(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => addImageDialog()
+        ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+            label: const Text('Add image'),
+            onPressed: () => addImageDialog(),
+            style: MyButtonStyles.rounded
         ),
       );
     }
