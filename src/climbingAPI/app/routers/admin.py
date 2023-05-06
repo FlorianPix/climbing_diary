@@ -14,13 +14,13 @@ from app.core.auth import auth
 
 router = APIRouter()
 
-@router.get('', description="Get all spots", response_model=List[SpotModel], dependencies=[Depends(auth.implicit_scheme)])
+@router.get('', description="Retrieve all spots from all users", response_model=List[SpotModel], dependencies=[Depends(auth.implicit_scheme)])
 async def get_all_spots(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
-    spots = await db["spots"].find({}).to_list(None)
+    spots = await db["spot"].find({}).to_list(None)
     return spots
 
-@router.delete('', description="Delete all spots", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('', description="Delete all spots from all users", dependencies=[Depends(auth.implicit_scheme)])
 async def delete_spots(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
-    delete_result = await db["spots"].delete_many({})
+    delete_result = await db["spot"].delete_many({})
