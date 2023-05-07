@@ -33,6 +33,7 @@ class _AddRouteState extends State<AddRoute>{
 
   @override
   void initState(){
+    dropdownValue = widget.spots[0];
     super.initState();
   }
 

@@ -7,8 +7,10 @@ import '../../interfaces/spot/spot.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
 import '../MyButtonStyles.dart';
+import '../add/add_route.dart';
 import '../diary_page/route_timeline.dart';
 import '../edit/edit_spot.dart';
+import '../select/select_route.dart';
 
 class SpotDetails extends StatefulWidget {
   const SpotDetails({super.key, required this.spot, required this.onDelete, required this.onUpdate });
@@ -283,6 +285,38 @@ class _SpotDetailsState extends State<SpotDetails>{
         ),
       );
     }
+    // add spot
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add new route'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddRoute(spots: [widget.spot],),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add existing route'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SelectRoute(spot: widget.spot),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    // delete, edit, close
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -307,7 +341,12 @@ class _SpotDetailsState extends State<SpotDetails>{
           ],
         )
     );
-
+    // proutes
+    if (widget.spot.routeIds.isNotEmpty){
+      elements.add(
+          RouteTimeline(spotId: widget.spot.id, routeIds: widget.spot.routeIds)
+      );
+    }
     return Stack(
         children: <Widget>[
           Container(
