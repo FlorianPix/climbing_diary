@@ -9,10 +9,12 @@ import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../MyButtonStyles.dart';
+import '../add/add_pitch.dart';
 import '../diary_page/pitch_timeline.dart';
 import '../edit/edit_route.dart';
 import '../info/multi_pitch_info.dart';
 import '../info/single_pitch_info.dart';
+import '../select/select_pitch.dart';
 
 class RouteDetails extends StatefulWidget {
   const RouteDetails({super.key, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
@@ -257,6 +259,37 @@ class _RouteDetailsState extends State<RouteDetails>{
         ),
       );
     }
+    // add pitch
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add new pitch'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddPitch(routes: [widget.route],),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add existing route'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SelectPitch(route: widget.route),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

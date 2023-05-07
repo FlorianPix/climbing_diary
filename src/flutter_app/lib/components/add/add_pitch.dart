@@ -37,6 +37,7 @@ class _AddPitchState extends State<AddPitch>{
 
   @override
   void initState(){
+    dropdownValue = widget.routes[0];
     super.initState();
   }
 
@@ -104,7 +105,7 @@ class _AddPitchState extends State<AddPitch>{
               TextFormField(
                 controller: controllerLength,
                 decoration: const InputDecoration(
-                    hintText: "length", labelText: "length"),
+                    hintText: "length in m", labelText: "length"),
               ),
               TextFormField(
                 controller: controllerComment,

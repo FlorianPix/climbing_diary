@@ -285,7 +285,7 @@ class _SpotDetailsState extends State<SpotDetails>{
         ),
       );
     }
-    // add spot
+    // add route
     elements.add(
       ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
