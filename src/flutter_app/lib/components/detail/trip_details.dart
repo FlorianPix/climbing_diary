@@ -273,7 +273,11 @@ class _TripDetailsState extends State<TripDetails>{
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => NavigationScreenPage(onAdd: (spot) {},),
+                  builder: (context) => NavigationScreenPage(
+                    onAdd: (spot) {
+                      trip.spotIds.add(spot.id);
+                    },
+                  ),
                 )
             );
           },

@@ -4,6 +4,8 @@ import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/route/route.dart';
+import '../../interfaces/spot/spot.dart';
+import '../../interfaces/trip/trip.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
@@ -16,8 +18,10 @@ import '../info/single_pitch_info.dart';
 import '../select/select_pitch.dart';
 
 class RouteDetails extends StatefulWidget {
-  const RouteDetails({super.key, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
+  const RouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
 
+  final Trip? trip;
+  final Spot spot;
   final ClimbingRoute route;
   final ValueSetter<ClimbingRoute> onDelete;
   final ValueSetter<ClimbingRoute> onUpdate;
@@ -324,7 +328,7 @@ class _RouteDetailsState extends State<RouteDetails>{
             )
         );
         elements.add(
-            PitchTimeline(routeId: route.id, pitchIds: route.pitchIds)
+            PitchTimeline(trip: widget.trip, spot: widget.spot, route: route, pitchIds: route.pitchIds)
         );
       } else {
         // single pitch

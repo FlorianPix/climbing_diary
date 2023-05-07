@@ -4,15 +4,16 @@ import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/ascent/ascent.dart';
+import '../../interfaces/pitch/pitch.dart';
 import '../../services/media_service.dart';
 import '../../services/ascent_service.dart';
 import '../MyButtonStyles.dart';
 import '../edit/edit_ascent.dart';
 
 class AscentDetails extends StatefulWidget {
-  const AscentDetails({super.key, required this.pitchId, required this.ascent, required this.onDelete, required this.onUpdate });
+  const AscentDetails({super.key, required this.pitch, required this.ascent, required this.onDelete, required this.onUpdate });
 
-  final String pitchId;
+  final Pitch pitch;
   final Ascent ascent;
   final ValueSetter<Ascent> onDelete;
   final ValueSetter<Ascent> onUpdate;
@@ -236,7 +237,7 @@ class _AscentDetailsState extends State<AscentDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                ascentService.deleteAscent(ascent, widget.pitchId);
+                ascentService.deleteAscent(ascent, widget.pitch.id);
                 widget.onDelete.call(ascent);
               },
               icon: const Icon(Icons.delete),

@@ -8,8 +8,9 @@ import '../../services/ascent_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class AddAscent extends StatefulWidget {
-  const AddAscent({super.key, required this.pitches});
+  const AddAscent({super.key, required this.pitches, this.onAdd});
 
+  final ValueSetter<Ascent>? onAdd;
   final List<Pitch> pitches;
 
   @override
@@ -116,6 +117,7 @@ class _AddAscentState extends State<AddAscent>{
                 final dropdownValue = this.dropdownValue;
                 if (dropdownValue != null) {
                   Ascent? createdAscent = await ascentService.createAscent(dropdownValue.id, ascent, result);
+                  widget.onAdd?.call(createdAscent!);
                 }
               }
             },

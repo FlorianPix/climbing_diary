@@ -27,8 +27,8 @@ class _EditAscentState extends State<EditAscent>{
   void initState(){
     controllerComment.text = widget.ascent.comment;
     controllerDate.text = widget.ascent.date;
-    controllerStyle.text = widget.ascent.style as String;
-    controllerType.text = widget.ascent.type as String;
+    controllerStyle.text = "${widget.ascent.style}";
+    controllerType.text = "${widget.ascent.type}";
     super.initState();
   }
 

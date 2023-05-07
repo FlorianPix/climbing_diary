@@ -5,15 +5,20 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
 import '../../interfaces/pitch/pitch.dart';
+import '../../interfaces/route/route.dart';
+import '../../interfaces/spot/spot.dart';
+import '../../interfaces/trip/trip.dart';
 import '../../services/pitch_service.dart';
 import '../detail/pitch_details.dart';
 import '../info/pitch_info.dart';
 
 class PitchTimeline extends StatefulWidget {
-  PitchTimeline({super.key, required this.routeId, required this.pitchIds});
+  const PitchTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchIds});
 
-  String routeId;
-  List<String> pitchIds;
+  final Trip? trip;
+  final Spot spot;
+  final ClimbingRoute route;
+  final List<String> pitchIds;
 
   @override
   State<StatefulWidget> createState() => PitchTimelineState();
@@ -105,7 +110,7 @@ class PitchTimelineState extends State<PitchTimeline> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(20),
                                             ),
-                                            child: PitchDetails(routeId: widget.routeId, pitch: pitches[index],
+                                            child: PitchDetails(trip: widget.trip, spot: widget.spot, route: widget.route, pitch: pitches[index],
                                                 onDelete: deletePitchCallback,
                                                 onUpdate: updatePitchCallback)
                                         ),

@@ -7,6 +7,8 @@ import 'package:timelines/timelines.dart';
 
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/route/route.dart';
+import '../../interfaces/spot/spot.dart';
+import '../../interfaces/trip/trip.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../detail/route_details.dart';
@@ -15,10 +17,11 @@ import '../info/route_info.dart';
 import '../info/single_pitch_info.dart';
 
 class RouteTimeline extends StatefulWidget {
-  RouteTimeline({super.key, required this.routeIds, required this.spotId});
+  const RouteTimeline({super.key, this.trip, required this.spot, required this.routeIds});
 
-  List<String> routeIds;
-  String spotId;
+  final Trip? trip;
+  final Spot spot;
+  final List<String> routeIds;
 
   @override
   State<StatefulWidget> createState() => RouteTimelineState();
@@ -105,7 +108,12 @@ class RouteTimelineState extends State<RouteTimeline> {
                                   MultiPitchInfo(pitchIds: routes[index].pitchIds)
                                 );
                                 elements.add(
-                                  PitchTimeline(routeId: routes[index].id, pitchIds: routes[index].pitchIds)
+                                  PitchTimeline(
+                                      trip: widget.trip,
+                                      spot: widget.spot,
+                                      route: routes[index],
+                                      pitchIds: routes[index].pitchIds
+                                  )
                                 );
                               } else {
                                 // single pitch
@@ -133,10 +141,13 @@ class RouteTimelineState extends State<RouteTimeline> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(20),
                                             ),
-                                            child: RouteDetails(route: routes[index],
+                                            child: RouteDetails(
+                                                trip: widget.trip,
+                                                spot: widget.spot,
+                                                route: routes[index],
                                                 onDelete: deleteRouteCallback,
                                                 onUpdate: updateRouteCallback,
-                                                spotId: widget.spotId)
+                                                spotId: widget.spot.id)
                                         ),
                                   ),
                               child: Ink(

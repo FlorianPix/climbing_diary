@@ -14,10 +14,10 @@ import '../detail/spot_details.dart';
 import '../info/spot_info.dart';
 
 class SpotTimeline extends StatefulWidget {
-  SpotTimeline({super.key, required this.spotIds, required this.trip});
+  const SpotTimeline({super.key, required this.spotIds, required this.trip});
 
-  Trip trip;
-  List<String> spotIds;
+  final Trip trip;
+  final List<String> spotIds;
 
   @override
   State<StatefulWidget> createState() => SpotTimelineState();
@@ -100,7 +100,7 @@ class SpotTimelineState extends State<SpotTimeline> {
                             // routes
                             if (spots[index].routeIds.isNotEmpty){
                               elements.add(
-                                  RouteTimeline(routeIds: spots[index].routeIds, spotId: spots[index].id)
+                                  RouteTimeline(trip: widget.trip, spot: spots[index], routeIds: spots[index].routeIds)
                               );
                             }
                             return InkWell(
@@ -112,7 +112,9 @@ class SpotTimelineState extends State<SpotTimeline> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(20),
                                             ),
-                                            child: SpotDetails(spot: spots[index],
+                                            child: SpotDetails(
+                                                trip: widget.trip,
+                                                spot: spots[index],
                                                 onDelete: deleteSpotCallback,
                                                 onUpdate: updateSpotCallback)
                                         ),

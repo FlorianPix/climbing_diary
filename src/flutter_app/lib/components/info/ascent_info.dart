@@ -16,12 +16,6 @@ class AscentInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> listInfo = [];
 
-    // name
-    listInfo.add(Text(
-      ascent.date,
-      style: MyTextStyles.title,
-    ));
-
     String style = "❓";
     switch (AscentStyle.values[ascent.style]) {
       case AscentStyle.boulder:
@@ -63,10 +57,10 @@ class AscentInfo extends StatelessWidget {
         break;
     }
 
-    // style and type
+    // date, style and type
     listInfo.add(Text(
-      "$style $type",
-      style: MyTextStyles.description,
+      "${ascent.date} $style $type",
+      style: MyTextStyles.title,
     ));
 
     // comment

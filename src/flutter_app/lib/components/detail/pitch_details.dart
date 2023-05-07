@@ -1,8 +1,11 @@
+import 'package:climbing_diary/interfaces/route/route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/pitch/pitch.dart';
+import '../../interfaces/spot/spot.dart';
+import '../../interfaces/trip/trip.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../MyButtonStyles.dart';
@@ -13,9 +16,11 @@ import '../info/single_pitch_info.dart';
 import '../select/select_ascent.dart';
 
 class PitchDetails extends StatefulWidget {
-  const PitchDetails({super.key, required this.routeId, required this.pitch, required this.onDelete, required this.onUpdate });
+  const PitchDetails({super.key, this.trip, required this.spot, required this.route, required this.pitch, required this.onDelete, required this.onUpdate });
 
-  final String routeId;
+  final Trip? trip;
+  final Spot spot;
+  final ClimbingRoute route;
   final Pitch pitch;
   final ValueSetter<Pitch> onDelete;
   final ValueSetter<Pitch> onUpdate;
@@ -258,7 +263,12 @@ class _PitchDetailsState extends State<PitchDetails>{
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddAscent(pitches: [widget.pitch],),
+                  builder: (context) => AddAscent(
+                    pitches: [widget.pitch],
+                    onAdd: (ascent) {
+                      widget.pitch.ascentIds.add(ascent.id);
+                    },
+                  ),
                 )
             );
           },
@@ -289,7 +299,7 @@ class _PitchDetailsState extends State<PitchDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                pitchService.deletePitch(widget.routeId, pitch);
+                pitchService.deletePitch(widget.route.id, pitch);
                 widget.onDelete.call(pitch);
               },
               icon: const Icon(Icons.delete),
@@ -308,7 +318,20 @@ class _PitchDetailsState extends State<PitchDetails>{
     // ascents
     if (pitch.ascentIds.isNotEmpty){
       elements.add(
-          AscentTimeline(pitchId: pitch.id, ascentIds: pitch.ascentIds)
+          AscentTimeline(
+              trip: widget.trip,
+              spot: widget.spot,
+              route: widget.route,
+              pitch: pitch,
+              ascentIds: pitch.ascentIds,
+              onUpdate: (ascent) {
+                // TODO
+              },
+              onDelete: (ascent) {
+                pitch.ascentIds.remove(ascent.id);
+                setState(() {});
+              },
+          )
       );
     }
 
