@@ -1,6 +1,5 @@
 import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/pitch/pitch.dart';
 import '../MyTextStyles.dart';

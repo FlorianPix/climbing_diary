@@ -1,7 +1,5 @@
 import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/grade.dart';
 import '../../interfaces/pitch/create_pitch.dart';
@@ -9,8 +7,6 @@ import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/route/route.dart';
 import '../../services/pitch_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-
-import '../../services/pitch_service.dart';
 
 class AddPitch extends StatefulWidget {
   const AddPitch({super.key, required this.routes});

@@ -1,13 +1,8 @@
-import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 
-import '../../interfaces/spot/create_spot.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
 import '../../services/spot_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../../services/trip_service.dart';
 import '../MyButtonStyles.dart';
@@ -32,9 +27,6 @@ class _SelectSpotState extends State<SelectSpot>{
 
   @override
   Widget build(BuildContext context) {
-
-    List<Widget> elements = [];
-
     return AlertDialog(
       shape:
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

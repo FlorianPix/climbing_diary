@@ -5,13 +5,9 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
 import '../../interfaces/pitch/pitch.dart';
-import '../../interfaces/trip/trip.dart';
 import '../../services/pitch_service.dart';
-import '../../services/trip_service.dart';
 import '../detail/pitch_details.dart';
-import '../detail/trip_details.dart';
 import '../info/pitch_info.dart';
-import '../info/trip_info.dart';
 
 class PitchTimeline extends StatefulWidget {
   PitchTimeline({super.key, required this.routeId, required this.pitchIds});

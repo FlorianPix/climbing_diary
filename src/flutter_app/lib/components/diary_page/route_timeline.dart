@@ -7,17 +7,12 @@ import 'package:timelines/timelines.dart';
 
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/route/route.dart';
-import '../../interfaces/trip/trip.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
-import '../../services/trip_service.dart';
 import '../detail/route_details.dart';
-import '../detail/trip_details.dart';
 import '../info/multi_pitch_info.dart';
-import '../info/pitch_info.dart';
 import '../info/route_info.dart';
 import '../info/single_pitch_info.dart';
-import '../info/trip_info.dart';
 
 class RouteTimeline extends StatefulWidget {
   RouteTimeline({super.key, required this.routeIds, required this.spotId});

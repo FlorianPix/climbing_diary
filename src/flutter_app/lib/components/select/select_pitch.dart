@@ -1,19 +1,10 @@
-import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/route/route.dart';
-import '../../interfaces/spot/create_spot.dart';
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
-import '../../services/spot_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../../services/trip_service.dart';
 import '../MyButtonStyles.dart';
 
 class SelectPitch extends StatefulWidget {
@@ -36,9 +27,6 @@ class _SelectPitchState extends State<SelectPitch>{
 
   @override
   Widget build(BuildContext context) {
-
-    List<Widget> elements = [];
-
     return AlertDialog(
       shape:
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

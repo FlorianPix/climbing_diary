@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/ascent/create_ascent.dart';
 import '../../interfaces/ascent/ascent.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../services/ascent_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-
-import '../../services/ascent_service.dart';
 
 class AddAscent extends StatefulWidget {
   const AddAscent({super.key, required this.pitches});
@@ -32,6 +29,7 @@ class _AddAscentState extends State<AddAscent>{
 
   @override
   void initState(){
+    dropdownValue = widget.pitches[0];
     controllerDate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
     super.initState();
   }

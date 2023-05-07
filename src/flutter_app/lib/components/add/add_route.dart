@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/route/create_route.dart';
 import '../../interfaces/route/route.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../services/route_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-
-import '../../services/route_service.dart';
 
 class AddRoute extends StatefulWidget {
   const AddRoute({super.key, required this.spots});

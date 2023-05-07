@@ -1,33 +1,24 @@
-import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 
+import '../../interfaces/ascent/ascent.dart';
 import '../../interfaces/pitch/pitch.dart';
-import '../../interfaces/route/route.dart';
-import '../../interfaces/spot/create_spot.dart';
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
+import '../../services/ascent_service.dart';
 import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
-import '../../services/spot_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
-
-import '../../services/trip_service.dart';
 import '../MyButtonStyles.dart';
 
-class SelectPitch extends StatefulWidget {
-  const SelectPitch({super.key, required this.route});
+class SelectAscent extends StatefulWidget {
+  const SelectAscent({super.key, required this.pitch});
 
-  final ClimbingRoute route;
+  final Pitch pitch;
+
   @override
-  State<StatefulWidget> createState() => _SelectPitchState();
+  State<StatefulWidget> createState() => _SelectAscentState();
 }
 
-class _SelectPitchState extends State<SelectPitch>{
+class _SelectAscentState extends State<SelectAscent>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final AscentService ascentService = AscentService();
   final PitchService pitchService = PitchService();
-  final RouteService routeService = RouteService();
 
   @override
   void initState(){
@@ -36,28 +27,25 @@ class _SelectPitchState extends State<SelectPitch>{
 
   @override
   Widget build(BuildContext context) {
-
-    List<Widget> elements = [];
-
     return AlertDialog(
       shape:
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      title: const Text('Please choose a pitch'),
-      content: FutureBuilder<List<Pitch>>(
-        future: pitchService.getPitches(),
+      title: const Text('Please choose a ascent'),
+      content: FutureBuilder<List<Ascent>>(
+        future: ascentService.getAscents(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            List<Pitch> pitches = snapshot.data!;
+            List<Ascent> ascents = snapshot.data!;
             List<Widget> elements = <Widget>[];
 
-            for (int i = 0; i < pitches.length; i++){
+            for (int i = 0; i < ascents.length; i++){
               elements.add(ElevatedButton.icon(
                   icon: const Icon(Icons.arrow_forward, size: 30.0, color: Colors.pink),
-                  label: Text(pitches[i].name),
+                  label: Text(ascents[i].date),
                   onPressed: () {
-                    if (!widget.route.pitchIds.contains(pitches[i].id)){
-                      widget.route.pitchIds.add(pitches[i].id);
-                      routeService.editRoute(widget.route.toUpdateClimbingRoute());
+                    if (!widget.pitch.ascentIds.contains(ascents[i].id)){
+                      widget.pitch.ascentIds.add(ascents[i].id);
+                      pitchService.editPitch(widget.pitch.toUpdatePitch());
                     }
                     Navigator.of(context).pop();
                   },

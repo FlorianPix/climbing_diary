@@ -1,16 +1,16 @@
-import 'package:climbing_diary/components/info/pitch_info.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/pitch/pitch.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../MyButtonStyles.dart';
+import '../add/add_ascent.dart';
 import '../diary_page/ascent_timeline.dart';
 import '../edit/edit_pitch.dart';
 import '../info/single_pitch_info.dart';
+import '../select/select_ascent.dart';
 
 class PitchDetails extends StatefulWidget {
   const PitchDetails({super.key, required this.routeId, required this.pitch, required this.onDelete, required this.onUpdate });
@@ -249,6 +249,38 @@ class _PitchDetailsState extends State<PitchDetails>{
         ),
       );
     }
+    // add ascent
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add new ascent'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddAscent(pitches: [widget.pitch],),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add existing ascent'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SelectAscent(pitch: widget.pitch),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    // delete, edit, close
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

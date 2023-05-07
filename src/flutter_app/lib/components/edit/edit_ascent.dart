@@ -1,8 +1,5 @@
-import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-import '../../interfaces/grade.dart';
 import '../../interfaces/ascent/ascent.dart';
 import '../../interfaces/ascent/update_ascent.dart';
 import '../../services/ascent_service.dart';

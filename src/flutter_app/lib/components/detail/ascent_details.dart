@@ -1,7 +1,6 @@
 import 'package:climbing_diary/components/info/ascent_info.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/ascent/ascent.dart';
