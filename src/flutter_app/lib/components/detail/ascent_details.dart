@@ -1,36 +1,34 @@
-import 'package:climbing_diary/components/info/pitch_info.dart';
+import 'package:climbing_diary/components/info/ascent_info.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
-import '../../interfaces/pitch/pitch.dart';
+import '../../interfaces/ascent/ascent.dart';
 import '../../services/media_service.dart';
-import '../../services/pitch_service.dart';
+import '../../services/ascent_service.dart';
 import '../MyButtonStyles.dart';
-import '../diary_page/ascent_timeline.dart';
-import '../edit/edit_pitch.dart';
-import '../info/single_pitch_info.dart';
+import '../edit/edit_ascent.dart';
 
-class PitchDetails extends StatefulWidget {
-  const PitchDetails({super.key, required this.routeId, required this.pitch, required this.onDelete, required this.onUpdate });
+class AscentDetails extends StatefulWidget {
+  const AscentDetails({super.key, required this.pitchId, required this.ascent, required this.onDelete, required this.onUpdate });
 
-  final String routeId;
-  final Pitch pitch;
-  final ValueSetter<Pitch> onDelete;
-  final ValueSetter<Pitch> onUpdate;
+  final String pitchId;
+  final Ascent ascent;
+  final ValueSetter<Ascent> onDelete;
+  final ValueSetter<Ascent> onUpdate;
 
   @override
-  State<StatefulWidget> createState() => _PitchDetailsState();
+  State<StatefulWidget> createState() => _AscentDetailsState();
 }
 
-class _PitchDetailsState extends State<PitchDetails>{
+class _AscentDetailsState extends State<AscentDetails>{
   final MediaService mediaService = MediaService();
-  final PitchService pitchService = PitchService();
+  final AscentService ascentService = AscentService();
 
   Future<List<String>> fetchURLs() {
     List<Future<String>> futures = [];
-    for (var mediaId in widget.pitch.mediaIds) {
+    for (var mediaId in widget.ascent.mediaIds) {
       futures.add(mediaService.getMediumUrl(mediaId));
     }
     return Future.wait(futures);
@@ -43,9 +41,9 @@ class _PitchDetailsState extends State<PitchDetails>{
     var img = await picker.pickImage(source: media);
     if (img != null){
       var mediaId = await mediaService.uploadMedia(img);
-      Pitch pitch = widget.pitch;
-      pitch.mediaIds.add(mediaId);
-      pitchService.editPitch(pitch.toUpdatePitch());
+      Ascent ascent = widget.ascent;
+      ascent.mediaIds.add(mediaId);
+      ascentService.editAscent(ascent.toUpdateAscent());
     }
 
     setState(() {
@@ -98,11 +96,11 @@ class _PitchDetailsState extends State<PitchDetails>{
       });
   }
 
-  void editPitchDialog() {
+  void editAscentDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return EditPitch(pitch: widget.pitch, onUpdate: widget.onUpdate);
+        return EditAscent(ascent: widget.ascent, onUpdate: widget.onUpdate);
       });
   }
 
@@ -113,40 +111,22 @@ class _PitchDetailsState extends State<PitchDetails>{
 
   @override
   Widget build(BuildContext context) {
-    Pitch pitch = widget.pitch;
+    Ascent ascent = widget.ascent;
     List<Widget> elements = [];
 
     // general info
     elements.addAll([
       Text(
-        pitch.name,
+        ascent.date,
         style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600
         ),
       ),
-      SinglePitchInfo(pitch: pitch),
+      AscentInfo(ascent: ascent),
     ]);
-    // rating
-    List<Widget> ratingRowElements = [];
 
-    for (var i = 0; i < 5; i++){
-      if (pitch.rating > i) {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
-      } else {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
-      }
-    }
-
-    elements.add(Center(child: Padding(
-        padding: const EdgeInsets.all(10),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: ratingRowElements,
-        )
-    )));
-
-    if (pitch.comment.isNotEmpty) {
+    if (ascent.comment.isNotEmpty) {
       elements.add(Container(
           margin: const EdgeInsets.all(15.0),
           padding: const EdgeInsets.all(5.0),
@@ -155,12 +135,12 @@ class _PitchDetailsState extends State<PitchDetails>{
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            pitch.comment,
+            ascent.comment,
           )
       ));
     }
     // images
-    if (pitch.mediaIds.isNotEmpty) {
+    if (ascent.mediaIds.isNotEmpty) {
       List<Widget> imageWidgets = [];
       Future<List<String>> futureMediaUrls = fetchURLs();
 
@@ -209,7 +189,7 @@ class _PitchDetailsState extends State<PitchDetails>{
               );
             }
             List<Widget> skeletons = [];
-            for (var i = 0; i < pitch.mediaIds.length; i++){
+            for (var i = 0; i < ascent.mediaIds.length; i++){
               skeletons.add(skeleton);
             }
             return Container(
@@ -253,17 +233,17 @@ class _PitchDetailsState extends State<PitchDetails>{
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // delete pitch button
+            // delete ascent button
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                pitchService.deletePitch(widget.routeId, pitch);
-                widget.onDelete.call(pitch);
+                ascentService.deleteAscent(ascent, widget.pitchId);
+                widget.onDelete.call(ascent);
               },
               icon: const Icon(Icons.delete),
             ),
             IconButton(
-              onPressed: () => editPitchDialog(),
+              onPressed: () => editAscentDialog(),
               icon: const Icon(Icons.edit),
             ),
             IconButton(
@@ -273,12 +253,6 @@ class _PitchDetailsState extends State<PitchDetails>{
           ],
         )
     );
-    // ascents
-    if (pitch.ascentIds.isNotEmpty){
-      elements.add(
-          AscentTimeline(pitchId: pitch.id, ascentIds: pitch.ascentIds)
-      );
-    }
 
     return Stack(
         children: <Widget>[

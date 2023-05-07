@@ -141,8 +141,7 @@ class _EditPitchState extends State<EditPitch>{
                 num: int.parse(controllerNum.text),
                 rating: currentSliderValue.toInt(),
               );
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              Navigator.popUntil(context, ModalRoute.withName('/'));
               Pitch? updatedPitch = await pitchService.editPitch(pitch);
               if (updatedPitch != null) {
                 widget.onUpdate.call(updatedPitch);

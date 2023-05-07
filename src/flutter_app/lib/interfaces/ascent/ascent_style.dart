@@ -1,0 +1,1 @@
+enum AscentStyle { boulder, solo, lead, second, topRope, aid }

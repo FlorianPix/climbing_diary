@@ -1,0 +1,1 @@
+enum AscentType { onSight, flash, redPoint, tick, bail }
