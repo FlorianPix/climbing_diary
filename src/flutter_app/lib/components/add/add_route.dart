@@ -7,9 +7,10 @@ import '../../services/route_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class AddRoute extends StatefulWidget {
-  const AddRoute({super.key, required this.spots});
+  const AddRoute({super.key, required this.spots, this.onAdd});
 
   final List<Spot> spots;
+  final ValueSetter<ClimbingRoute>? onAdd;
 
   @override
   State<StatefulWidget> createState() => _AddRouteState();
@@ -123,6 +124,8 @@ class _AddRouteState extends State<AddRoute>{
                 final dropdownValue = this.dropdownValue;
                 if (dropdownValue != null){
                   ClimbingRoute? createdRoute = await routeService.createRoute(route, dropdownValue.id, result);
+                  widget.onAdd?.call(createdRoute!);
+                  setState(() {});
                 }
               }
             },

@@ -47,14 +47,11 @@ class SinglePitchInfo extends StatelessWidget {
             ),
       ),
       child: Ink(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: listInfo,
-            ),
-          )
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: listInfo,
+          ),
       ),
     );
   }

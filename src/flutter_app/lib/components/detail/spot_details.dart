@@ -296,7 +296,13 @@ class _SpotDetailsState extends State<SpotDetails>{
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddRoute(spots: [widget.spot],),
+                  builder: (context) => AddRoute(
+                    spots: [widget.spot],
+                    onAdd: (route) {
+                      widget.spot.routeIds.add(route.id);
+                      setState(() {});
+                    },
+                  ),
                 )
             );
           },
