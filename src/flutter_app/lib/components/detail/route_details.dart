@@ -281,7 +281,7 @@ class _RouteDetailsState extends State<RouteDetails>{
     elements.add(
       ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add existing route'),
+          label: const Text('Add existing pitch'),
           onPressed: () {
             Navigator.push(
                 context,
@@ -338,9 +338,9 @@ class _RouteDetailsState extends State<RouteDetails>{
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     Pitch pitch = snapshot.data!;
-                    return SinglePitchInfo(pitch: pitch);
+                    return SinglePitchInfo(spot: widget.spot, route: route, pitch: pitch);
                   } else {
-                    return const Text("fml");
+                    return const CircularProgressIndicator();
                   }
                 }
             )

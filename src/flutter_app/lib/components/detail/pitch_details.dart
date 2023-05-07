@@ -130,7 +130,7 @@ class _PitchDetailsState extends State<PitchDetails>{
             fontWeight: FontWeight.w600
         ),
       ),
-      SinglePitchInfo(pitch: pitch),
+      SinglePitchInfo(spot: widget.spot, route: widget.route, pitch: pitch),
     ]);
     // rating
     List<Widget> ratingRowElements = [];
@@ -267,6 +267,7 @@ class _PitchDetailsState extends State<PitchDetails>{
                     pitches: [widget.pitch],
                     onAdd: (ascent) {
                       widget.pitch.ascentIds.add(ascent.id);
+                      setState(() {});
                     },
                   ),
                 )

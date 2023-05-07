@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../interfaces/ascent/ascent.dart';
+import '../../interfaces/ascent/ascent_style.dart';
+import '../../interfaces/ascent/ascent_type.dart';
 import '../../interfaces/ascent/update_ascent.dart';
+import '../../interfaces/pitch/pitch.dart';
 import '../../services/ascent_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
@@ -20,15 +24,16 @@ class _EditAscentState extends State<EditAscent>{
   final AscentService ascentService = AscentService();
   final TextEditingController controllerComment = TextEditingController();
   final TextEditingController controllerDate = TextEditingController();
-  final TextEditingController controllerStyle = TextEditingController();
-  final TextEditingController controllerType = TextEditingController();
+
+  AscentStyle? ascentStyleValue;
+  AscentType? ascentTypeValue;
 
   @override
   void initState(){
+    ascentStyleValue = AscentStyle.values[widget.ascent.style];
+    ascentTypeValue = AscentType.values[widget.ascent.type];
     controllerComment.text = widget.ascent.comment;
     controllerDate.text = widget.ascent.date;
-    controllerStyle.text = "${widget.ascent.style}";
-    controllerType.text = "${widget.ascent.type}";
     super.initState();
   }
 
@@ -50,6 +55,57 @@ class _EditAscentState extends State<EditAscent>{
                 decoration: const InputDecoration(
                     hintText: "comment", labelText: "comment"),
               ),
+              TextFormField(
+                controller: controllerDate,
+                decoration: const InputDecoration(
+                    icon: Icon(Icons.calendar_today),
+                    labelText: "Enter Date"
+                ),
+                readOnly: true,
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                      context: context, initialDate: DateTime.now(),
+                      firstDate: DateTime(1923),
+                      lastDate: DateTime(2123)
+                  );
+                  if(pickedDate != null ){
+                    String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                    setState(() {
+                      controllerDate.text = formattedDate; //set output date to TextField value.
+                    });
+                  }
+                },
+              ),
+              // ascentStyle
+              DropdownButton<AscentStyle>(
+                  value: ascentStyleValue,
+                  items: AscentStyle.values.map<DropdownMenuItem<AscentStyle>>((AscentStyle ascentStyle) {
+                    return DropdownMenuItem<AscentStyle>(
+                      value: ascentStyle,
+                      child: Text("${ascentStyle.toEmoji()} ${ascentStyle.name}"),
+                    );
+                  }).toList(),
+                  onChanged: (AscentStyle? ascentStyle) {
+                    setState(() {
+                      ascentStyleValue = ascentStyle!;
+                    });
+                  }
+              ),
+              // ascentType
+              DropdownButton<AscentType>(
+                  value: ascentTypeValue,
+                  items: AscentType.values.map<DropdownMenuItem<AscentType>>((AscentType ascentType) {
+                    return DropdownMenuItem<AscentType>(
+                      value: ascentType,
+                      child: Text("${ascentType.toEmoji()} ${ascentType.name}"),
+                    );
+                  }).toList(),
+                  onChanged: (AscentType? ascentType) {
+                    setState(() {
+                      ascentTypeValue = ascentType!;
+                    });
+                  }
+              ),
             ]
           ),
         ),
@@ -59,17 +115,22 @@ class _EditAscentState extends State<EditAscent>{
           onPressed: () async {
             bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
-              UpdateAscent ascent = UpdateAscent(
-                id: widget.ascent.id,
-                comment: controllerComment.text,
-                date: controllerDate.text,
-                style: int.parse(controllerStyle.text),
-                type: int.parse(controllerType.text)
-              );
-              Navigator.popUntil(context, ModalRoute.withName('/'));
-              Ascent? updatedAscent = await ascentService.editAscent(ascent);
-              if (updatedAscent != null) {
-                widget.onUpdate.call(updatedAscent);
+              final int? ascentStyleIndex = ascentStyleValue?.index;
+              final int? ascentTypeIndex = ascentTypeValue?.index;
+              if (ascentStyleIndex != null && ascentTypeIndex != null) {
+                UpdateAscent ascent = UpdateAscent(
+                  id: widget.ascent.id,
+                  comment: controllerComment.text,
+                  date: controllerDate.text,
+                  style: ascentStyleIndex,
+                  type: ascentTypeIndex
+                );
+                Navigator.popUntil(context, ModalRoute.withName('/'));
+                Ascent? updatedAscent = await ascentService.editAscent(ascent);
+                if (updatedAscent != null) {
+                  widget.onUpdate.call(updatedAscent);
+                  setState(() {});
+                }
               }
             }
           },

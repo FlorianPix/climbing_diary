@@ -1,6 +1,8 @@
+import 'package:climbing_diary/interfaces/ascent/ascent_style.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../interfaces/ascent/ascent_type.dart';
 import '../../interfaces/ascent/create_ascent.dart';
 import '../../interfaces/ascent/ascent.dart';
 import '../../interfaces/pitch/pitch.dart';
@@ -23,14 +25,16 @@ class _AddAscentState extends State<AddAscent>{
   final TextEditingController controllerPitchId = TextEditingController();
   final TextEditingController controllerComment = TextEditingController();
   final TextEditingController controllerDate = TextEditingController();
-  final TextEditingController controllerStyle = TextEditingController();
-  final TextEditingController controllerType = TextEditingController();
 
-  Pitch? dropdownValue;
+  Pitch? pitchValue;
+  AscentStyle? ascentStyleValue;
+  AscentType? ascentTypeValue;
 
   @override
   void initState(){
-    dropdownValue = widget.pitches[0];
+    pitchValue = widget.pitches[0];
+    ascentStyleValue = AscentStyle.lead;
+    ascentTypeValue = AscentType.redPoint;
     controllerDate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
     super.initState();
   }
@@ -49,7 +53,7 @@ class _AddAscentState extends State<AddAscent>{
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButton<Pitch>(
-                  value: dropdownValue,
+                  value: pitchValue,
                   items: widget.pitches.map<DropdownMenuItem<Pitch>>((Pitch pitch) {
                     return DropdownMenuItem<Pitch>(
                       value: pitch,
@@ -58,7 +62,7 @@ class _AddAscentState extends State<AddAscent>{
                   }).toList(),
                   onChanged: (Pitch? pitch) {
                     setState(() {
-                      dropdownValue = pitch!;
+                      pitchValue = pitch!;
                     });
                   }
               ),
@@ -88,15 +92,35 @@ class _AddAscentState extends State<AddAscent>{
                   }
                 },
               ),
-              TextFormField(
-                controller: controllerStyle,
-                decoration: const InputDecoration(
-                    hintText: "ascent style", labelText: "ascent style"),
+              // ascentStyle
+              DropdownButton<AscentStyle>(
+                  value: ascentStyleValue,
+                  items: AscentStyle.values.map<DropdownMenuItem<AscentStyle>>((AscentStyle ascentStyle) {
+                    return DropdownMenuItem<AscentStyle>(
+                      value: ascentStyle,
+                      child: Text("${ascentStyle.toEmoji()} ${ascentStyle.name}"),
+                    );
+                  }).toList(),
+                  onChanged: (AscentStyle? ascentStyle) {
+                    setState(() {
+                      ascentStyleValue = ascentStyle!;
+                    });
+                  }
               ),
-              TextFormField(
-                controller: controllerType,
-                decoration: const InputDecoration(
-                    hintText: "ascent type", labelText: "ascent type"),
+              // ascentType
+              DropdownButton<AscentType>(
+                  value: ascentTypeValue,
+                  items: AscentType.values.map<DropdownMenuItem<AscentType>>((AscentType ascentType) {
+                    return DropdownMenuItem<AscentType>(
+                      value: ascentType,
+                      child: Text("${ascentType.toEmoji()} ${ascentType.name}"),
+                    );
+                  }).toList(),
+                  onChanged: (AscentType? ascentType) {
+                    setState(() {
+                      ascentTypeValue = ascentType!;
+                    });
+                  }
               ),
             ],
           ),
@@ -107,17 +131,21 @@ class _AddAscentState extends State<AddAscent>{
             onPressed: () async {
               bool result = await InternetConnectionChecker().hasConnection;
               if (_formKey.currentState!.validate()) {
-                CreateAscent ascent = CreateAscent(
-                  comment: controllerComment.text,
-                  date: controllerDate.text,
-                  style: int.parse(controllerStyle.text),
-                  type: int.parse(controllerType.text),
-                );
-                Navigator.popUntil(context, ModalRoute.withName('/'));
-                final dropdownValue = this.dropdownValue;
-                if (dropdownValue != null) {
-                  Ascent? createdAscent = await ascentService.createAscent(dropdownValue.id, ascent, result);
-                  widget.onAdd?.call(createdAscent!);
+                final int? ascentStyleIndex = ascentStyleValue?.index;
+                final int? ascentTypeIndex = ascentTypeValue?.index;
+                if (ascentStyleIndex != null && ascentTypeIndex != null) {
+                  CreateAscent ascent = CreateAscent(
+                    comment: controllerComment.text,
+                    date: controllerDate.text,
+                    style: ascentStyleIndex,
+                    type: ascentTypeIndex,
+                  );
+                  Navigator.popUntil(context, ModalRoute.withName('/'));
+                  final pitchValue = this.pitchValue;
+                  if (pitchValue != null) {
+                    Ascent? createdAscent = await ascentService.createAscent(pitchValue.id, ascent, result);
+                    widget.onAdd?.call(createdAscent!);
+                  }
                 }
               }
             },

@@ -123,7 +123,7 @@ class RouteTimelineState extends State<RouteTimeline> {
                                     builder: (context, snapshot) {
                                       if (snapshot.hasData) {
                                         Pitch pitch = snapshot.data!;
-                                        return SinglePitchInfo(pitch: pitch);
+                                        return SinglePitchInfo(spot: widget.spot, route: routes[index], pitch: pitch);
                                       } else {
                                         return const Text("fml");
                                       }
@@ -133,8 +133,7 @@ class RouteTimelineState extends State<RouteTimeline> {
                               }
                             }
                             return InkWell(
-                              onTap: () =>
-                                  showDialog(
+                              onTap: () => showDialog(
                                     context: context,
                                     builder: (BuildContext context) =>
                                         Dialog(

@@ -130,7 +130,7 @@ class _MapPageState extends State<MapPage> {
                             child: IconButton(
                               icon: const Icon(Icons.adjust, size: 30.0),
                               onPressed: () {
-                                print("asd");
+                                // TODO
                               },
                             )
                           ),
@@ -139,7 +139,7 @@ class _MapPageState extends State<MapPage> {
                               child: IconButton(
                                 icon: const Icon(Icons.start, size: 30.0),
                                 onPressed: () {
-                                  print("asd");
+                                  // TODO
                                 },
                               )
                           ),
@@ -148,7 +148,7 @@ class _MapPageState extends State<MapPage> {
                               child: IconButton(
                                 icon: const Icon(Icons.route, size: 30.0),
                                 onPressed: () {
-                                  print("asd");
+                                  // TODO
                                 },
                               )
                           ),
@@ -157,7 +157,7 @@ class _MapPageState extends State<MapPage> {
                               child: IconButton(
                                 icon: const Icon(Icons.location_city, size: 30.0),
                                 onPressed: () {
-                                  print("asd");
+                                  // TODO
                                 },
                               )
                           ),
@@ -166,7 +166,7 @@ class _MapPageState extends State<MapPage> {
                               child: IconButton(
                                 icon: const Icon(Icons.explore, size: 30.0),
                                 onPressed: () {
-                                  print("asd");
+                                  // TODO
                                 },
                               )
                           )

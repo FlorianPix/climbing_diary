@@ -16,50 +16,9 @@ class AscentInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> listInfo = [];
 
-    String style = "❓";
-    switch (AscentStyle.values[ascent.style]) {
-      case AscentStyle.boulder:
-        style = "🪨";
-        break;
-      case AscentStyle.solo:
-        style = "🔥";
-        break;
-      case AscentStyle.lead:
-        style = "🥇";
-        break;
-      case AscentStyle.second:
-        style = "🥈";
-        break;
-      case AscentStyle.topRope:
-        style = "🥉";
-        break;
-      case AscentStyle.aid:
-        style = "🩹";
-        break;
-    }
-
-    String type = "❓";
-    switch (AscentType.values[ascent.type]) {
-      case AscentType.onSight:
-        type = "👁️";
-        break;
-      case AscentType.flash:
-        type = "⚡";
-        break;
-      case AscentType.redPoint:
-        type = "🔴";
-        break;
-      case AscentType.tick:
-        type = "✔️";
-        break;
-      case AscentType.bail:
-        type = "❌";
-        break;
-    }
-
     // date, style and type
     listInfo.add(Text(
-      "${ascent.date} $style $type",
+      "${ascent.date} ${AscentStyle.values[ascent.style].toEmoji()} ${AscentType.values[ascent.type].toEmoji()}",
       style: MyTextStyles.title,
     ));
 

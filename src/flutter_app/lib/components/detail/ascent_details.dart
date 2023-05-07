@@ -116,13 +116,6 @@ class _AscentDetailsState extends State<AscentDetails>{
 
     // general info
     elements.addAll([
-      Text(
-        ascent.date,
-        style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600
-        ),
-      ),
       AscentInfo(ascent: ascent),
     ]);
 
