@@ -277,8 +277,7 @@ class _PitchDetailsState extends State<PitchDetails>{
         children: <Widget>[
           Container(
               padding: const EdgeInsets.all(20),
-              child: Column(
-                  mainAxisSize: MainAxisSize.min,
+              child: ListView(
                   children: elements
               )
           )
