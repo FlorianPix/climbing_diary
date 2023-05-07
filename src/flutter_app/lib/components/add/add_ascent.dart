@@ -114,7 +114,7 @@ class _AddAscentState extends State<AddAscent>{
                   style: int.parse(controllerStyle.text),
                   type: int.parse(controllerType.text),
                 );
-                Navigator.of(context).pop();
+                Navigator.popUntil(context, ModalRoute.withName('/'));
                 final dropdownValue = this.dropdownValue;
                 if (dropdownValue != null) {
                   Ascent? createdAscent = await ascentService.createAscent(dropdownValue.id, ascent, result);

@@ -184,7 +184,7 @@ class _AddSpotState extends State<AddSpot>{
                 name: controllerTitle.text,
                 rating: currentSliderValue.toInt(),
               );
-              Navigator.of(context).pop();
+              Navigator.popUntil(context, ModalRoute.withName('/'));
               Spot? createdSpot = await spotService.createSpot(spot, result);
               UpdateTrip editTrip = dropdownValue!.toUpdateTrip();
               if (createdSpot != null) {

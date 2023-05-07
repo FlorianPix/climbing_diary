@@ -128,7 +128,7 @@ class _AddTripState extends State<AddTrip>{
                 comment: controllerComment.text,
                 startDate: controllerStartDate.text,
               );
-              Navigator.of(context).pop();
+              Navigator.popUntil(context, ModalRoute.withName('/'));
               Trip? createdTrip = await tripService.createTrip(trip, result);
             }
           },

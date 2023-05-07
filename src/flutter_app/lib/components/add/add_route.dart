@@ -122,7 +122,7 @@ class _AddRouteState extends State<AddRoute>{
                   rating: currentSliderValue.toInt(),
                   comment: controllerComment.text,
                 );
-                Navigator.of(context).pop();
+                Navigator.popUntil(context, ModalRoute.withName('/'));
                 final dropdownValue = this.dropdownValue;
                 if (dropdownValue != null){
                   ClimbingRoute? createdRoute = await routeService.createRoute(route, dropdownValue.id, result);

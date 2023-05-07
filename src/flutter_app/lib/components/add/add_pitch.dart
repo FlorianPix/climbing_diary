@@ -152,11 +152,11 @@ class _AddPitchState extends State<AddPitch>{
                   num: int.parse(controllerNum.text),
                   rating: currentSliderValue.toInt(),
                 );
-                Navigator.of(context).pop();
                 final dropdownValue = this.dropdownValue;
                 if (dropdownValue != null) {
                   Pitch? createdPitch = await pitchService.createPitch(pitch, dropdownValue.id, result);
                 }
+                Navigator.popUntil(context, ModalRoute.withName('/'));
               }
             },
             child: const Text("Save"))
