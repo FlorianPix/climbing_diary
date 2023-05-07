@@ -341,7 +341,7 @@ class _SpotDetailsState extends State<SpotDetails>{
           ],
         )
     );
-    // proutes
+    // routes
     if (widget.spot.routeIds.isNotEmpty){
       elements.add(
           RouteTimeline(spotId: widget.spot.id, routeIds: widget.spot.routeIds)
