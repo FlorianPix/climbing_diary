@@ -12,6 +12,7 @@ import '../../interfaces/trip/trip.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../detail/multi_pitch_route_details.dart';
+import '../detail/single_pitch_route_details.dart';
 import '../info/multi_pitch_route_info.dart';
 import '../info/route_info.dart';
 import '../info/single_pitch_route_info.dart';
@@ -202,7 +203,12 @@ class RouteTimelineState extends State<RouteTimeline> {
                                                 shape: RoundedRectangleBorder(
                                                   borderRadius: BorderRadius.circular(20),
                                                 ),
-                                                child: Text("test")
+                                                child: SinglePitchRouteDetails(
+                                                    spot: widget.spot,
+                                                    route: singlePitchRoutes[index],
+                                                    onDelete: (SinglePitchRoute singlePitchRoute) => {},
+                                                    onUpdate: (SinglePitchRoute singlePitchRoute) => {},
+                                                    spotId: widget.spot.id)
                                             )
                                     ),
                                     child: Ink(

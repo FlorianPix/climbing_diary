@@ -23,24 +23,10 @@ class SinglePitchRouteInfo extends StatelessWidget {
       style: MyTextStyles.description,
     ));
 
-    return InkWell(
-      onTap: () => showDialog(
-        context: context,
-        builder: (BuildContext context) =>
-            Dialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text("test")
-            ),
-      ),
-      child: Ink(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: listInfo,
-          ),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: listInfo,
     );
   }
 }
