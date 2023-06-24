@@ -4,10 +4,12 @@ import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch
 import '../grade.dart';
 
 class SinglePitchRoute extends ClimbingRoute{
+  final List<String> ascentIds;
   final Grade grade;
   final int length;
 
   const SinglePitchRoute({
+    required this.ascentIds,
     required super.mediaIds,
     required super.id,
     required super.userId,
@@ -16,11 +18,12 @@ class SinglePitchRoute extends ClimbingRoute{
     required super.name,
     required super.rating,
     required this.grade,
-    required this.length
+    required this.length,
   });
 
   factory SinglePitchRoute.fromJson(Map<String, dynamic> json) {
     return SinglePitchRoute(
+      ascentIds: List<String>.from(json['ascent_ids']),
       mediaIds: List<String>.from(json['media_ids']),
       id: json['_id'],
       userId: json['user_id'],
@@ -35,6 +38,7 @@ class SinglePitchRoute extends ClimbingRoute{
 
   factory SinglePitchRoute.fromCache(Map<dynamic, dynamic> cache) {
     return SinglePitchRoute(
+      ascentIds: cache['ascent_ids'] != null ? List<String>.from(cache['ascent_ids']) : [],
       mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : [],
       id: cache['_id'],
       userId: cache['user_id'],
@@ -49,6 +53,7 @@ class SinglePitchRoute extends ClimbingRoute{
 
   @override
   Map toJson() => {
+    "ascent_ids": ascentIds,
     "media_ids": mediaIds,
     "_id": id,
     "user_id": userId,
@@ -62,6 +67,7 @@ class SinglePitchRoute extends ClimbingRoute{
 
   UpdateSinglePitchRoute toUpdateSinglePitchRoute() {
     return UpdateSinglePitchRoute(
+      ascentIds: ascentIds,
       mediaIds: mediaIds,
       id: id,
       userId: userId,

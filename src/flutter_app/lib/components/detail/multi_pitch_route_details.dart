@@ -11,8 +11,10 @@ import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../MyButtonStyles.dart';
 import '../add/add_pitch.dart';
+import '../diary_page/pitch_timeline.dart';
 import '../edit/edit_multi_pitch_route.dart';
 import '../edit/edit_route.dart';
+import '../info/multi_pitch_route_info.dart';
 import '../select/select_pitch.dart';
 
 class MultiPitchRouteDetails extends StatefulWidget {
@@ -132,6 +134,9 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
             fontSize: 22,
             fontWeight: FontWeight.w600
         ),
+      ),
+      MultiPitchInfo(
+          pitchIds: route.pitchIds
       ),
       Text(
         route.location,
@@ -318,25 +323,9 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         )
     );
     // pitches
-    /*
-    if (route.pitchIds.isNotEmpty){
-      if (route.pitchIds.length > 1) {
-        // multi pitch
-        elements.add(
-            Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: MultiPitchInfo(pitchIds: route.pitchIds)
-            )
-        );
-        elements.add(
-            PitchTimeline(trip: widget.trip, spot: widget.spot, route: route, pitchIds: route.pitchIds)
-        );
-      } else {
-        // single pitch
-      }
-    }
-     */
-
+    elements.add(
+      PitchTimeline(trip: widget.trip, spot: widget.spot, route: route, pitchIds: route.pitchIds)
+    );
     return Stack(
         children: <Widget>[
           Padding(

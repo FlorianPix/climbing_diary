@@ -1,3 +1,5 @@
+import 'package:climbing_diary/components/add/add_ascent_to_single_pitch_route.dart';
+import 'package:climbing_diary/components/select/select_ascent_of_single_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
@@ -9,9 +11,11 @@ import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../MyButtonStyles.dart';
+import '../add/add_ascent.dart';
 import '../add/add_pitch.dart';
 import '../edit/edit_single_pitch_route.dart';
 import '../info/single_pitch_route_info.dart';
+import '../select/select_ascent.dart';
 import '../select/select_pitch.dart';
 
 class SinglePitchRouteDetails extends StatefulWidget {
@@ -265,6 +269,43 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
         ),
       );
     }
+    // add ascent
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add new ascent'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddAscentToSinglePitchRoute(
+                    singlePitchRoutes: [widget.route],
+                    onAdd: (ascent) {
+                      widget.route.ascentIds.add(ascent.id);
+                      setState(() {});
+                    },
+                  ),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add existing ascent'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SelectAscentOfSinglePitchRoute(singlePitchRoute: widget.route),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
