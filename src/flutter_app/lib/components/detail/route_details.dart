@@ -318,6 +318,7 @@ class _RouteDetailsState extends State<RouteDetails>{
         )
     );
     // pitches
+    /*
     if (route.pitchIds.isNotEmpty){
       if (route.pitchIds.length > 1) {
         // multi pitch
@@ -332,21 +333,9 @@ class _RouteDetailsState extends State<RouteDetails>{
         );
       } else {
         // single pitch
-        elements.add(
-            FutureBuilder<Pitch>(
-                future: pitchService.getPitch(route.pitchIds[0]),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    Pitch pitch = snapshot.data!;
-                    return SinglePitchInfo(spot: widget.spot, route: route, pitch: pitch);
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
-                }
-            )
-        );
       }
     }
+     */
 
     return Stack(
         children: <Widget>[

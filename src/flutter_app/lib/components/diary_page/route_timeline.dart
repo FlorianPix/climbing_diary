@@ -101,6 +101,7 @@ class RouteTimelineState extends State<RouteTimeline> {
                               );
                             }
                             // pitches
+                            /*
                             if (routes[index].pitchIds.isNotEmpty){
                               if (routes[index].pitchIds.length > 1) {
                                 // multi pitch
@@ -117,21 +118,10 @@ class RouteTimelineState extends State<RouteTimeline> {
                                 );
                               } else {
                                 // single pitch
-                                elements.add(
-                                  FutureBuilder<Pitch>(
-                                    future: pitchService.getPitch(routes[index].pitchIds[0]),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.hasData) {
-                                        Pitch pitch = snapshot.data!;
-                                        return SinglePitchInfo(spot: widget.spot, route: routes[index], pitch: pitch);
-                                      } else {
-                                        return const Text("fml");
-                                      }
-                                    }
-                                  )
-                                );
+                                // TODO
                               }
                             }
+                             */
                             return InkWell(
                               onTap: () => showDialog(
                                     context: context,

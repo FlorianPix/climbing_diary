@@ -40,7 +40,9 @@ class SinglePitchInfo extends StatelessWidget {
                     route: route,
                     pitch: pitch,
                     onDelete: (pitch) {
+                      /*
                       route.pitchIds.remove(pitch.id);
+                      */
                     },
                     onUpdate: (pitch) {  },
                 )

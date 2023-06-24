@@ -3,14 +3,11 @@ from pydantic import BaseModel
 from bson import ObjectId
 from typing import Optional, List
 
+from app.models.route.update_route_model import UpdateRouteModel
 
-class UpdateRouteModel(BaseModel):
-    media_ids: Optional[tuple]
 
-    comment: Optional[str]
-    location: Optional[str]
-    name: Optional[str]
-    rating: Optional[int]
+class UpdateMultiPitchRouteModel(UpdateRouteModel):
+    pitch_ids: Optional[tuple]
 
     class Config:
         arbitrary_types_allowed = True
@@ -18,6 +15,7 @@ class UpdateRouteModel(BaseModel):
         schema_extra = {
             "example": {
                 "media_ids": [],
+                "pitch_ids": [],
                 "comment": "Top Route",
                 "location": "Sektor Falkensteiner Riss",
                 "name": "Falkenstein Riss",

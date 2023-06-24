@@ -130,7 +130,12 @@ class _MapPageState extends State<MapPage> {
                             child: IconButton(
                               icon: const Icon(Icons.adjust, size: 30.0),
                               onPressed: () {
-                                // TODO
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddAscent(pitches: pitches),
+                                    )
+                                );
                               },
                             )
                           ),
@@ -139,7 +144,12 @@ class _MapPageState extends State<MapPage> {
                               child: IconButton(
                                 icon: const Icon(Icons.start, size: 30.0),
                                 onPressed: () {
-                                  // TODO
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AddPitch(routes: routes),
+                                      )
+                                  );
                                 },
                               )
                           ),
@@ -148,7 +158,12 @@ class _MapPageState extends State<MapPage> {
                               child: IconButton(
                                 icon: const Icon(Icons.route, size: 30.0),
                                 onPressed: () {
-                                  // TODO
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AddRoute(spots: spots),
+                                      )
+                                  );
                                 },
                               )
                           ),
@@ -157,7 +172,21 @@ class _MapPageState extends State<MapPage> {
                               child: IconButton(
                                 icon: const Icon(Icons.location_city, size: 30.0),
                                 onPressed: () {
-                                  // TODO
+                                  if (online) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (
+                                              context) => NavigationScreenPage(onAdd: addSpotCallback)),
+                                    );
+                                  } else {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (
+                                              context) => SaveLocationNoConnectionPage(onAdd: addSpotCallback)),
+                                    );
+                                  }
                                 },
                               )
                           ),
@@ -166,7 +195,12 @@ class _MapPageState extends State<MapPage> {
                               child: IconButton(
                                 icon: const Icon(Icons.explore, size: 30.0),
                                 onPressed: () {
-                                  // TODO
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const AddTrip(),
+                                      )
+                                  );
                                 },
                               )
                           )

@@ -9,52 +9,85 @@ from bson import ObjectId
 from app.core.db import get_db
 from app.core.auth import auth
 
-from app.models.route.route_model import RouteModel
-from app.models.route.update_route_model import UpdateRouteModel
 from app.models.spot.spot_model import SpotModel
+
+from app.models.multi_pitch_route.multi_pitch_route_model import MultiPitchRouteModel
+from app.models.multi_pitch_route.create_multi_pitch_route_model import CreateMultiPitchRouteModel
+from app.models.multi_pitch_route.update_multi_pitch_route_model import UpdateMultiPitchRouteModel
 
 router = APIRouter()
 
 
-@router.get('', description="Retrieve all routes", response_model=List[RouteModel], dependencies=[Depends(auth.implicit_scheme)])
+@router.post('/spot/{spot_id}', description="Create a new multi pitch route", response_model=MultiPitchRouteModel, dependencies=[Depends(auth.implicit_scheme)])
+async def create_route(spot_id: str, route: CreateMultiPitchRouteModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    route = jsonable_encoder(route)
+    route["user_id"] = user.id
+    route["pitch_ids"] = []
+    route["media_ids"] = []
+    db = await get_db()
+    spot = await db["spot"].find_one({"_id": ObjectId(spot_id), "user_id": user.id})
+    if spot is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Spot {spot_id} not found")
+    # spot was found
+    if await db["multi_pitch_route"].find({"user_id": user.id, "name": route["name"], "route_id": {"$in": spot["route_ids"]}}).to_list(None):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="Route already exists")
+    # route does not already exist
+    new_route = await db["multi_pitch_route"].insert_one(route)
+    # created route
+    created_route = await db["multi_pitch_route"].find_one({"_id": new_route.inserted_id})
+    if created_route is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Route {new_route.inserted_id} not found")
+    # route was found
+    update_result = await db["spot"].update_one({"_id": ObjectId(spot_id)}, {"$push": {"route_ids": new_route.inserted_id}})
+    if update_result.modified_count != 1:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Route {new_route.inserted_id} was not added to spot {spot_id}")
+    # route_id was added to spot
+    return JSONResponse(status_code=status.HTTP_201_CREATED,
+                        content=jsonable_encoder(MultiPitchRouteModel(**created_route)))
+
+
+@router.get('', description="Retrieve all multi pitch routes", response_model=List[MultiPitchRouteModel], dependencies=[Depends(auth.implicit_scheme)])
 async def retrieve_routes(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
-    routes = await db["single_pitch_route"].find({"user_id": user.id}).to_list(None)
-    routes += await db["multi_pitch_route"].find({"user_id": user.id}).to_list(None)
+    routes = await db["multi_pitch_route"].find({"user_id": user.id}).to_list(None)
     return routes
 
 
-@router.get('/{route_id}', description="Retrieve a route", response_model=RouteModel, dependencies=[Depends(auth.implicit_scheme)])
+@router.get('/{route_id}', description="Retrieve a multi pitch route", response_model=MultiPitchRouteModel, dependencies=[Depends(auth.implicit_scheme)])
 async def retrieve_route(route_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
-    if (route := await db["route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})) is not None:
+    if (route := await db["multi_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})) is not None:
         return route
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                         detail=f"Route {route_id} not found")
 
 
-@router.put('/{route_id}', description="Update a route", response_model=RouteModel, dependencies=[Depends(auth.implicit_scheme)])
-async def update_route(route_id: str, route: UpdateRouteModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+@router.put('/{route_id}', description="Update a multi pitch route", response_model=MultiPitchRouteModel, dependencies=[Depends(auth.implicit_scheme)])
+async def update_route(route_id: str, route: UpdateMultiPitchRouteModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     route = {k: v for k, v in route.dict().items() if v is not None}
 
     if len(route) >= 1:
-        update_result = await db["route"].update_one({"_id": ObjectId(route_id)}, {"$set": route})
+        update_result = await db["multi_pitch_route"].update_one({"_id": ObjectId(route_id)}, {"$set": route})
 
         if update_result.modified_count == 1:
             if (
-                updated_route := await db["route"].find_one({"_id": ObjectId(route_id)})
+                updated_route := await db["multi_pitch_route"].find_one({"_id": ObjectId(route_id)})
             ) is not None:
                 return updated_route
 
-    if (existing_route := await db["route"].find_one({"_id": ObjectId(route_id)})) is not None:
+    if (existing_route := await db["multi_pitch_route"].find_one({"_id": ObjectId(route_id)})) is not None:
         return existing_route
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                         detail=f"Route {route_id} not found")
 
 
-@router.delete('/{route_id}/spot/{spot_id}', response_model=SpotModel, description="Delete a route", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/{route_id}/spot/{spot_id}', response_model=SpotModel, description="Delete a multi pitch route", dependencies=[Depends(auth.implicit_scheme)])
 async def delete_route(spot_id: str, route_id: str, user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     spot = await db["spot"].find_one({"_id": ObjectId(spot_id), "user_id": user.id})
@@ -62,7 +95,7 @@ async def delete_route(spot_id: str, route_id: str, user: Auth0User = Security(a
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Spot {spot_id} not found")
     # spot was found
-    route = await db["route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})
+    route = await db["multi_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})
     if route is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Route {route_id} not found")
@@ -89,7 +122,7 @@ async def delete_route(spot_id: str, route_id: str, user: Auth0User = Security(a
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Pitches could not be deleted")
     # all pitches were deleted
-    delete_result = await db["route"].delete_one({"_id": ObjectId(route_id)})
+    delete_result = await db["multi_pitch_route"].delete_one({"_id": ObjectId(route_id)})
     if not delete_result.acknowledged:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Route {route_id} could not be deleted")

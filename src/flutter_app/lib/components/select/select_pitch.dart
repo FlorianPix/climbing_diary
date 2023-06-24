@@ -43,10 +43,12 @@ class _SelectPitchState extends State<SelectPitch>{
                   icon: const Icon(Icons.arrow_forward, size: 30.0, color: Colors.pink),
                   label: Text(pitches[i].name),
                   onPressed: () {
+                    /*
                     if (!widget.route.pitchIds.contains(pitches[i].id)){
                       widget.route.pitchIds.add(pitches[i].id);
                       routeService.editRoute(widget.route.toUpdateClimbingRoute());
                     }
+                    */
                     Navigator.of(context).pop();
                   },
                   style: MyButtonStyles.rounded

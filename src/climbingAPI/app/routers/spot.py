@@ -127,9 +127,9 @@ async def delete_spot(spot_id: str, user: Auth0User = Security(auth.get_user, sc
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Spot {spot_id} not found")
     # spot was deleted
-    update_result = await db["trip"].update_many({"$pull": {"spot_ids": ObjectId(spot_id)}})
-    if update_result.modified_count < 1:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Removing spot_id {spot_id} from trips failed")
+    trips = await db["trip"].find({"user_id": user.id}).to_list(None)
+    if trips:
+        for trip in trips:
+            update_result = await db["trip"].update_one({"_id": ObjectId(trip['_id'])}, {"$pull": {"spot_ids": ObjectId(spot_id)}})
     # spot_id was removed from trips
     return Response(status_code=status.HTTP_204_NO_CONTENT)
