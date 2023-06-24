@@ -172,17 +172,17 @@ class RouteService {
     return null;
   }
 
-  Future<List<ClimbingRoute>> getMultiPitchRoutes() async {
+  Future<List<MultiPitchRoute>> getMultiPitchRoutes() async {
     try {
       final Response response = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route');
 
       if (response.statusCode == 200) {
         // If the server did return a 200 OK response, then parse the JSON.
-        List<ClimbingRoute> routes = [];
+        List<MultiPitchRoute> routes = [];
         // save to cache
         Box box = Hive.box('routes');
         response.data.forEach((s) {
-          ClimbingRoute route = ClimbingRoute.fromJson(s);
+          MultiPitchRoute route = MultiPitchRoute.fromJson(s);
           if (!box.containsKey(route.id)) {
             box.put(route.id, route.toJson());
           }
@@ -205,18 +205,18 @@ class RouteService {
     return [];
   }
 
-  Future<ClimbingRoute> getMultiPitchRoute(String routeId) async {
+  Future<MultiPitchRoute> getMultiPitchRoute(String routeId) async {
     final Response response =
     await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route/$routeId');
     if (response.statusCode == 200) {
-      return ClimbingRoute.fromJson(response.data);
+      return MultiPitchRoute.fromJson(response.data);
     } else {
       throw Exception('Failed to load route');
     }
   }
 
-  Future<ClimbingRoute?> createMultiPitchRoute(CreateMultiPitchRoute createRoute, String spotId, bool hasConnection) async {
-    CreateClimbingRoute route = CreateClimbingRoute(
+  Future<MultiPitchRoute?> createMultiPitchRoute(CreateMultiPitchRoute createRoute, String spotId, bool hasConnection) async {
+    CreateMultiPitchRoute route = CreateMultiPitchRoute(
       comment: (createRoute.comment != null) ? createRoute.comment! : "",
       location: createRoute.location,
       name: createRoute.name,
@@ -234,13 +234,13 @@ class RouteService {
     return null;
   }
 
-  Future<ClimbingRoute?> editMultiPitchRoute(UpdateMultiPitchRoute route) async {
+  Future<MultiPitchRoute?> editMultiPitchRoute(UpdateMultiPitchRoute route) async {
     try {
       final Response response = await netWorkLocator.dio
           .put('$climbingApiHost/multi_pitch_route/${route.id}', data: route.toJson());
       if (response.statusCode == 200) {
         // TODO deleteRouteFromEditQueue(route.hashCode);
-        return ClimbingRoute.fromJson(response.data);
+        return MultiPitchRoute.fromJson(response.data);
       } else {
         throw Exception('Failed to edit route');
       }
@@ -290,12 +290,12 @@ class RouteService {
     }
   }
 
-  Future<ClimbingRoute?> uploadMultiPitchRoute(String spotId, Map data) async {
+  Future<MultiPitchRoute?> uploadMultiPitchRoute(String spotId, Map data) async {
     try {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/multi_pitch_route/spot/$spotId', data: data);
       if (response.statusCode == 201) {
-        return ClimbingRoute.fromJson(response.data);
+        return MultiPitchRoute.fromJson(response.data);
       } else {
         throw Exception('Failed to create route');
       }
@@ -321,17 +321,17 @@ class RouteService {
     return null;
   }
 
-  Future<List<ClimbingRoute>> getSinglePitchRoutes() async {
+  Future<List<SinglePitchRoute>> getSinglePitchRoutes() async {
     try {
       final Response response = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route');
 
       if (response.statusCode == 200) {
         // If the server did return a 200 OK response, then parse the JSON.
-        List<ClimbingRoute> routes = [];
+        List<SinglePitchRoute> routes = [];
         // save to cache
         Box box = Hive.box('routes');
         response.data.forEach((s) {
-          ClimbingRoute route = ClimbingRoute.fromJson(s);
+          SinglePitchRoute route = SinglePitchRoute.fromJson(s);
           if (!box.containsKey(route.id)) {
             box.put(route.id, route.toJson());
           }
@@ -354,22 +354,24 @@ class RouteService {
     return [];
   }
 
-  Future<ClimbingRoute> getSinglePitchRoute(String routeId) async {
+  Future<SinglePitchRoute> getSinglePitchRoute(String routeId) async {
     final Response response =
     await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$routeId');
     if (response.statusCode == 200) {
-      return ClimbingRoute.fromJson(response.data);
+      return SinglePitchRoute.fromJson(response.data);
     } else {
       throw Exception('Failed to load route');
     }
   }
 
-  Future<ClimbingRoute?> createSinglePitchRoute(CreateSinglePitchRoute createRoute, String spotId, bool hasConnection) async {
-    CreateClimbingRoute route = CreateClimbingRoute(
+  Future<SinglePitchRoute?> createSinglePitchRoute(CreateSinglePitchRoute createRoute, String spotId, bool hasConnection) async {
+    CreateSinglePitchRoute route = CreateSinglePitchRoute(
       comment: (createRoute.comment != null) ? createRoute.comment! : "",
       location: createRoute.location,
       name: createRoute.name,
       rating: createRoute.rating,
+      grade: createRoute.grade,
+      length: createRoute.length
     );
     if (hasConnection) {
       var data = route.toJson();
@@ -383,13 +385,13 @@ class RouteService {
     return null;
   }
 
-  Future<ClimbingRoute?> editSinglePitchRoute(UpdateSinglePitchRoute route) async {
+  Future<SinglePitchRoute?> editSinglePitchRoute(UpdateSinglePitchRoute route) async {
     try {
       final Response response = await netWorkLocator.dio
           .put('$climbingApiHost/single_pitch_route/${route.id}', data: route.toJson());
       if (response.statusCode == 200) {
         // TODO deleteRouteFromEditQueue(route.hashCode);
-        return ClimbingRoute.fromJson(response.data);
+        return SinglePitchRoute.fromJson(response.data);
       } else {
         throw Exception('Failed to edit route');
       }
@@ -439,12 +441,13 @@ class RouteService {
     }
   }
 
-  Future<ClimbingRoute?> uploadSinglePitchRoute(String spotId, Map data) async {
+  Future<SinglePitchRoute?> uploadSinglePitchRoute(String spotId, Map data) async {
     try {
+      print(data);
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/single_pitch_route/spot/$spotId', data: data);
       if (response.statusCode == 201) {
-        return ClimbingRoute.fromJson(response.data);
+        return SinglePitchRoute.fromJson(response.data);
       } else {
         throw Exception('Failed to create route');
       }

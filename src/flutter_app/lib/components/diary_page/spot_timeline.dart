@@ -98,9 +98,14 @@ class SpotTimelineState extends State<SpotTimeline> {
                               );
                             }
                             // routes
-                            if (spots[index].routeIds.isNotEmpty){
+                            if (spots[index].multiPitchRouteIds.isNotEmpty){
                               elements.add(
-                                  RouteTimeline(trip: widget.trip, spot: spots[index], routeIds: spots[index].routeIds)
+                                  RouteTimeline(
+                                      trip: widget.trip,
+                                      spot: spots[index],
+                                      singlePitchRouteIds: spots[index].singlePitchRouteIds,
+                                      multiPitchRouteIds: spots[index].multiPitchRouteIds
+                                  )
                               );
                             }
                             return InkWell(

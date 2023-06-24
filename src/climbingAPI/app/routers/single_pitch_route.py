@@ -29,7 +29,7 @@ async def create_route(spot_id: str, route: CreateSinglePitchRouteModel = Body(.
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Spot {spot_id} not found")
     # spot was found
-    if await db["single_pitch_route"].find({"user_id": user.id, "name": route["name"], "route_id": {"$in": spot["route_ids"]}}).to_list(None):
+    if await db["single_pitch_route"].find({"user_id": user.id, "name": route["name"], "route_id": {"$in": spot["single_pitch_route_ids"]}}).to_list(None):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Route already exists")
     # route does not already exist
@@ -40,7 +40,7 @@ async def create_route(spot_id: str, route: CreateSinglePitchRouteModel = Body(.
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Route {new_route.inserted_id} not found")
     # route was found
-    update_result = await db["spot"].update_one({"_id": ObjectId(spot_id)}, {"$push": {"route_ids": new_route.inserted_id}})
+    update_result = await db["spot"].update_one({"_id": ObjectId(spot_id)}, {"$push": {"single_pitch_route_ids": new_route.inserted_id}})
     if update_result.modified_count != 1:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Route {new_route.inserted_id} was not added to spot {spot_id}")
@@ -113,7 +113,7 @@ async def delete_route(spot_id: str, route_id: str, user: Auth0User = Security(a
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Route {route_id} could not be deleted")
     # route was deleted
-    update_result = await db["spot"].update_one({"_id": ObjectId(spot_id)}, {"$pull": {"route_ids": ObjectId(route_id)}})
+    update_result = await db["spot"].update_one({"_id": ObjectId(spot_id)}, {"$pull": {"single_pitch_route_ids": ObjectId(route_id)}})
     if update_result.modified_count != 1:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Removing route_id {route_id} from spot {spot_id} failed")

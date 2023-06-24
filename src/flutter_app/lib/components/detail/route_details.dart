@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
-import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/route/route.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
@@ -11,10 +10,7 @@ import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../MyButtonStyles.dart';
 import '../add/add_pitch.dart';
-import '../diary_page/pitch_timeline.dart';
 import '../edit/edit_route.dart';
-import '../info/multi_pitch_info.dart';
-import '../info/single_pitch_info.dart';
 import '../select/select_pitch.dart';
 
 class RouteDetails extends StatefulWidget {

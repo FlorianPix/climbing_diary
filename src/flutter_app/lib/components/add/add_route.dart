@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../interfaces/grade.dart';
+import '../../interfaces/grading_system.dart';
 import '../../interfaces/multi_pitch_route/create_multi_pitch_route.dart';
 import '../../interfaces/route/route.dart';
 import '../../interfaces/single_pitch_route/create_single_pitch_route.dart';
@@ -31,6 +33,7 @@ class _AddRouteState extends State<AddRoute>{
 
   double currentSliderValue = 0;
   Spot? dropdownValue;
+  GradingSystem? gradingSystem;
   bool isMultiPitch = false;
 
   @override
@@ -70,6 +73,23 @@ class _AddRouteState extends State<AddRoute>{
                   decoration: const InputDecoration(
                       hintText: "grade of the route", labelText: "grade"),
                 ),
+              ),
+              Visibility(
+                visible: !isMultiPitch,
+                child: DropdownButton<GradingSystem>(
+                  value: gradingSystem,
+                  items: GradingSystem.values.map<DropdownMenuItem<GradingSystem>>((GradingSystem value) {
+                    return DropdownMenuItem<GradingSystem>(
+                        value: value,
+                        child: Text(value.toShortString())
+                    );
+                  }).toList(),
+                  onChanged: (GradingSystem? value) {
+                    setState(() {
+                      gradingSystem = value!;
+                    });
+                  },
+                )
               ),
               Visibility(
                 visible: !isMultiPitch,
@@ -168,7 +188,7 @@ class _AddRouteState extends State<AddRoute>{
                       location: controllerLocation.text,
                       rating: currentSliderValue.toInt(),
                       comment: controllerComment.text,
-                      grade: controllerGrade.text,
+                      grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
                       length: int.parse(controllerLength.text)
                     );
                     createdRoute = await routeService.createSinglePitchRoute(route, dropdownValue.id, result);

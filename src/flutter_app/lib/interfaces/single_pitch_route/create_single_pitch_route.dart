@@ -1,16 +1,16 @@
-class CreateSinglePitchRoute {
-  final String? comment;
-  final String location;
-  final String name;
-  final int rating;
-  final String grade;
+import 'package:climbing_diary/interfaces/route/create_route.dart';
+
+import '../grade.dart';
+
+class CreateSinglePitchRoute extends CreateClimbingRoute {
+  final Grade grade;
   final int length;
 
   const CreateSinglePitchRoute({
-    this.comment,
-    required this.location,
-    required this.name,
-    required this.rating,
+    super.comment,
+    required super.location,
+    required super.name,
+    required super.rating,
     required this.grade,
     required this.length
   });
@@ -21,7 +21,7 @@ class CreateSinglePitchRoute {
       location: json['location'],
       name: json['name'],
       rating: json['rating'],
-      grade: json['grade'],
+      grade: Grade.fromJson(json['grade']),
       length: json['length'],
     );
   }
@@ -37,12 +37,13 @@ class CreateSinglePitchRoute {
     );
   }
 
+  @override
   Map toJson() => {
     "comment": comment,
     "location": location,
     "name": name,
     "rating": rating,
-    "grade": grade,
+    "grade": grade.toJson(),
     "length": length,
   };
 }

@@ -22,7 +22,8 @@ router = APIRouter()
 async def create_spot(spot: CreateSpotModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     spot = jsonable_encoder(spot)
     spot["user_id"] = user.id
-    spot["route_ids"] = []
+    spot["single_pitch_route_ids"] = []
+    spot["multi_pitch_route_ids"] = []
     spot["media_ids"] = []
 
     db = await get_db()

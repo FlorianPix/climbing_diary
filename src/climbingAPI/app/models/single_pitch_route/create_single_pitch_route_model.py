@@ -6,9 +6,11 @@ from typing import List, Optional
 from app.models.py_object_id import PyObjectId
 from app.models.route.create_route_model import CreateRouteModel
 
+from app.models.grade import Grade
+
 
 class CreateSinglePitchRouteModel(CreateRouteModel):
-    grade: str = Field(...)
+    grade: Grade = Field(...)
     length: int = Field(..., ge=0)
 
     class Config:

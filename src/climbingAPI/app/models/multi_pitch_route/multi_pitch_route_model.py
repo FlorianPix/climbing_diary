@@ -7,7 +7,7 @@ from app.models.route.route_model import RouteModel
 
 
 class MultiPitchRouteModel(RouteModel):
-    pitch_ids: List[str] = []
+    pitch_ids: List[PyObjectId] = []
 
     class Config:
         allow_population_by_field_name = True

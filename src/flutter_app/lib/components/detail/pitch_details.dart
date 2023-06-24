@@ -12,7 +12,7 @@ import '../MyButtonStyles.dart';
 import '../add/add_ascent.dart';
 import '../diary_page/ascent_timeline.dart';
 import '../edit/edit_pitch.dart';
-import '../info/single_pitch_info.dart';
+import '../info/pitch_info.dart';
 import '../select/select_ascent.dart';
 
 class PitchDetails extends StatefulWidget {
@@ -130,7 +130,7 @@ class _PitchDetailsState extends State<PitchDetails>{
             fontWeight: FontWeight.w600
         ),
       ),
-      SinglePitchInfo(spot: widget.spot, route: widget.route, pitch: pitch),
+      PitchInfo(pitch: pitch),
     ]);
     // rating
     List<Widget> ratingRowElements = [];

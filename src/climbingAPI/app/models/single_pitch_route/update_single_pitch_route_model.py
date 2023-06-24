@@ -5,11 +5,13 @@ from typing import Optional, List
 
 from app.models.route.update_route_model import UpdateRouteModel
 
+from app.models.grade import Grade
+
 
 class UpdateSinglePitchRouteModel(UpdateRouteModel):
     ascent_ids: Optional[tuple]
 
-    grade: Optional[str]
+    grade: Optional[Grade]
     length: Optional[int]
 
     class Config:
