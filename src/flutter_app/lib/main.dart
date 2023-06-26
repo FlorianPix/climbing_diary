@@ -1,4 +1,5 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:climbing_diary/pages/list_page.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'config/environment.dart';
@@ -72,7 +73,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const MyHomePage(title: 'ClimbingDiary'),
+        '/': (context) => const MyHomePage(title: 'Climbing Diary'),
       },
     );
   }
@@ -97,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late bool online = true;
 
   int currentIndex = 0;
-  final screens = [const MapPage(), const DiaryPage(), const StatisticPage()];
+  final screens = [const MapPage(), const DiaryPage(), const ListPage(), const StatisticPage()];
 
   @override
   void initState() {
@@ -165,6 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 body: screens[currentIndex],
                 bottomNavigationBar: BottomNavigationBar(
+                  type: BottomNavigationBarType.fixed,
                   currentIndex: currentIndex,
                   onTap: (index) => setState(() => currentIndex = index),
                   items: const [
@@ -175,6 +177,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     BottomNavigationBarItem(
                       icon: Icon(Icons.menu_book),
                       label: 'Diary',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.list),
+                      label: 'List',
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.graphic_eq),
@@ -227,6 +233,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               body: screens[currentIndex],
               bottomNavigationBar: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
                 currentIndex: currentIndex,
                 onTap: (index) => setState(() => currentIndex = index),
                 items: const [
@@ -237,6 +244,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   BottomNavigationBarItem(
                     icon: Icon(Icons.menu_book),
                     label: 'Diary',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.list),
+                    label: 'List',
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.graphic_eq),
