@@ -98,7 +98,7 @@ class SpotTimelineState extends State<SpotTimeline> {
                               );
                             }
                             // routes
-                            if (spots[index].multiPitchRouteIds.isNotEmpty){
+                            if (spots[index].multiPitchRouteIds.isNotEmpty || spots[index].singlePitchRouteIds.isNotEmpty){
                               elements.add(
                                   RouteTimeline(
                                       trip: widget.trip,

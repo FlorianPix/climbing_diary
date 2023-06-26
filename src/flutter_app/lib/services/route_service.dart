@@ -443,7 +443,6 @@ class RouteService {
 
   Future<SinglePitchRoute?> uploadSinglePitchRoute(String spotId, Map data) async {
     try {
-      print(data);
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/single_pitch_route/spot/$spotId', data: data);
       if (response.statusCode == 201) {

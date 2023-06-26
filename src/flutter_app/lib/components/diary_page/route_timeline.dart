@@ -77,8 +77,10 @@ class RouteTimelineState extends State<RouteTimeline> {
                           setState(() {});
                         }
 
-                        return Column(
-                          children: [
+                        List<Widget> elements = [];
+
+                        if (multiPitchRoutes.isNotEmpty){
+                          elements.add(
                             FixedTimeline.tileBuilder(
                               theme: TimelineThemeData(
                                 nodePosition: 0,
@@ -163,6 +165,11 @@ class RouteTimelineState extends State<RouteTimeline> {
                                 const SolidLineConnector(color: Color(0xff66c97f)),
                               ),
                             ),
+                          );
+                        }
+
+                        if (singlePitchRoutes.isNotEmpty){
+                          elements.add(
                             FixedTimeline.tileBuilder(
                               theme: TimelineThemeData(
                                 nodePosition: 0,
@@ -177,7 +184,7 @@ class RouteTimelineState extends State<RouteTimeline> {
                               ),
                               builder: TimelineTileBuilder.connected(
                                 connectionDirection: ConnectionDirection.before,
-                                itemCount: multiPitchRoutes.length,
+                                itemCount: singlePitchRoutes.length,
                                 contentsBuilder: (_, index) {
                                   List<Widget> elements = [];
                                   // route info
@@ -204,11 +211,11 @@ class RouteTimelineState extends State<RouteTimeline> {
                                                   borderRadius: BorderRadius.circular(20),
                                                 ),
                                                 child: SinglePitchRouteDetails(
-                                                    spot: widget.spot,
-                                                    route: singlePitchRoute,
-                                                    onDelete: (SinglePitchRoute sPR) => {},
-                                                    onUpdate: (SinglePitchRoute sPR) => {},
-                                                    spotId: widget.spot.id)
+                                                  spot: widget.spot,
+                                                  route: singlePitchRoute,
+                                                  onDelete: (SinglePitchRoute sPR) => {},
+                                                  onUpdate: (SinglePitchRoute sPR) => {},
+                                                  spotId: widget.spot.id)
                                             )
                                     ),
                                     child: Ink(
@@ -233,7 +240,10 @@ class RouteTimelineState extends State<RouteTimeline> {
                                 const SolidLineConnector(color: Color(0xff66c97f)),
                               ),
                             )
-                          ],
+                          );
+                        }
+                        return Column(
+                          children: elements,
                         );
                       } else {
                         return const CircularProgressIndicator();
