@@ -1,41 +1,39 @@
-import 'package:climbing_diary/interfaces/ascent/ascent_style.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../interfaces/ascent/ascent_type.dart';
-import '../../interfaces/ascent/create_ascent.dart';
 import '../../interfaces/ascent/ascent.dart';
+import '../../interfaces/ascent/ascent_style.dart';
+import '../../interfaces/ascent/ascent_type.dart';
+import '../../interfaces/ascent/update_ascent.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../services/ascent_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-class AddAscent extends StatefulWidget {
-  const AddAscent({super.key, required this.pitches, this.onAdd});
+class EditAscent extends StatefulWidget {
+  const EditAscent({super.key, required this.ascent, required this.onUpdate});
 
-  final ValueSetter<Ascent>? onAdd;
-  final List<Pitch> pitches;
+  final Ascent ascent;
+  final ValueSetter<Ascent> onUpdate;
 
   @override
-  State<StatefulWidget> createState() => _AddAscentState();
+  State<StatefulWidget> createState() => _EditAscentState();
 }
 
-class _AddAscentState extends State<AddAscent>{
+class _EditAscentState extends State<EditAscent>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final AscentService ascentService = AscentService();
-  final TextEditingController controllerPitchId = TextEditingController();
   final TextEditingController controllerComment = TextEditingController();
   final TextEditingController controllerDate = TextEditingController();
 
-  Pitch? pitchValue;
   AscentStyle? ascentStyleValue;
   AscentType? ascentTypeValue;
 
   @override
   void initState(){
-    pitchValue = widget.pitches[0];
-    ascentStyleValue = AscentStyle.lead;
-    ascentTypeValue = AscentType.redPoint;
-    controllerDate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    ascentStyleValue = AscentStyle.values[widget.ascent.style];
+    ascentTypeValue = AscentType.values[widget.ascent.type];
+    controllerComment.text = widget.ascent.comment;
+    controllerDate.text = widget.ascent.date;
     super.initState();
   }
 
@@ -45,27 +43,13 @@ class _AddAscentState extends State<AddAscent>{
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      title: const Text('Add a new ascent'),
+      title: const Text('Edit this ascent'),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              DropdownButton<Pitch>(
-                  value: pitchValue,
-                  items: widget.pitches.map<DropdownMenuItem<Pitch>>((Pitch pitch) {
-                    return DropdownMenuItem<Pitch>(
-                      value: pitch,
-                      child: Text(pitch.name),
-                    );
-                  }).toList(),
-                  onChanged: (Pitch? pitch) {
-                    setState(() {
-                      pitchValue = pitch!;
-                    });
-                  }
-              ),
               TextFormField(
                 controller: controllerComment,
                 decoration: const InputDecoration(
@@ -122,34 +106,40 @@ class _AddAscentState extends State<AddAscent>{
                     });
                   }
               ),
-            ],
+            ]
           ),
         ),
       ),
       actions: <Widget>[
-        TextButton(
-            onPressed: () async {
-              bool result = await InternetConnectionChecker().hasConnection;
-              if (_formKey.currentState!.validate()) {
-                final int? ascentStyleIndex = ascentStyleValue?.index;
-                final int? ascentTypeIndex = ascentTypeValue?.index;
-                if (ascentStyleIndex != null && ascentTypeIndex != null) {
-                  CreateAscent ascent = CreateAscent(
-                    comment: controllerComment.text,
-                    date: controllerDate.text,
-                    style: ascentStyleIndex,
-                    type: ascentTypeIndex,
-                  );
-                  Navigator.popUntil(context, ModalRoute.withName('/'));
-                  final pitchValue = this.pitchValue;
-                  if (pitchValue != null) {
-                    Ascent? createdAscent = await ascentService.createAscent(pitchValue.id, ascent, result);
-                    widget.onAdd?.call(createdAscent!);
-                  }
+        IconButton(
+          onPressed: () async {
+            bool result = await InternetConnectionChecker().hasConnection;
+            if (_formKey.currentState!.validate()) {
+              final int? ascentStyleIndex = ascentStyleValue?.index;
+              final int? ascentTypeIndex = ascentTypeValue?.index;
+              if (ascentStyleIndex != null && ascentTypeIndex != null) {
+                UpdateAscent ascent = UpdateAscent(
+                  id: widget.ascent.id,
+                  comment: controllerComment.text,
+                  date: controllerDate.text,
+                  style: ascentStyleIndex,
+                  type: ascentTypeIndex
+                );
+                Navigator.popUntil(context, ModalRoute.withName('/'));
+                Ascent? updatedAscent = await ascentService.editAscent(ascent);
+                if (updatedAscent != null) {
+                  widget.onUpdate.call(updatedAscent);
+                  setState(() {});
                 }
               }
-            },
-            child: const Text("Save"))
+            }
+          },
+          icon: const Icon(Icons.save)
+        ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        ),
       ],
     );
   }

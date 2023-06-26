@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/route/create_route.dart';
 import '../../interfaces/route/route.dart';
@@ -8,12 +6,11 @@ import '../../interfaces/spot/spot.dart';
 import '../../services/route_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../../services/route_service.dart';
-
 class AddRoute extends StatefulWidget {
-  const AddRoute({super.key, required this.spots});
+  const AddRoute({super.key, required this.spots, this.onAdd});
 
   final List<Spot> spots;
+  final ValueSetter<ClimbingRoute>? onAdd;
 
   @override
   State<StatefulWidget> createState() => _AddRouteState();
@@ -33,6 +30,7 @@ class _AddRouteState extends State<AddRoute>{
 
   @override
   void initState(){
+    dropdownValue = widget.spots[0];
     super.initState();
   }
 
@@ -122,10 +120,12 @@ class _AddRouteState extends State<AddRoute>{
                   rating: currentSliderValue.toInt(),
                   comment: controllerComment.text,
                 );
-                Navigator.of(context).pop();
+                Navigator.popUntil(context, ModalRoute.withName('/'));
                 final dropdownValue = this.dropdownValue;
                 if (dropdownValue != null){
                   ClimbingRoute? createdRoute = await routeService.createRoute(route, dropdownValue.id, result);
+                  widget.onAdd?.call(createdRoute!);
+                  setState(() {});
                 }
               }
             },

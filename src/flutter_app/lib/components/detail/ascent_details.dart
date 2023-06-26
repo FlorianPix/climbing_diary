@@ -1,44 +1,34 @@
+import 'package:climbing_diary/components/info/ascent_info.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
+import '../../interfaces/ascent/ascent.dart';
 import '../../interfaces/pitch/pitch.dart';
-import '../../interfaces/route/route.dart';
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
 import '../../services/media_service.dart';
-import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
+import '../../services/ascent_service.dart';
 import '../MyButtonStyles.dart';
-import '../add/add_pitch.dart';
-import '../diary_page/pitch_timeline.dart';
-import '../edit/edit_route.dart';
-import '../info/multi_pitch_info.dart';
-import '../info/single_pitch_info.dart';
-import '../select/select_pitch.dart';
+import '../edit/edit_ascent.dart';
 
-class RouteDetails extends StatefulWidget {
-  const RouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
+class AscentDetails extends StatefulWidget {
+  const AscentDetails({super.key, required this.pitch, required this.ascent, required this.onDelete, required this.onUpdate });
 
-  final Trip? trip;
-  final Spot spot;
-  final ClimbingRoute route;
-  final ValueSetter<ClimbingRoute> onDelete;
-  final ValueSetter<ClimbingRoute> onUpdate;
-  final String spotId;
+  final Pitch pitch;
+  final Ascent ascent;
+  final ValueSetter<Ascent> onDelete;
+  final ValueSetter<Ascent> onUpdate;
 
   @override
-  State<StatefulWidget> createState() => _RouteDetailsState();
+  State<StatefulWidget> createState() => _AscentDetailsState();
 }
 
-class _RouteDetailsState extends State<RouteDetails>{
+class _AscentDetailsState extends State<AscentDetails>{
   final MediaService mediaService = MediaService();
-  final RouteService routeService = RouteService();
-  final PitchService pitchService = PitchService();
+  final AscentService ascentService = AscentService();
 
   Future<List<String>> fetchURLs() {
     List<Future<String>> futures = [];
-    for (var mediaId in widget.route.mediaIds) {
+    for (var mediaId in widget.ascent.mediaIds) {
       futures.add(mediaService.getMediumUrl(mediaId));
     }
     return Future.wait(futures);
@@ -51,9 +41,9 @@ class _RouteDetailsState extends State<RouteDetails>{
     var img = await picker.pickImage(source: media);
     if (img != null){
       var mediaId = await mediaService.uploadMedia(img);
-      ClimbingRoute route = widget.route;
-      route.mediaIds.add(mediaId);
-      routeService.editRoute(route.toUpdateClimbingRoute());
+      Ascent ascent = widget.ascent;
+      ascent.mediaIds.add(mediaId);
+      ascentService.editAscent(ascent.toUpdateAscent());
     }
 
     setState(() {
@@ -106,11 +96,11 @@ class _RouteDetailsState extends State<RouteDetails>{
       });
   }
 
-  void editRouteDialog() {
+  void editAscentDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return EditRoute(route: widget.route, onUpdate: widget.onUpdate);
+        return EditAscent(ascent: widget.ascent, onUpdate: widget.onUpdate);
       });
   }
 
@@ -121,45 +111,15 @@ class _RouteDetailsState extends State<RouteDetails>{
 
   @override
   Widget build(BuildContext context) {
+    Ascent ascent = widget.ascent;
     List<Widget> elements = [];
-    ClimbingRoute route = widget.route;
 
     // general info
     elements.addAll([
-      Text(
-        route.name,
-        style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600
-        ),
-      ),
-      Text(
-        route.location,
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400
-        ),
-      )]);
-    // rating
-    List<Widget> ratingRowElements = [];
+      AscentInfo(ascent: ascent),
+    ]);
 
-    for (var i = 0; i < 5; i++){
-      if (route.rating > i) {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
-      } else {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
-      }
-    }
-
-    elements.add(Center(child: Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: ratingRowElements,
-        )
-    )));
-
-    if (route.comment.isNotEmpty) {
+    if (ascent.comment.isNotEmpty) {
       elements.add(Container(
           margin: const EdgeInsets.all(15.0),
           padding: const EdgeInsets.all(5.0),
@@ -168,12 +128,12 @@ class _RouteDetailsState extends State<RouteDetails>{
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            route.comment,
+            ascent.comment,
           )
       ));
     }
     // images
-    if (route.mediaIds.isNotEmpty) {
+    if (ascent.mediaIds.isNotEmpty) {
       List<Widget> imageWidgets = [];
       Future<List<String>> futureMediaUrls = fetchURLs();
 
@@ -222,7 +182,7 @@ class _RouteDetailsState extends State<RouteDetails>{
               );
             }
             List<Widget> skeletons = [];
-            for (var i = 0; i < route.mediaIds.length; i++){
+            for (var i = 0; i < ascent.mediaIds.length; i++){
               skeletons.add(skeleton);
             }
             return Container(
@@ -262,52 +222,21 @@ class _RouteDetailsState extends State<RouteDetails>{
         ),
       );
     }
-    // add pitch
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add new pitch'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddPitch(routes: [widget.route],),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add existing pitch'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SelectPitch(route: widget.route),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // delete route button
+            // delete ascent button
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                routeService.deleteRoute(route, widget.spotId);
-                widget.onDelete.call(route);
+                ascentService.deleteAscent(ascent, widget.pitch.id);
+                widget.onDelete.call(ascent);
               },
               icon: const Icon(Icons.delete),
             ),
             IconButton(
-              onPressed: () => editRouteDialog(),
+              onPressed: () => editAscentDialog(),
               icon: const Icon(Icons.edit),
             ),
             IconButton(
@@ -317,40 +246,10 @@ class _RouteDetailsState extends State<RouteDetails>{
           ],
         )
     );
-    // pitches
-    if (route.pitchIds.isNotEmpty){
-      if (route.pitchIds.length > 1) {
-        // multi pitch
-        elements.add(
-            Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: MultiPitchInfo(pitchIds: route.pitchIds)
-            )
-        );
-        elements.add(
-            PitchTimeline(trip: widget.trip, spot: widget.spot, route: route, pitchIds: route.pitchIds)
-        );
-      } else {
-        // single pitch
-        elements.add(
-            FutureBuilder<Pitch>(
-                future: pitchService.getPitch(route.pitchIds[0]),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    Pitch pitch = snapshot.data!;
-                    return SinglePitchInfo(spot: widget.spot, route: route, pitch: pitch);
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
-                }
-            )
-        );
-      }
-    }
 
     return Stack(
         children: <Widget>[
-          Padding(
+          Container(
               padding: const EdgeInsets.all(20),
               child: ListView(
                   children: elements

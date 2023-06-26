@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/trip/create_trip.dart';
 import '../../interfaces/trip/trip.dart';
 import '../../services/trip_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-
-import '../../services/trip_service.dart';
 
 class AddTrip extends StatefulWidget {
   const AddTrip({super.key});
@@ -128,7 +125,7 @@ class _AddTripState extends State<AddTrip>{
                 comment: controllerComment.text,
                 startDate: controllerStartDate.text,
               );
-              Navigator.of(context).pop();
+              Navigator.popUntil(context, ModalRoute.withName('/'));
               Trip? createdTrip = await tripService.createTrip(trip, result);
             }
           },

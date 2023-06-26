@@ -82,7 +82,7 @@ class AscentService {
   Future<Ascent?> editAscent(UpdateAscent ascent) async {
     try {
       final Response response = await netWorkLocator.dio
-          .put('$climbingApiHost/pitch/${ascent.id}', data: ascent.toJson());
+          .put('$climbingApiHost/ascent/${ascent.id}', data: ascent.toJson());
       if (response.statusCode == 200) {
         // TODO deleteAscentFromEditQueue(ascent.hashCode);
         return Ascent.fromJson(response.data);

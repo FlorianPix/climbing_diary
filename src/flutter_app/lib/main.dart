@@ -70,7 +70,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: MaterialColor(0xffff7f50, color),
       ),
-      home: const MyHomePage(title: 'ClimbingDiary'),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const MyHomePage(title: 'ClimbingDiary'),
+      },
     );
   }
 }

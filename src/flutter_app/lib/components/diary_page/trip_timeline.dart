@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
-import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
 import '../../services/trip_service.dart';
 import '../detail/trip_details.dart';
@@ -92,7 +91,7 @@ class TripTimelineState extends State<TripTimeline> {
                             // spots
                             if (trips[index].spotIds.isNotEmpty){
                               elements.add(
-                                SpotTimeline(spotIds: trips[index].spotIds)
+                                SpotTimeline(trip: trips[index], spotIds: trips[index].spotIds)
                               );
                             }
                             return InkWell(

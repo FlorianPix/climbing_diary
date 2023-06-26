@@ -5,7 +5,9 @@ import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.
 
 import '../components/add/add_spot.dart';
 import '../interfaces/spot/spot.dart';
+import '../interfaces/trip/trip.dart';
 import '../services/location_service.dart';
+import '../services/trip_service.dart';
 
 class NavigationScreenPage extends StatefulWidget {
   const NavigationScreenPage({super.key, required this.onAdd});
@@ -17,6 +19,7 @@ class NavigationScreenPage extends StatefulWidget {
 }
 
 class _NavigationScreenPage extends State<NavigationScreenPage> {
+  final TripService tripService = TripService();
   final LocationService locationService = LocationService();
   String address = "";
   List values = [1, 2, 3, 4, 5];
@@ -29,11 +32,12 @@ class _NavigationScreenPage extends State<NavigationScreenPage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Position>(
-      future: locationService.getPosition(),
-      builder: (context, AsyncSnapshot<Position> snapshot) {
+    return FutureBuilder<List<dynamic>>(
+      future: Future.wait([locationService.getPosition(), tripService.getTrips()]),
+      builder: (context, snapshot) {
         if (snapshot.hasData) {
-          Position position = snapshot.data!;
+          Position position = snapshot.data![0];
+          List<Trip> trips = snapshot.data![1];
           return Scaffold(
             body: OpenStreetMapSearchAndPick(
               center: LatLong(position.latitude, position.longitude),
@@ -47,6 +51,7 @@ class _NavigationScreenPage extends State<NavigationScreenPage> {
                   context: context,
                   builder: (BuildContext context) =>
                     AddSpot(
+                      trips: trips,
                       coordinates: LatLng(
                         pickedData.latLong.latitude,
                         pickedData.latLong.longitude

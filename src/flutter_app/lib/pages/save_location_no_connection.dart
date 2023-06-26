@@ -34,6 +34,7 @@ class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> 
           Position position = snapshot.data!;
           return Scaffold(
             body: AddSpot(
+              trips: [],
               coordinates: LatLng(position.latitude, position.longitude),
               address: " ",
               onAdd: widget.onAdd

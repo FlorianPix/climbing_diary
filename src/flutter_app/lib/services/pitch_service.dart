@@ -82,7 +82,6 @@ class PitchService {
   }
 
   Future<Pitch?> editPitch(UpdatePitch pitch) async {
-    print(pitch.toJson());
     try {
       final Response response = await netWorkLocator.dio
           .put('$climbingApiHost/pitch/${pitch.id}', data: pitch.toJson());

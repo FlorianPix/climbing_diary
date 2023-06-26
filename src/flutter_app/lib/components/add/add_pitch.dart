@@ -1,7 +1,5 @@
 import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/grade.dart';
 import '../../interfaces/pitch/create_pitch.dart';
@@ -9,8 +7,6 @@ import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/route/route.dart';
 import '../../services/pitch_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-
-import '../../services/pitch_service.dart';
 
 class AddPitch extends StatefulWidget {
   const AddPitch({super.key, required this.routes});
@@ -37,6 +33,7 @@ class _AddPitchState extends State<AddPitch>{
 
   @override
   void initState(){
+    dropdownValue = widget.routes[0];
     super.initState();
   }
 
@@ -104,7 +101,7 @@ class _AddPitchState extends State<AddPitch>{
               TextFormField(
                 controller: controllerLength,
                 decoration: const InputDecoration(
-                    hintText: "length", labelText: "length"),
+                    hintText: "length in m", labelText: "length"),
               ),
               TextFormField(
                 controller: controllerComment,
@@ -152,11 +149,11 @@ class _AddPitchState extends State<AddPitch>{
                   num: int.parse(controllerNum.text),
                   rating: currentSliderValue.toInt(),
                 );
-                Navigator.of(context).pop();
                 final dropdownValue = this.dropdownValue;
                 if (dropdownValue != null) {
                   Pitch? createdPitch = await pitchService.createPitch(pitch, dropdownValue.id, result);
                 }
+                Navigator.popUntil(context, ModalRoute.withName('/'));
               }
             },
             child: const Text("Save"))

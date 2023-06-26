@@ -1,19 +1,26 @@
-import 'package:climbing_diary/components/info/pitch_info.dart';
+import 'package:climbing_diary/interfaces/route/route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/pitch/pitch.dart';
+import '../../interfaces/spot/spot.dart';
+import '../../interfaces/trip/trip.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
+import '../MyButtonStyles.dart';
+import '../add/add_ascent.dart';
+import '../diary_page/ascent_timeline.dart';
 import '../edit/edit_pitch.dart';
 import '../info/single_pitch_info.dart';
+import '../select/select_ascent.dart';
 
 class PitchDetails extends StatefulWidget {
-  const PitchDetails({super.key, required this.routeId, required this.pitch, required this.onDelete, required this.onUpdate });
+  const PitchDetails({super.key, this.trip, required this.spot, required this.route, required this.pitch, required this.onDelete, required this.onUpdate });
 
-  final String routeId;
+  final Trip? trip;
+  final Spot spot;
+  final ClimbingRoute route;
   final Pitch pitch;
   final ValueSetter<Pitch> onDelete;
   final ValueSetter<Pitch> onUpdate;
@@ -123,7 +130,7 @@ class _PitchDetailsState extends State<PitchDetails>{
             fontWeight: FontWeight.w600
         ),
       ),
-      SinglePitchInfo(pitch: pitch),
+      SinglePitchInfo(spot: widget.spot, route: widget.route, pitch: pitch),
     ]);
     // rating
     List<Widget> ratingRowElements = [];
@@ -221,11 +228,12 @@ class _PitchDetailsState extends State<PitchDetails>{
         )
       );
       imageWidgets.add(
-        IconButton(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => addImageDialog()
-        )
+        ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+            label: const Text('Add image'),
+            onPressed: () => addImageDialog(),
+            style: MyButtonStyles.rounded
+        ),
       );
       elements.add(
         SizedBox(
@@ -238,13 +246,52 @@ class _PitchDetailsState extends State<PitchDetails>{
       );
     } else {
       elements.add(
-        IconButton(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => addImageDialog()
+        ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+            label: const Text('Add image'),
+            onPressed: () => addImageDialog(),
+            style: MyButtonStyles.rounded
         ),
       );
     }
+    // add ascent
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add new ascent'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddAscent(
+                    pitches: [widget.pitch],
+                    onAdd: (ascent) {
+                      widget.pitch.ascentIds.add(ascent.id);
+                      setState(() {});
+                    },
+                  ),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add existing ascent'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SelectAscent(pitch: widget.pitch),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    // delete, edit, close
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -253,7 +300,7 @@ class _PitchDetailsState extends State<PitchDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                pitchService.deletePitch(widget.routeId, pitch);
+                pitchService.deletePitch(widget.route.id, pitch);
                 widget.onDelete.call(pitch);
               },
               icon: const Icon(Icons.delete),
@@ -269,13 +316,31 @@ class _PitchDetailsState extends State<PitchDetails>{
           ],
         )
     );
+    // ascents
+    if (pitch.ascentIds.isNotEmpty){
+      elements.add(
+          AscentTimeline(
+              trip: widget.trip,
+              spot: widget.spot,
+              route: widget.route,
+              pitch: pitch,
+              ascentIds: pitch.ascentIds,
+              onUpdate: (ascent) {
+                // TODO
+              },
+              onDelete: (ascent) {
+                pitch.ascentIds.remove(ascent.id);
+                setState(() {});
+              },
+          )
+      );
+    }
 
     return Stack(
         children: <Widget>[
           Container(
               padding: const EdgeInsets.all(20),
-              child: Column(
-                  mainAxisSize: MainAxisSize.min,
+              child: ListView(
                   children: elements
               )
           )

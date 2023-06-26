@@ -4,14 +4,19 @@ import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/spot/spot.dart';
+import '../../interfaces/trip/trip.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
+import '../MyButtonStyles.dart';
+import '../add/add_route.dart';
 import '../diary_page/route_timeline.dart';
 import '../edit/edit_spot.dart';
+import '../select/select_route.dart';
 
 class SpotDetails extends StatefulWidget {
-  const SpotDetails({super.key, required this.spot, required this.onDelete, required this.onUpdate });
+  const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate });
 
+  final Trip? trip;
   final Spot spot;
   final ValueSetter<Spot> onDelete;
   final ValueSetter<Spot> onUpdate;
@@ -256,11 +261,12 @@ class _SpotDetailsState extends State<SpotDetails>{
         )
       );
       imageWidgets.add(
-        IconButton(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => addImageDialog()
-        )
+        ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+            label: const Text('Add image'),
+            onPressed: () => addImageDialog(),
+            style: MyButtonStyles.rounded
+        ),
       );
       elements.add(
         SizedBox(
@@ -273,13 +279,52 @@ class _SpotDetailsState extends State<SpotDetails>{
       );
     } else {
       elements.add(
-        IconButton(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => addImageDialog()
+        ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+            label: const Text('Add image'),
+            onPressed: () => addImageDialog(),
+            style: MyButtonStyles.rounded
         ),
       );
     }
+    // add route
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add new route'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddRoute(
+                    spots: [widget.spot],
+                    onAdd: (route) {
+                      widget.spot.routeIds.add(route.id);
+                      setState(() {});
+                    },
+                  ),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add existing route'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SelectRoute(spot: widget.spot),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    // delete, edit, close
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -304,13 +349,17 @@ class _SpotDetailsState extends State<SpotDetails>{
           ],
         )
     );
-
+    // routes
+    if (widget.spot.routeIds.isNotEmpty){
+      elements.add(
+          RouteTimeline(trip: widget.trip, spot: widget.spot, routeIds: widget.spot.routeIds)
+      );
+    }
     return Stack(
         children: <Widget>[
           Container(
               padding: const EdgeInsets.all(20),
-              child: Column(
-                  mainAxisSize: MainAxisSize.min,
+              child: ListView(
                   children: elements
               )
           )

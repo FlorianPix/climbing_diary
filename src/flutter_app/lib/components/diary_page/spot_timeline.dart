@@ -7,17 +7,17 @@ import 'package:timelines/timelines.dart';
 
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
+import '../../interfaces/trip/update_trip.dart';
 import '../../services/spot_service.dart';
 import '../../services/trip_service.dart';
 import '../detail/spot_details.dart';
-import '../detail/trip_details.dart';
 import '../info/spot_info.dart';
-import '../info/trip_info.dart';
 
 class SpotTimeline extends StatefulWidget {
-  SpotTimeline({super.key, required this.spotIds});
+  const SpotTimeline({super.key, required this.spotIds, required this.trip});
 
-  List<String> spotIds;
+  final Trip trip;
+  final List<String> spotIds;
 
   @override
   State<StatefulWidget> createState() => SpotTimelineState();
@@ -25,6 +25,7 @@ class SpotTimeline extends StatefulWidget {
 
 class SpotTimelineState extends State<SpotTimeline> {
   final SpotService spotService = SpotService();
+  final TripService tripService = TripService();
 
   @override
   void initState(){
@@ -61,6 +62,9 @@ class SpotTimelineState extends State<SpotTimeline> {
 
                   deleteSpotCallback(Spot spot) {
                     spots.remove(spot);
+                    widget.trip.spotIds.remove(spot.id);
+                    UpdateTrip editTrip = widget.trip.toUpdateTrip();
+                    tripService.editTrip(editTrip);
                     setState(() {});
                   }
 
@@ -96,7 +100,7 @@ class SpotTimelineState extends State<SpotTimeline> {
                             // routes
                             if (spots[index].routeIds.isNotEmpty){
                               elements.add(
-                                  RouteTimeline(routeIds: spots[index].routeIds, spotId: spots[index].id)
+                                  RouteTimeline(trip: widget.trip, spot: spots[index], routeIds: spots[index].routeIds)
                               );
                             }
                             return InkWell(
@@ -108,7 +112,9 @@ class SpotTimelineState extends State<SpotTimeline> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(20),
                                             ),
-                                            child: SpotDetails(spot: spots[index],
+                                            child: SpotDetails(
+                                                trip: widget.trip,
+                                                spot: spots[index],
                                                 onDelete: deleteSpotCallback,
                                                 onUpdate: updateSpotCallback)
                                         ),

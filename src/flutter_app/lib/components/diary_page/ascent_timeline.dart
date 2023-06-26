@@ -1,31 +1,34 @@
 import 'package:climbing_diary/components/diary_page/image_list_view.dart';
-import 'package:climbing_diary/components/diary_page/rating_row.dart';
+import 'package:climbing_diary/interfaces/route/route.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
+import '../../interfaces/ascent/ascent.dart';
 import '../../interfaces/pitch/pitch.dart';
-import '../../interfaces/route/route.dart';
-import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
-import '../../services/pitch_service.dart';
-import '../detail/pitch_details.dart';
-import '../info/pitch_info.dart';
+import '../../interfaces/spot/spot.dart';
+import '../../services/ascent_service.dart';
+import '../detail/ascent_details.dart';
+import '../info/ascent_info.dart';
 
-class PitchTimeline extends StatefulWidget {
-  const PitchTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchIds});
+class AscentTimeline extends StatefulWidget {
+  const AscentTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitch, required this.ascentIds, required this.onDelete, required this.onUpdate});
 
   final Trip? trip;
   final Spot spot;
   final ClimbingRoute route;
-  final List<String> pitchIds;
+  final Pitch pitch;
+  final List<String> ascentIds;
+  final ValueSetter<Ascent> onDelete;
+  final ValueSetter<Ascent> onUpdate;
 
   @override
-  State<StatefulWidget> createState() => PitchTimelineState();
+  State<StatefulWidget> createState() => AscentTimelineState();
 }
 
-class PitchTimelineState extends State<PitchTimeline> {
-  final PitchService pitchService = PitchService();
+class AscentTimelineState extends State<AscentTimeline> {
+  final AscentService ascentService = AscentService();
 
   @override
   void initState(){
@@ -35,40 +38,37 @@ class PitchTimelineState extends State<PitchTimeline> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> pitchIds = widget.pitchIds;
+    List<String> ascentIds = widget.ascentIds;
     return FutureBuilder<bool>(
       future: checkConnection(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            return FutureBuilder<List<Pitch>>(
-              future: Future.wait(pitchIds.map((pitchId) => pitchService.getPitch(pitchId))),
+            return FutureBuilder<List<Ascent>>(
+              future: Future.wait(ascentIds.map((ascentId) => ascentService.getAscent(ascentId))),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  List<Pitch> pitches = snapshot.data!;
-                  pitches.sort((a, b) {
-                    if (a.num > b.num) {
-                      return 1;
-                    } else {
-                      return a.num < b.num ? -1 : 0;
-                    }
-                  });
+                  List<Ascent> ascents = snapshot.data!;
+                  ascents.sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
 
-                  updatePitchCallback(Pitch pitch) {
+                  updateAscentCallback(Ascent ascent) {
                     var index = -1;
-                    for (int i = 0; i < pitches.length; i++) {
-                      if (pitches[i].id == pitch.id) {
+                    for (int i = 0; i < ascents.length; i++) {
+                      if (ascents[i].id == ascent.id) {
                         index = i;
                       }
                     }
-                    pitches.removeAt(index);
-                    pitches.add(pitch);
+                    ascents.removeAt(index);
+                    ascents.add(ascent);
+                    widget.onUpdate.call(ascent);
                     setState(() {});
                   }
 
-                  deletePitchCallback(Pitch pitch) {
-                    pitches.remove(pitch);
+                  deleteAscentCallback(Ascent ascent) {
+                    ascents.remove(ascent);
+                    ascentIds.remove(ascent.id);
+                    widget.onDelete.call(ascent);
                     setState(() {});
                   }
 
@@ -88,17 +88,15 @@ class PitchTimelineState extends State<PitchTimeline> {
                         ),
                         builder: TimelineTileBuilder.connected(
                           connectionDirection: ConnectionDirection.before,
-                          itemCount: pitches.length,
+                          itemCount: ascents.length,
                           contentsBuilder: (_, index) {
                             List<Widget> elements = [];
-                            // pitch info
-                            elements.add(PitchInfo(pitch: pitches[index]));
-                            // rating as hearts in a row
-                            elements.add(RatingRow(rating: pitches[index].rating));
+                            // ascent info
+                            elements.add(AscentInfo(ascent: ascents[index]));
                             // images list view
-                            if (pitches[index].mediaIds.isNotEmpty) {
+                            if (ascents[index].mediaIds.isNotEmpty) {
                               elements.add(
-                                  ImageListView(mediaIds: pitches[index].mediaIds)
+                                  ImageListView(mediaIds: ascents[index].mediaIds)
                               );
                             }
                             return InkWell(
@@ -110,9 +108,12 @@ class PitchTimelineState extends State<PitchTimeline> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(20),
                                             ),
-                                            child: PitchDetails(trip: widget.trip, spot: widget.spot, route: widget.route, pitch: pitches[index],
-                                                onDelete: deletePitchCallback,
-                                                onUpdate: updatePitchCallback)
+                                            child: AscentDetails(
+                                                pitch: widget.pitch,
+                                                ascent: ascents[index],
+                                                onDelete: deleteAscentCallback,
+                                                onUpdate: updateAscentCallback
+                                            ),
                                         ),
                                   ),
                               child: Ink(

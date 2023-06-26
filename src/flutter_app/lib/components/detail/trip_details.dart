@@ -1,12 +1,14 @@
-import 'package:climbing_diary/components/info/trip_info.dart';
+import 'package:climbing_diary/components/MyButtonStyles.dart';
+import 'package:climbing_diary/components/select/select_spot.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/trip/trip.dart';
+import '../../pages/navigation_screen_page.dart';
 import '../../services/media_service.dart';
 import '../../services/trip_service.dart';
+import '../diary_page/spot_timeline.dart';
 import '../edit/edit_trip.dart';
 
 class TripDetails extends StatefulWidget {
@@ -110,6 +112,7 @@ class _TripDetailsState extends State<TripDetails>{
   @override
   Widget build(BuildContext context) {
     List<Widget> elements = [];
+    Trip trip = widget.trip;
 
     // general info
     elements.addAll([
@@ -123,7 +126,7 @@ class _TripDetailsState extends State<TripDetails>{
     ]);
 
     elements.add(Text(
-      "${widget.trip.startDate} ${widget.trip.endDate}",
+      "${trip.startDate} ${trip.endDate}",
       style: const TextStyle(
           color: Color(0xff989898),
           fontSize: 12.0,
@@ -132,7 +135,7 @@ class _TripDetailsState extends State<TripDetails>{
     ));
 
     elements.add(Text(
-      widget.trip.comment,
+      trip.comment,
       style: const TextStyle(
           color: Color(0xff989898),
           fontSize: 12.0,
@@ -144,7 +147,7 @@ class _TripDetailsState extends State<TripDetails>{
     List<Widget> ratingRowElements = [];
 
     for (var i = 0; i < 5; i++){
-      if (widget.trip.rating > i) {
+      if (trip.rating > i) {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
       } else {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
@@ -159,7 +162,7 @@ class _TripDetailsState extends State<TripDetails>{
         )
     )));
 
-    if (widget.trip.comment.isNotEmpty) {
+    if (trip.comment.isNotEmpty) {
       elements.add(Container(
           margin: const EdgeInsets.all(15.0),
           padding: const EdgeInsets.all(5.0),
@@ -168,18 +171,17 @@ class _TripDetailsState extends State<TripDetails>{
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            widget.trip.comment,
+            trip.comment,
           )
       ));
     }
     // images
-    if (widget.trip.mediaIds.isNotEmpty) {
+    if (trip.mediaIds.isNotEmpty) {
       List<Widget> imageWidgets = [];
-      Future<List<String>> futureMediaUrls = fetchURLs();
 
       imageWidgets.add(
         FutureBuilder<List<String>>(
-          future: futureMediaUrls,
+          future: fetchURLs(),
           builder: (context, snapshot) {
             Widget skeleton = const Padding(
                 padding: EdgeInsets.all(5),
@@ -222,7 +224,7 @@ class _TripDetailsState extends State<TripDetails>{
               );
             }
             List<Widget> skeletons = [];
-            for (var i = 0; i < widget.trip.mediaIds.length; i++){
+            for (var i = 0; i < trip.mediaIds.length; i++){
               skeletons.add(skeleton);
             }
             return Container(
@@ -236,11 +238,12 @@ class _TripDetailsState extends State<TripDetails>{
         )
       );
       imageWidgets.add(
-        IconButton(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => addImageDialog()
-        )
+        ElevatedButton.icon(
+            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+            label: const Text('Add image'),
+            onPressed: () => addImageDialog(),
+            style: MyButtonStyles.rounded
+        ),
       );
       elements.add(
         SizedBox(
@@ -253,13 +256,50 @@ class _TripDetailsState extends State<TripDetails>{
       );
     } else {
       elements.add(
-        IconButton(
+        ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          tooltip: 'add image',
-          onPressed: () => addImageDialog()
+          label: const Text('Add image'),
+          onPressed: () => addImageDialog(),
+          style: MyButtonStyles.rounded
         ),
       );
     }
+    // add spot
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add new spot'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NavigationScreenPage(
+                    onAdd: (spot) {
+                      trip.spotIds.add(spot.id);
+                    },
+                  ),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    elements.add(
+      ElevatedButton.icon(
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add existing spot'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SelectSpot(trip: widget.trip),
+                )
+            );
+          },
+          style: MyButtonStyles.rounded
+      ),
+    );
+    // delete, edit, close
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -268,8 +308,8 @@ class _TripDetailsState extends State<TripDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                tripService.deleteTrip(widget.trip);
-                widget.onDelete.call(widget.trip);
+                tripService.deleteTrip(trip);
+                widget.onDelete.call(trip);
               },
               icon: const Icon(Icons.delete),
             ),
@@ -284,13 +324,18 @@ class _TripDetailsState extends State<TripDetails>{
           ],
         )
     );
+    // spots
+    if (trip.spotIds.isNotEmpty){
+        elements.add(
+            SpotTimeline(trip: trip, spotIds: trip.spotIds)
+        );
+    }
 
     return Stack(
         children: <Widget>[
-          Container(
+          Padding(
               padding: const EdgeInsets.all(20),
-              child: Column(
-                  mainAxisSize: MainAxisSize.min,
+              child: ListView(
                   children: elements
               )
           )

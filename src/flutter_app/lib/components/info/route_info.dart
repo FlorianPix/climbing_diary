@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/route/route.dart';
 import '../MyTextStyles.dart';
