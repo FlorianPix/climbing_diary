@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 @router.post('/pitch/{pitch_id}', description="Create a new ascent", response_model=AscentModel, dependencies=[Depends(auth.implicit_scheme)])
-async def create_ascent(pitch_id: str, ascent: CreateAscentModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+async def create_ascent_for_pitch(pitch_id: str, ascent: CreateAscentModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     ascent = jsonable_encoder(ascent)
     ascent["user_id"] = user.id
     ascent["media_ids"] = []
@@ -34,6 +34,28 @@ async def create_ascent(pitch_id: str, ascent: CreateAscentModel = Body(...), us
     if update_result.modified_count != 1:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Ascent {new_ascent.inserted_id} was not added to pitch {pitch_id}")
+    # ascent_id was added to pitch
+    return JSONResponse(status_code=status.HTTP_201_CREATED,
+                        content=jsonable_encoder(AscentModel(**created_ascent)))
+
+
+@router.post('/route/{route_id}', description="Create a new ascent", response_model=AscentModel, dependencies=[Depends(auth.implicit_scheme)])
+async def create_ascent_for_single_pitch_route(route_id: str, ascent: CreateAscentModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    ascent = jsonable_encoder(ascent)
+    ascent["user_id"] = user.id
+    ascent["media_ids"] = []
+    db = await get_db()
+    new_ascent = await db["ascent"].insert_one(ascent)
+    # created ascent
+    created_ascent = await db["ascent"].find_one({"_id": new_ascent.inserted_id})
+    if created_ascent is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Ascent {new_ascent.inserted_id} not found")
+    # ascent was found
+    update_result = await db["single_pitch_route"].update_one({"_id": ObjectId(route_id)}, {"$push": {"ascent_ids": new_ascent.inserted_id}})
+    if update_result.modified_count != 1:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail=f"Ascent {new_ascent.inserted_id} was not added to route {route_id}")
     # ascent_id was added to pitch
     return JSONResponse(status_code=status.HTTP_201_CREATED,
                         content=jsonable_encoder(AscentModel(**created_ascent)))

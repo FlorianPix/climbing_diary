@@ -9,7 +9,7 @@ from app.models.grade import Grade
 
 
 class SinglePitchRouteModel(RouteModel):
-    ascent_ids: List[str] = []
+    ascent_ids: List[PyObjectId] = []
 
     grade: Grade = Field(...)
     length: int = Field(..., ge=0)
