@@ -45,3 +45,9 @@ async def delete_routes(user: Auth0User = Security(auth.get_user, scopes=["write
 async def delete_pitches(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     delete_result = await db["pitch"].delete_many({})
+
+
+@router.delete('/ascents', description="Delete all ascents from all users", dependencies=[Depends(auth.implicit_scheme)])
+async def delete_ascents(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    db = await get_db()
+    delete_result = await db["ascent"].delete_many({})
