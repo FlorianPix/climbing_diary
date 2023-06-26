@@ -89,7 +89,7 @@ async def delete_spot(spot_id: str, user: Auth0User = Security(auth.get_user, sc
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Spot {spot_id} not found")
     # spot was found
-    routes = await db["route"].find({"_id": {"$in": spot["route_ids"]}}).to_list(None)
+    routes = await db["multi_pitch_route"].find({"_id": {"$in": spot["multi_pitch_route_ids"]}}).to_list(None)
     if routes is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Routes could not be found")
@@ -118,11 +118,30 @@ async def delete_spot(spot_id: str, user: Auth0User = Security(auth.get_user, sc
                                     detail=f"Pitches could not be deleted")
             # all pitches of this route were deleted
         # all pitches were deleted
-        delete_result = await db["route"].delete_many({"_id": {"$in": spot["route_ids"]}})
+        delete_result = await db["multi_pitch_route"].delete_many({"_id": {"$in": spot["multi_pitch_route_ids"]}})
         if delete_result.deleted_count < 1:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                 detail=f"Routes could not be deleted")
-    # all routes were deleted
+    # all multi pitch routes were deleted
+    routes = await db["single_pitch_route"].find({"_id": {"$in": spot["single_pitch_route_ids"]}}).to_list(None)
+    if routes is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Routes could not be found")
+    if routes:
+        # routes were found
+        for route in routes:
+            if not route["ascent_ids"]:
+                continue
+            delete_result = await db["ascent"].delete_many({"_id": {"$in": route["ascent_ids"]}})
+            if delete_result.deleted_count < 1:
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                    detail=f"Ascents could not be deleted")
+            # all ascents of this route were deleted
+        delete_result = await db["route"].delete_many({"_id": {"$in": spot["single_pitch_route_ids"]}})
+        if delete_result.deleted_count < 1:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                detail=f"Routes could not be deleted")
+    # all single pitch routes were deleted
     delete_result = await db["spot"].delete_one({"_id": ObjectId(spot_id)})
     if delete_result.deleted_count != 1:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
