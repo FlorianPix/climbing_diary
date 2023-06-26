@@ -13,6 +13,7 @@ import '../../services/route_service.dart';
 import '../MyButtonStyles.dart';
 import '../add/add_ascent.dart';
 import '../add/add_pitch.dart';
+import '../diary_page/ascent_timeline.dart';
 import '../edit/edit_single_pitch_route.dart';
 import '../info/single_pitch_route_info.dart';
 import '../select/select_ascent.dart';
@@ -330,25 +331,23 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
           ],
         )
     );
-    // pitches
-    /*
-    if (route.pitchIds.isNotEmpty){
-      if (route.pitchIds.length > 1) {
-        // Single pitch
-        elements.add(
-            Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: SinglePitchInfo(pitchIds: route.pitchIds)
-            )
-        );
-        elements.add(
-            PitchTimeline(trip: widget.trip, spot: widget.spot, route: route, pitchIds: route.pitchIds)
-        );
-      } else {
-        // single pitch
-      }
+    // ascents
+    if (route.ascentIds.isNotEmpty){
+      elements.add(
+          AscentTimeline(
+            trip: widget.trip,
+            spot: widget.spot,
+            route: widget.route,
+            pitchId: route.id,
+            ascentIds: route.ascentIds,
+            onUpdate: (ascent) {},
+            onDelete: (ascent) {
+              route.ascentIds.remove(ascent.id);
+              setState(() {});
+            },
+          )
+      );
     }
-     */
 
     return Stack(
         children: <Widget>[

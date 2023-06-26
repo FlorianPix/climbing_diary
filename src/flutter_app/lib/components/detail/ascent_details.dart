@@ -11,9 +11,9 @@ import '../MyButtonStyles.dart';
 import '../edit/edit_ascent.dart';
 
 class AscentDetails extends StatefulWidget {
-  const AscentDetails({super.key, required this.pitch, required this.ascent, required this.onDelete, required this.onUpdate });
+  const AscentDetails({super.key, required this.pitchId, required this.ascent, required this.onDelete, required this.onUpdate });
 
-  final Pitch pitch;
+  final String pitchId;
   final Ascent ascent;
   final ValueSetter<Ascent> onDelete;
   final ValueSetter<Ascent> onUpdate;
@@ -230,7 +230,7 @@ class _AscentDetailsState extends State<AscentDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                ascentService.deleteAscent(ascent, widget.pitch.id);
+                ascentService.deleteAscent(ascent, widget.pitchId, true);
                 widget.onDelete.call(ascent);
               },
               icon: const Icon(Icons.delete),

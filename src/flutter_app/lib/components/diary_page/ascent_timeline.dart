@@ -13,12 +13,12 @@ import '../detail/ascent_details.dart';
 import '../info/ascent_info.dart';
 
 class AscentTimeline extends StatefulWidget {
-  const AscentTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitch, required this.ascentIds, required this.onDelete, required this.onUpdate});
+  const AscentTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchId, required this.ascentIds, required this.onDelete, required this.onUpdate});
 
   final Trip? trip;
   final Spot spot;
   final ClimbingRoute route;
-  final Pitch pitch;
+  final String pitchId;
   final List<String> ascentIds;
   final ValueSetter<Ascent> onDelete;
   final ValueSetter<Ascent> onUpdate;
@@ -109,7 +109,7 @@ class AscentTimelineState extends State<AscentTimeline> {
                                               borderRadius: BorderRadius.circular(20),
                                             ),
                                             child: AscentDetails(
-                                                pitch: widget.pitch,
+                                                pitchId: widget.pitchId,
                                                 ascent: ascents[index],
                                                 onDelete: deleteAscentCallback,
                                                 onUpdate: updateAscentCallback

@@ -323,7 +323,7 @@ class _PitchDetailsState extends State<PitchDetails>{
               trip: widget.trip,
               spot: widget.spot,
               route: widget.route,
-              pitch: pitch,
+              pitchId: pitch.id,
               ascentIds: pitch.ascentIds,
               onUpdate: (ascent) {
                 // TODO

@@ -7,6 +7,7 @@ import '../config/environment.dart';
 import '../interfaces/ascent/ascent.dart';
 import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../interfaces/multi_pitch_route/update_multi_pitch_route.dart';
+import '../interfaces/pitch/pitch.dart';
 import '../interfaces/route/create_route.dart';
 import 'package:dio/dio.dart';
 
@@ -216,6 +217,28 @@ class RouteService {
     }
   }
 
+  Future<MultiPitchRoute?> getMultiPitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate) async {
+    final Response response = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route/$routeId');
+    if (response.statusCode == 200) {
+      MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromJson(response.data);
+      for (String pitchId in multiPitchRoute.pitchIds){
+        final Response pitchResponse = await netWorkLocator.dio.get('$climbingApiHost/pitch/$pitchId');
+        Pitch pitch = Pitch.fromJson(pitchResponse.data);
+        for (String ascentId in pitch.ascentIds){
+          final Response ascentResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
+          Ascent ascent = Ascent.fromJson(ascentResponse.data);
+          DateTime dateOfAscent = DateTime.parse(ascent.date);
+          if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
+            return multiPitchRoute;
+          }
+        }
+      }
+      return null;
+    } else {
+      throw Exception('Failed to load route');
+    }
+  }
+
   Future<MultiPitchRoute?> createMultiPitchRoute(CreateMultiPitchRoute createRoute, String spotId, bool hasConnection) async {
     CreateMultiPitchRoute route = CreateMultiPitchRoute(
       comment: (createRoute.comment != null) ? createRoute.comment! : "",
@@ -369,18 +392,17 @@ class RouteService {
     final Response response = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$routeId');
     if (response.statusCode == 200) {
       SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(response.data);
-      bool isWithinDateRange = false;
       for (String ascentId in singlePitchRoute.ascentIds){
         final Response ascentResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
         if (response.statusCode == 200){
           Ascent ascent = Ascent.fromJson(ascentResponse.data);
           DateTime dateOfAscent = DateTime.parse(ascent.date);
           if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
-            isWithinDateRange = true;
+            return singlePitchRoute;
           }
         }
       }
-      return isWithinDateRange ? singlePitchRoute : null;
+      return null;
     } else {
       throw Exception('Failed to load route');
     }

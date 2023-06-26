@@ -104,34 +104,64 @@ class AscentService {
     return null;
   }
 
-  Future<void> deleteAscent(Ascent ascent, String pitchId) async {
-    try {
-      for (var id in ascent.mediaIds) {
-        final Response mediaResponse =
-        await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-        if (mediaResponse.statusCode != 204) {
-          throw Exception('Failed to delete medium');
+  Future<void> deleteAscent(Ascent ascent, String pitchId, bool isMultiPitch) async {
+    if (isMultiPitch){
+      try {
+        for (var id in ascent.mediaIds) {
+          final Response mediaResponse =
+          await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
+          if (mediaResponse.statusCode != 204) {
+            throw Exception('Failed to delete medium');
+          }
         }
-      }
 
-      final Response ascentResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/ascent/${ascent.id}/pitch/$pitchId');
-      if (ascentResponse.statusCode != 204) {
-        throw Exception('Failed to delete ascent');
-      }
-      // TODO deleteAscentFromDeleteQueue(ascent.toJson().hashCode);
-      return ascentResponse.data;
-    } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this ascent and delete later
-          Box box = Hive.box('delete_later_ascents');
-          Map ascentJson = ascent.toJson();
-          box.put(ascentJson.hashCode, ascentJson);
+        final Response ascentResponse =
+        await netWorkLocator.dio.delete('$climbingApiHost/ascent/${ascent.id}/pitch/$pitchId');
+        if (ascentResponse.statusCode != 204) {
+          throw Exception('Failed to delete ascent');
         }
+        // TODO deleteAscentFromDeleteQueue(ascent.toJson().hashCode);
+        return ascentResponse.data;
+      } catch (e) {
+        if (e is DioError) {
+          if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
+            // this means we are offline so queue this ascent and delete later
+            Box box = Hive.box('delete_later_ascents');
+            Map ascentJson = ascent.toJson();
+            box.put(ascentJson.hashCode, ascentJson);
+          }
+        }
+      } finally {
+        // TODO deleteAscentFromCache(ascent.id);
       }
-    } finally {
-      // TODO deleteAscentFromCache(ascent.id);
+    } else {
+      try {
+        for (var id in ascent.mediaIds) {
+          final Response mediaResponse =
+          await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
+          if (mediaResponse.statusCode != 204) {
+            throw Exception('Failed to delete medium');
+          }
+        }
+
+        final Response ascentResponse = await netWorkLocator.dio.delete('$climbingApiHost/ascent/${ascent.id}/route/$pitchId');
+        if (ascentResponse.statusCode != 204) {
+          throw Exception('Failed to delete ascent');
+        }
+        // TODO deleteAscentFromDeleteQueue(ascent.toJson().hashCode);
+        return ascentResponse.data;
+      } catch (e) {
+        if (e is DioError) {
+          if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
+            // this means we are offline so queue this ascent and delete later
+            Box box = Hive.box('delete_later_ascents');
+            Map ascentJson = ascent.toJson();
+            box.put(ascentJson.hashCode, ascentJson);
+          }
+        }
+      } finally {
+        // TODO deleteAscentFromCache(ascent.id);
+      }
     }
   }
 

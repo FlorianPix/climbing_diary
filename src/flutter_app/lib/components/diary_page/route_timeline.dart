@@ -49,11 +49,11 @@ class RouteTimelineState extends State<RouteTimeline> {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            return FutureBuilder<List<MultiPitchRoute>>(
-              future: Future.wait(multiPitchRouteIds.map((routeId) => routeService.getMultiPitchRoute(routeId))),
+            return FutureBuilder<List<MultiPitchRoute?>>(
+              future: Future.wait(multiPitchRouteIds.map((routeId) => routeService.getMultiPitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate))),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  List<MultiPitchRoute> multiPitchRoutes = snapshot.data!;
+                  List<MultiPitchRoute> multiPitchRoutes = snapshot.data!.whereType<MultiPitchRoute>().toList();
                   return FutureBuilder<List<SinglePitchRoute?>>(
                     future: Future.wait(singlePitchRouteIds.map((routeId) => routeService.getSinglePitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate))),
                     builder: (context, snapshot) {
