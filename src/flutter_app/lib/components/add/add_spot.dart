@@ -66,6 +66,7 @@ class _AddSpotState extends State<AddSpot>{
         )
     );
     elements.add(DropdownButton<Trip>(
+        isExpanded: true,
         value: dropdownValue,
         items: widget.trips.map<DropdownMenuItem<Trip>>((Trip trip) {
           return DropdownMenuItem<Trip>(
