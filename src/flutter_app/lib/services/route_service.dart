@@ -4,6 +4,7 @@ import 'package:hive/hive.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 import '../config/environment.dart';
+import '../interfaces/ascent/ascent.dart';
 import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import '../interfaces/route/create_route.dart';
@@ -359,6 +360,27 @@ class RouteService {
     await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$routeId');
     if (response.statusCode == 200) {
       return SinglePitchRoute.fromJson(response.data);
+    } else {
+      throw Exception('Failed to load route');
+    }
+  }
+
+  Future<SinglePitchRoute?> getSinglePitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate) async {
+    final Response response = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$routeId');
+    if (response.statusCode == 200) {
+      SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(response.data);
+      bool isWithinDateRange = false;
+      for (String ascentId in singlePitchRoute.ascentIds){
+        final Response ascentResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
+        if (response.statusCode == 200){
+          Ascent ascent = Ascent.fromJson(ascentResponse.data);
+          DateTime dateOfAscent = DateTime.parse(ascent.date);
+          if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
+            isWithinDateRange = true;
+          }
+        }
+      }
+      return isWithinDateRange ? singlePitchRoute : null;
     } else {
       throw Exception('Failed to load route');
     }

@@ -18,8 +18,7 @@ class SpotDetails extends StatefulWidget {
 
   final Trip? trip;
   final Spot spot;
-  final ValueSetter<Spot> onDelete;
-  final ValueSetter<Spot> onUpdate;
+  final ValueSetter<Spot> onDelete, onUpdate;
 
   @override
   State<StatefulWidget> createState() => _SpotDetailsState();
@@ -352,7 +351,14 @@ class _SpotDetailsState extends State<SpotDetails>{
     // routes
     if (widget.spot.multiPitchRouteIds.isNotEmpty){
       elements.add(
-          RouteTimeline(trip: widget.trip, spot: widget.spot, singlePitchRouteIds: widget.spot.singlePitchRouteIds, multiPitchRouteIds: widget.spot.multiPitchRouteIds)
+          RouteTimeline(
+              trip: widget.trip,
+              spot: widget.spot,
+              singlePitchRouteIds: widget.spot.singlePitchRouteIds,
+              multiPitchRouteIds: widget.spot.multiPitchRouteIds,
+              startDate: DateTime(1923),
+              endDate: DateTime(2123)
+          )
       );
     }
     return Stack(

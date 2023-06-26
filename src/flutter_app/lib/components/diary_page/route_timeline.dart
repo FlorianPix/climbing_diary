@@ -18,12 +18,12 @@ import '../info/route_info.dart';
 import '../info/single_pitch_route_info.dart';
 
 class RouteTimeline extends StatefulWidget {
-  const RouteTimeline({super.key, this.trip, required this.spot, required this.singlePitchRouteIds, required this.multiPitchRouteIds});
+  const RouteTimeline({super.key, this.trip, required this.spot, required this.singlePitchRouteIds, required this.multiPitchRouteIds, required this.startDate, required this.endDate});
 
   final Trip? trip;
   final Spot spot;
-  final List<String> singlePitchRouteIds;
-  final List<String> multiPitchRouteIds;
+  final List<String> singlePitchRouteIds, multiPitchRouteIds;
+  final DateTime startDate, endDate;
 
   @override
   State<StatefulWidget> createState() => RouteTimelineState();
@@ -54,11 +54,11 @@ class RouteTimelineState extends State<RouteTimeline> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   List<MultiPitchRoute> multiPitchRoutes = snapshot.data!;
-                  return FutureBuilder<List<SinglePitchRoute>>(
-                    future: Future.wait(singlePitchRouteIds.map((routeId) => routeService.getSinglePitchRoute(routeId))),
+                  return FutureBuilder<List<SinglePitchRoute?>>(
+                    future: Future.wait(singlePitchRouteIds.map((routeId) => routeService.getSinglePitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate))),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
-                        List<SinglePitchRoute> singlePitchRoutes = snapshot.data!;
+                        List<SinglePitchRoute> singlePitchRoutes = snapshot.data!.whereType<SinglePitchRoute>().toList();
 
                         updateMultiPitchRouteCallback(MultiPitchRoute route) {
                           var index = -1;

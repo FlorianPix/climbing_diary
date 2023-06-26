@@ -14,10 +14,11 @@ import '../detail/spot_details.dart';
 import '../info/spot_info.dart';
 
 class SpotTimeline extends StatefulWidget {
-  const SpotTimeline({super.key, required this.spotIds, required this.trip});
+  const SpotTimeline({super.key, required this.spotIds, required this.trip, required this.startDate, required this.endDate});
 
   final Trip trip;
   final List<String> spotIds;
+  final DateTime startDate, endDate;
 
   @override
   State<StatefulWidget> createState() => SpotTimelineState();
@@ -42,11 +43,11 @@ class SpotTimelineState extends State<SpotTimeline> {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            return FutureBuilder<List<Spot>>(
+            return FutureBuilder<List<Spot?>>(
               future: Future.wait(spotIds.map((spotId) => spotService.getSpot(spotId))),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  List<Spot> spots = snapshot.data!;
+                  List<Spot> spots = snapshot.data!.whereType<Spot>().toList();
 
                   updateSpotCallback(Spot spot) {
                     var index = -1;
@@ -104,7 +105,9 @@ class SpotTimelineState extends State<SpotTimeline> {
                                       trip: widget.trip,
                                       spot: spots[index],
                                       singlePitchRouteIds: spots[index].singlePitchRouteIds,
-                                      multiPitchRouteIds: spots[index].multiPitchRouteIds
+                                      multiPitchRouteIds: spots[index].multiPitchRouteIds,
+                                      startDate: widget.startDate,
+                                      endDate: widget.endDate,
                                   )
                               );
                             }

@@ -327,7 +327,7 @@ class _TripDetailsState extends State<TripDetails>{
     // spots
     if (trip.spotIds.isNotEmpty){
         elements.add(
-            SpotTimeline(trip: trip, spotIds: trip.spotIds)
+            SpotTimeline(trip: trip, spotIds: trip.spotIds, startDate: DateTime.parse(trip.startDate), endDate: DateTime.parse(trip.endDate))
         );
     }
 

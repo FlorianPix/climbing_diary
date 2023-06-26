@@ -50,13 +50,13 @@ class SpotService {
     return [];
   }
 
-  Future<Spot> getSpot(String spotId) async {
+  Future<Spot?> getSpot(String spotId) async {
     final Response response =
         await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
     if (response.statusCode == 200) {
       return Spot.fromJson(response.data);
     } else {
-      throw Exception('Failed to load spot');
+      return null;
     }
   }
 
