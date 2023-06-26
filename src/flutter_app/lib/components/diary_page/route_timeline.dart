@@ -181,19 +181,19 @@ class RouteTimelineState extends State<RouteTimeline> {
                                 contentsBuilder: (_, index) {
                                   List<Widget> elements = [];
                                   // route info
-                                  MultiPitchRoute multiPitchRoute = multiPitchRoutes[index];
-                                  elements.add(RouteInfo(route: multiPitchRoute));
+                                  SinglePitchRoute singlePitchRoute = singlePitchRoutes[index];
+                                  elements.add(RouteInfo(route: singlePitchRoute));
                                   // rating as hearts in a row
-                                  elements.add(RatingRow(rating: multiPitchRoute.rating));
+                                  elements.add(RatingRow(rating: singlePitchRoute.rating));
                                   // images list view
-                                  if (multiPitchRoute.mediaIds.isNotEmpty) {
+                                  if (singlePitchRoute.mediaIds.isNotEmpty) {
                                     elements.add(
-                                        ImageListView(mediaIds: multiPitchRoute.mediaIds)
+                                        ImageListView(mediaIds: singlePitchRoute.mediaIds)
                                     );
                                   }
                                   elements.add(SinglePitchRouteInfo(
                                       spot: widget.spot,
-                                      route: singlePitchRoutes[index]
+                                      route: singlePitchRoute
                                   ));
                                   return InkWell(
                                     onTap: () => showDialog(
@@ -205,9 +205,9 @@ class RouteTimelineState extends State<RouteTimeline> {
                                                 ),
                                                 child: SinglePitchRouteDetails(
                                                     spot: widget.spot,
-                                                    route: singlePitchRoutes[index],
-                                                    onDelete: (SinglePitchRoute singlePitchRoute) => {},
-                                                    onUpdate: (SinglePitchRoute singlePitchRoute) => {},
+                                                    route: singlePitchRoute,
+                                                    onDelete: (SinglePitchRoute sPR) => {},
+                                                    onUpdate: (SinglePitchRoute sPR) => {},
                                                     spotId: widget.spot.id)
                                             )
                                     ),
