@@ -79,6 +79,25 @@ class AscentService {
     return null;
   }
 
+  Future<Ascent?> createAscentForSinglePitchRoute(String routeId, CreateAscent createAscent, bool hasConnection) async {
+    CreateAscent ascent = CreateAscent(
+      comment: (createAscent.comment != null) ? createAscent.comment! : "",
+      date: createAscent.date,
+      style: createAscent.style,
+      type: createAscent.type,
+    );
+    if (hasConnection) {
+      var data = ascent.toJson();
+      return uploadAscentForSinglePitchRoute(routeId, data);
+    } else {
+      // save to cache
+      Box box = Hive.box('upload_later_ascents');
+      Map ascentJson = ascent.toJson();
+      box.put(ascentJson.hashCode, ascentJson);
+    }
+    return null;
+  }
+
   Future<Ascent?> editAscent(UpdateAscent ascent) async {
     try {
       final Response response = await netWorkLocator.dio
@@ -169,6 +188,37 @@ class AscentService {
     try {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/ascent/pitch/$pitchId', data: data);
+      if (response.statusCode == 201) {
+        return Ascent.fromJson(response.data);
+      } else {
+        throw Exception('Failed to create ascent');
+      }
+    } catch (e) {
+      if (e is DioError) {
+        final response = e.response;
+        if (response != null) {
+          switch (response.statusCode) {
+            case 409:
+              showSimpleNotification(
+                const Text('This ascent already exists!'),
+                background: Colors.red,
+              );
+              break;
+            default:
+              throw Exception('Failed to create ascent');
+          }
+        }
+      }
+    } finally {
+      // TODO deleteAscentFromUploadQueue(data.hashCode);
+    }
+    return null;
+  }
+
+  Future<Ascent?> uploadAscentForSinglePitchRoute(String routeId, Map data) async {
+    try {
+      final Response response = await netWorkLocator.dio
+          .post('$climbingApiHost/ascent/route/$routeId', data: data);
       if (response.statusCode == 201) {
         return Ascent.fromJson(response.data);
       } else {

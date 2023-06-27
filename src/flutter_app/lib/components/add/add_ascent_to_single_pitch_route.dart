@@ -144,7 +144,7 @@ class _AddAscentToSinglePitchRouteState extends State<AddAscentToSinglePitchRout
                   Navigator.popUntil(context, ModalRoute.withName('/'));
                   final singlePitchRouteValue = this.singlePitchRouteValue;
                   if (singlePitchRouteValue != null) {
-                    Ascent? createdAscent = await ascentService.createAscent(singlePitchRouteValue.id, ascent, result);
+                    Ascent? createdAscent = await ascentService.createAscentForSinglePitchRoute(singlePitchRouteValue.id, ascent, result);
                     widget.onAdd?.call(createdAscent!);
                   }
                 }

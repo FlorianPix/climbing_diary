@@ -318,6 +318,12 @@ class _PitchDetailsState extends State<PitchDetails>{
     );
     // ascents
     if (pitch.ascentIds.isNotEmpty){
+      DateTime startDate = DateTime(1923);
+      DateTime endDate = DateTime(2123);
+      if (widget.trip != null) {
+        DateTime.parse(widget.trip!.startDate);
+        DateTime.parse(widget.trip!.endDate);
+      }
       elements.add(
           AscentTimeline(
               trip: widget.trip,
@@ -332,6 +338,8 @@ class _PitchDetailsState extends State<PitchDetails>{
                 pitch.ascentIds.remove(ascent.id);
                 setState(() {});
               },
+              startDate: startDate,
+              endDate: endDate
           )
       );
     }

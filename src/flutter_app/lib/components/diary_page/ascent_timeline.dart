@@ -13,15 +13,15 @@ import '../detail/ascent_details.dart';
 import '../info/ascent_info.dart';
 
 class AscentTimeline extends StatefulWidget {
-  const AscentTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchId, required this.ascentIds, required this.onDelete, required this.onUpdate});
+  const AscentTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchId, required this.ascentIds, required this.onDelete, required this.onUpdate, required this.startDate, required this.endDate});
 
   final Trip? trip;
   final Spot spot;
   final ClimbingRoute route;
   final String pitchId;
   final List<String> ascentIds;
-  final ValueSetter<Ascent> onDelete;
-  final ValueSetter<Ascent> onUpdate;
+  final ValueSetter<Ascent> onDelete, onUpdate;
+  final DateTime startDate, endDate;
 
   @override
   State<StatefulWidget> createState() => AscentTimelineState();
@@ -50,6 +50,13 @@ class AscentTimelineState extends State<AscentTimeline> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   List<Ascent> ascents = snapshot.data!;
+                  ascents.retainWhere((ascent) {
+                    DateTime dateOfAscent = DateTime.parse(ascent.date);
+                    if ((dateOfAscent.isAfter(widget.startDate) && dateOfAscent.isBefore(widget.endDate)) || dateOfAscent.isAtSameMomentAs(widget.startDate) || dateOfAscent.isAtSameMomentAs(widget.endDate)){
+                      return true;
+                    }
+                    return false;
+                  });
                   ascents.sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
 
                   updateAscentCallback(Ascent ascent) {
