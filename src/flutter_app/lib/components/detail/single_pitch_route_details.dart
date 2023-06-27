@@ -130,13 +130,6 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
 
     // general info
     elements.addAll([
-      Text(
-        route.name,
-        style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600
-        ),
-      ),
       SinglePitchRouteInfo(
           spot: widget.spot,
           route: route
@@ -353,6 +346,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
             },
             startDate: startDate,
             endDate: endDate,
+            ofMultiPitch: false,
           )
       );
     }

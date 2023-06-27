@@ -13,7 +13,7 @@ import '../detail/ascent_details.dart';
 import '../info/ascent_info.dart';
 
 class AscentTimeline extends StatefulWidget {
-  const AscentTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchId, required this.ascentIds, required this.onDelete, required this.onUpdate, required this.startDate, required this.endDate});
+  const AscentTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchId, required this.ascentIds, required this.onDelete, required this.onUpdate, required this.startDate, required this.endDate, required this.ofMultiPitch});
 
   final Trip? trip;
   final Spot spot;
@@ -22,6 +22,7 @@ class AscentTimeline extends StatefulWidget {
   final List<String> ascentIds;
   final ValueSetter<Ascent> onDelete, onUpdate;
   final DateTime startDate, endDate;
+  final bool ofMultiPitch;
 
   @override
   State<StatefulWidget> createState() => AscentTimelineState();
@@ -119,7 +120,8 @@ class AscentTimelineState extends State<AscentTimeline> {
                                                 pitchId: widget.pitchId,
                                                 ascent: ascents[index],
                                                 onDelete: deleteAscentCallback,
-                                                onUpdate: updateAscentCallback
+                                                onUpdate: updateAscentCallback,
+                                                ofMultiPitch: widget.ofMultiPitch,
                                             ),
                                         ),
                                   ),

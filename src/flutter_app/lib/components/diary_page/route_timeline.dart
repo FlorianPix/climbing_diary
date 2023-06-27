@@ -189,7 +189,10 @@ class RouteTimelineState extends State<RouteTimeline> {
                                   List<Widget> elements = [];
                                   // route info
                                   SinglePitchRoute singlePitchRoute = singlePitchRoutes[index];
-                                  elements.add(RouteInfo(route: singlePitchRoute));
+                                  elements.add(SinglePitchRouteInfo(
+                                      spot: widget.spot,
+                                      route: singlePitchRoute
+                                  ));
                                   // rating as hearts in a row
                                   elements.add(RatingRow(rating: singlePitchRoute.rating));
                                   // images list view
@@ -198,10 +201,7 @@ class RouteTimelineState extends State<RouteTimeline> {
                                         ImageListView(mediaIds: singlePitchRoute.mediaIds)
                                     );
                                   }
-                                  elements.add(SinglePitchRouteInfo(
-                                      spot: widget.spot,
-                                      route: singlePitchRoute
-                                  ));
+
                                   return InkWell(
                                     onTap: () => showDialog(
                                         context: context,

@@ -122,16 +122,7 @@ class _PitchDetailsState extends State<PitchDetails>{
     List<Widget> elements = [];
 
     // general info
-    elements.addAll([
-      Text(
-        pitch.name,
-        style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600
-        ),
-      ),
-      PitchInfo(pitch: pitch),
-    ]);
+    elements.add(PitchInfo(pitch: pitch));
     // rating
     List<Widget> ratingRowElements = [];
 
@@ -339,7 +330,8 @@ class _PitchDetailsState extends State<PitchDetails>{
                 setState(() {});
               },
               startDate: startDate,
-              endDate: endDate
+              endDate: endDate,
+              ofMultiPitch: true,
           )
       );
     }

@@ -345,6 +345,56 @@ class RouteService {
     return null;
   }
 
+  Future<Ascent?> getBestAscent(MultiPitchRoute route) async {
+    List<Ascent> bestPitchAscents = [];
+    for (String pitchId in route.pitchIds){
+      final Response pitchResponse = await netWorkLocator.dio.get('$climbingApiHost/pitch/$pitchId');
+      if (pitchResponse.statusCode == 200) {
+        Pitch pitch = Pitch.fromJson(pitchResponse.data);
+        int pitchStyle = 6;
+        int pitchType = 4;
+        Ascent? bestPitchAscent;
+        for (String ascentId in pitch.ascentIds) {
+          final Response ascentResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
+          if (ascentResponse.statusCode == 200) {
+            Ascent ascent = Ascent.fromJson(ascentResponse.data);
+            if (ascent.style < pitchStyle){
+              bestPitchAscent = ascent;
+              pitchStyle = bestPitchAscent.style;
+              pitchType = bestPitchAscent.type;
+            }
+            if (ascent.style == pitchStyle && ascent.type < pitchType){
+              bestPitchAscent = ascent;
+              pitchStyle = bestPitchAscent.style;
+              pitchType = bestPitchAscent.type;
+            }
+          }
+        }
+        if (bestPitchAscent == null){
+          return null;
+        } else {
+          bestPitchAscents.add(bestPitchAscent);
+        }
+      }
+    }
+    int routeStyle = 0;
+    int routeType = 0;
+    Ascent? bestRouteAscent;
+    for (Ascent ascent in bestPitchAscents){
+      if (ascent.style >= routeStyle){
+        bestRouteAscent = ascent;
+        routeStyle = bestRouteAscent.style;
+        routeType = bestRouteAscent.type;
+      }
+      if (ascent.style == routeStyle && ascent.type >= routeType){
+        bestRouteAscent = ascent;
+        routeStyle = bestRouteAscent.style;
+        routeType = bestRouteAscent.type;
+      }
+    }
+    return bestRouteAscent;
+  }
+
   Future<List<SinglePitchRoute>> getSinglePitchRoutes() async {
     try {
       final Response response = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route');
