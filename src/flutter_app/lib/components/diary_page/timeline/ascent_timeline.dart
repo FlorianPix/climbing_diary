@@ -1,32 +1,35 @@
 import 'package:climbing_diary/components/diary_page/image_list_view.dart';
-import 'package:climbing_diary/components/diary_page/rating_row.dart';
-import 'package:climbing_diary/components/diary_page/route_timeline.dart';
+import 'package:climbing_diary/interfaces/route/route.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
-import '../../interfaces/trip/update_trip.dart';
-import '../../services/spot_service.dart';
-import '../../services/trip_service.dart';
-import '../detail/spot_details.dart';
-import '../info/spot_info.dart';
+import '../../../interfaces/ascent/ascent.dart';
+import '../../../interfaces/pitch/pitch.dart';
+import '../../../interfaces/trip/trip.dart';
+import '../../../interfaces/spot/spot.dart';
+import '../../../services/ascent_service.dart';
+import '../../detail/ascent_details.dart';
+import '../../info/ascent_info.dart';
 
-class SpotTimeline extends StatefulWidget {
-  const SpotTimeline({super.key, required this.spotIds, required this.trip, required this.startDate, required this.endDate});
+class AscentTimeline extends StatefulWidget {
+  const AscentTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchId, required this.ascentIds, required this.onDelete, required this.onUpdate, required this.startDate, required this.endDate, required this.ofMultiPitch});
 
-  final Trip trip;
-  final List<String> spotIds;
+  final Trip? trip;
+  final Spot spot;
+  final ClimbingRoute route;
+  final String pitchId;
+  final List<String> ascentIds;
+  final ValueSetter<Ascent> onDelete, onUpdate;
   final DateTime startDate, endDate;
+  final bool ofMultiPitch;
 
   @override
-  State<StatefulWidget> createState() => SpotTimelineState();
+  State<StatefulWidget> createState() => AscentTimelineState();
 }
 
-class SpotTimelineState extends State<SpotTimeline> {
-  final SpotService spotService = SpotService();
-  final TripService tripService = TripService();
+class AscentTimelineState extends State<AscentTimeline> {
+  final AscentService ascentService = AscentService();
 
   @override
   void initState(){
@@ -36,36 +39,44 @@ class SpotTimelineState extends State<SpotTimeline> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> spotIds = widget.spotIds;
+    List<String> ascentIds = widget.ascentIds;
     return FutureBuilder<bool>(
       future: checkConnection(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            return FutureBuilder<List<Spot?>>(
-              future: Future.wait(spotIds.map((spotId) => spotService.getSpot(spotId))),
+            return FutureBuilder<List<Ascent>>(
+              future: Future.wait(ascentIds.map((ascentId) => ascentService.getAscent(ascentId))),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  List<Spot> spots = snapshot.data!.whereType<Spot>().toList();
+                  List<Ascent> ascents = snapshot.data!;
+                  ascents.retainWhere((ascent) {
+                    DateTime dateOfAscent = DateTime.parse(ascent.date);
+                    if ((dateOfAscent.isAfter(widget.startDate) && dateOfAscent.isBefore(widget.endDate)) || dateOfAscent.isAtSameMomentAs(widget.startDate) || dateOfAscent.isAtSameMomentAs(widget.endDate)){
+                      return true;
+                    }
+                    return false;
+                  });
+                  ascents.sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
 
-                  updateSpotCallback(Spot spot) {
+                  updateAscentCallback(Ascent ascent) {
                     var index = -1;
-                    for (int i = 0; i < spots.length; i++) {
-                      if (spots[i].id == spot.id) {
+                    for (int i = 0; i < ascents.length; i++) {
+                      if (ascents[i].id == ascent.id) {
                         index = i;
                       }
                     }
-                    spots.removeAt(index);
-                    spots.add(spot);
+                    ascents.removeAt(index);
+                    ascents.add(ascent);
+                    widget.onUpdate.call(ascent);
                     setState(() {});
                   }
 
-                  deleteSpotCallback(Spot spot) {
-                    spots.remove(spot);
-                    widget.trip.spotIds.remove(spot.id);
-                    UpdateTrip editTrip = widget.trip.toUpdateTrip();
-                    tripService.editTrip(editTrip);
+                  deleteAscentCallback(Ascent ascent) {
+                    ascents.remove(ascent);
+                    ascentIds.remove(ascent.id);
+                    widget.onDelete.call(ascent);
                     setState(() {});
                   }
 
@@ -85,30 +96,15 @@ class SpotTimelineState extends State<SpotTimeline> {
                         ),
                         builder: TimelineTileBuilder.connected(
                           connectionDirection: ConnectionDirection.before,
-                          itemCount: spots.length,
+                          itemCount: ascents.length,
                           contentsBuilder: (_, index) {
                             List<Widget> elements = [];
-                            // spot info
-                            elements.add(SpotInfo(spot: spots[index]));
-                            // rating as hearts in a row
-                            elements.add(RatingRow(rating: spots[index].rating));
+                            // ascent info
+                            elements.add(AscentInfo(ascent: ascents[index]));
                             // images list view
-                            if (spots[index].mediaIds.isNotEmpty) {
+                            if (ascents[index].mediaIds.isNotEmpty) {
                               elements.add(
-                                  ImageListView(mediaIds: spots[index].mediaIds)
-                              );
-                            }
-                            // routes
-                            if (spots[index].multiPitchRouteIds.isNotEmpty || spots[index].singlePitchRouteIds.isNotEmpty){
-                              elements.add(
-                                  RouteTimeline(
-                                      trip: widget.trip,
-                                      spot: spots[index],
-                                      singlePitchRouteIds: spots[index].singlePitchRouteIds,
-                                      multiPitchRouteIds: spots[index].multiPitchRouteIds,
-                                      startDate: widget.startDate,
-                                      endDate: widget.endDate,
-                                  )
+                                  ImageListView(mediaIds: ascents[index].mediaIds)
                               );
                             }
                             return InkWell(
@@ -120,11 +116,13 @@ class SpotTimelineState extends State<SpotTimeline> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(20),
                                             ),
-                                            child: SpotDetails(
-                                                trip: widget.trip,
-                                                spot: spots[index],
-                                                onDelete: deleteSpotCallback,
-                                                onUpdate: updateSpotCallback)
+                                            child: AscentDetails(
+                                                pitchId: widget.pitchId,
+                                                ascent: ascents[index],
+                                                onDelete: deleteAscentCallback,
+                                                onUpdate: updateAscentCallback,
+                                                ofMultiPitch: widget.ofMultiPitch,
+                                            ),
                                         ),
                                   ),
                               child: Ink(

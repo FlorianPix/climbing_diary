@@ -8,7 +8,7 @@ import '../../interfaces/trip/trip.dart';
 import '../../pages/navigation_screen_page.dart';
 import '../../services/media_service.dart';
 import '../../services/trip_service.dart';
-import '../diary_page/spot_timeline.dart';
+import '../diary_page/timeline/spot_timeline.dart';
 import '../edit/edit_trip.dart';
 
 class TripDetails extends StatefulWidget {

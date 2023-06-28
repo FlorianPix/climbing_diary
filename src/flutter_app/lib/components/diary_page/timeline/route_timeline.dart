@@ -1,5 +1,5 @@
 import 'package:climbing_diary/components/diary_page/image_list_view.dart';
-import 'package:climbing_diary/components/diary_page/pitch_timeline.dart';
+import 'package:climbing_diary/components/diary_page/timeline/pitch_timeline.dart';
 import 'package:climbing_diary/components/diary_page/rating_row.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
@@ -7,15 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
-import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
-import '../detail/multi_pitch_route_details.dart';
-import '../detail/single_pitch_route_details.dart';
-import '../info/multi_pitch_route_info.dart';
-import '../info/route_info.dart';
-import '../info/single_pitch_route_info.dart';
+import '../../../interfaces/spot/spot.dart';
+import '../../../interfaces/trip/trip.dart';
+import '../../../services/pitch_service.dart';
+import '../../../services/route_service.dart';
+import '../../detail/multi_pitch_route_details.dart';
+import '../../detail/single_pitch_route_details.dart';
+import '../../info/multi_pitch_route_info.dart';
+import '../../info/route_info.dart';
+import '../../info/single_pitch_route_info.dart';
 
 class RouteTimeline extends StatefulWidget {
   const RouteTimeline({super.key, this.trip, required this.spot, required this.singlePitchRouteIds, required this.multiPitchRouteIds, required this.startDate, required this.endDate});

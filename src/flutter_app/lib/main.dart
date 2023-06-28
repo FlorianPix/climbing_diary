@@ -4,7 +4,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'config/environment.dart';
 import 'pages/diary_page.dart';
-import 'pages/map_page.dart';
+import 'components/map_page/map_page.dart';
 import 'pages/statistic_page.dart';
 import 'services/locator.dart';
 import 'package:flutter/material.dart';

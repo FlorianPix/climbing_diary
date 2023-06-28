@@ -1,11 +1,11 @@
 import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
 
-import '../../interfaces/grade.dart';
-import '../../interfaces/pitch/create_pitch.dart';
-import '../../interfaces/pitch/pitch.dart';
-import '../../interfaces/route/route.dart';
-import '../../services/pitch_service.dart';
+import '../../../interfaces/grade.dart';
+import '../../../interfaces/pitch/create_pitch.dart';
+import '../../../interfaces/pitch/pitch.dart';
+import '../../../interfaces/route/route.dart';
+import '../../../services/pitch_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class AddPitch extends StatefulWidget {
@@ -33,6 +33,7 @@ class _AddPitchState extends State<AddPitch>{
 
   @override
   void initState(){
+    dropdownValue = widget.routes[0];
     super.initState();
   }
 

@@ -1,31 +1,24 @@
 import 'package:climbing_diary/components/diary_page/image_list_view.dart';
 import 'package:climbing_diary/components/diary_page/rating_row.dart';
+import 'package:climbing_diary/components/diary_page/timeline/spot_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
-import '../../interfaces/pitch/pitch.dart';
-import '../../interfaces/route/route.dart';
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
-import '../../services/pitch_service.dart';
-import '../detail/pitch_details.dart';
-import '../info/pitch_info.dart';
+import '../../../interfaces/trip/trip.dart';
+import '../../../services/trip_service.dart';
+import '../../detail/trip_details.dart';
+import '../../info/trip_info.dart';
 
-class PitchTimeline extends StatefulWidget {
-  const PitchTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchIds});
-
-  final Trip? trip;
-  final Spot spot;
-  final ClimbingRoute route;
-  final List<String> pitchIds;
+class TripTimeline extends StatefulWidget {
+  const TripTimeline({super.key});
 
   @override
-  State<StatefulWidget> createState() => PitchTimelineState();
+  State<StatefulWidget> createState() => TripTimelineState();
 }
 
-class PitchTimelineState extends State<PitchTimeline> {
-  final PitchService pitchService = PitchService();
+class TripTimelineState extends State<TripTimeline> {
+  final TripService tripService = TripService();
 
   @override
   void initState(){
@@ -35,44 +28,38 @@ class PitchTimelineState extends State<PitchTimeline> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> pitchIds = widget.pitchIds;
     return FutureBuilder<bool>(
       future: checkConnection(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            return FutureBuilder<List<Pitch>>(
-              future: Future.wait(pitchIds.map((pitchId) => pitchService.getPitch(pitchId))),
+            return FutureBuilder<List<Trip>>(
+              future: tripService.getTrips(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  List<Pitch> pitches = snapshot.data!;
-                  pitches.sort((a, b) {
-                    if (a.num > b.num) {
-                      return 1;
-                    } else {
-                      return a.num < b.num ? -1 : 0;
-                    }
-                  });
+                  List<Trip> trips = snapshot.data!;
+                  trips.sort((a, b) => DateTime.parse(b.startDate).compareTo(DateTime.parse(a.startDate)));
 
-                  updatePitchCallback(Pitch pitch) {
+                  updateTripCallback(Trip trip) {
                     var index = -1;
-                    for (int i = 0; i < pitches.length; i++) {
-                      if (pitches[i].id == pitch.id) {
+                    for (int i = 0; i < trips.length; i++) {
+                      if (trips[i].id == trip.id) {
                         index = i;
                       }
                     }
-                    pitches.removeAt(index);
-                    pitches.add(pitch);
+                    trips.removeAt(index);
+                    trips.add(trip);
                     setState(() {});
                   }
 
-                  deletePitchCallback(Pitch pitch) {
-                    pitches.remove(pitch);
+                  deleteTripCallback(Trip spot) {
+                    trips.remove(spot);
                     setState(() {});
                   }
 
-                  return Column(
+                  return ListView(
+                    padding: const EdgeInsets.all(20.0),
                     children: [
                       FixedTimeline.tileBuilder(
                         theme: TimelineThemeData(
@@ -88,17 +75,28 @@ class PitchTimelineState extends State<PitchTimeline> {
                         ),
                         builder: TimelineTileBuilder.connected(
                           connectionDirection: ConnectionDirection.before,
-                          itemCount: pitches.length,
+                          itemCount: trips.length,
                           contentsBuilder: (_, index) {
                             List<Widget> elements = [];
-                            // pitch info
-                            elements.add(PitchInfo(pitch: pitches[index]));
+                            // spot info
+                            elements.add(TripInfo(trip: trips[index]));
                             // rating as hearts in a row
-                            elements.add(RatingRow(rating: pitches[index].rating));
+                            elements.add(RatingRow(rating: trips[index].rating));
                             // images list view
-                            if (pitches[index].mediaIds.isNotEmpty) {
+                            if (trips[index].mediaIds.isNotEmpty) {
                               elements.add(
-                                  ImageListView(mediaIds: pitches[index].mediaIds)
+                                  ImageListView(mediaIds: trips[index].mediaIds)
+                              );
+                            }
+                            // spots
+                            if (trips[index].spotIds.isNotEmpty){
+                              elements.add(
+                                SpotTimeline(
+                                    trip: trips[index],
+                                    spotIds: trips[index].spotIds,
+                                    startDate: DateTime.parse(trips[index].startDate),
+                                    endDate: DateTime.parse(trips[index].endDate)
+                                )
                               );
                             }
                             return InkWell(
@@ -110,9 +108,9 @@ class PitchTimelineState extends State<PitchTimeline> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(20),
                                             ),
-                                            child: PitchDetails(trip: widget.trip, spot: widget.spot, route: widget.route, pitch: pitches[index],
-                                                onDelete: deletePitchCallback,
-                                                onUpdate: updatePitchCallback)
+                                            child: TripDetails(trip: trips[index],
+                                                onDelete: deleteTripCallback,
+                                                onUpdate: updateTripCallback)
                                         ),
                                   ),
                               child: Ink(

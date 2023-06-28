@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../interfaces/spot/create_spot.dart';
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
-import '../../services/spot_service.dart';
+import '../../../interfaces/spot/create_spot.dart';
+import '../../../interfaces/spot/spot.dart';
+import '../../../interfaces/trip/trip.dart';
+import '../../../services/spot_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../../services/trip_service.dart';
+import '../../../services/trip_service.dart';
 
 class AddSpot extends StatefulWidget {
   const AddSpot({super.key, required this.trips, required this.coordinates, required this.address, required this.onAdd});
@@ -187,12 +187,10 @@ class _AddSpotState extends State<AddSpot>{
               );
               Navigator.popUntil(context, ModalRoute.withName('/'));
               Spot? createdSpot = await spotService.createSpot(spot, result);
+              UpdateTrip editTrip = dropdownValue!.toUpdateTrip();
               if (createdSpot != null) {
-                if (dropdownValue != null) {
-                  UpdateTrip editTrip = dropdownValue!.toUpdateTrip();
-                  editTrip.spotIds?.add(createdSpot.id);
-                  Trip? editedTrip = await tripService.editTrip(editTrip);
-                }
+                editTrip.spotIds?.add(createdSpot.id);
+                Trip? editedTrip = await tripService.editTrip(editTrip);
                 widget.onAdd.call(createdSpot);
               }
             }

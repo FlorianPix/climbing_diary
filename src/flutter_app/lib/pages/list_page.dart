@@ -1,12 +1,7 @@
-import 'package:climbing_diary/pages/statistic_page.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
-import '../components/diary_page/trip_timeline.dart';
-import '../components/list_page/spot_list.dart';
 import '../interfaces/spot/spot.dart';
 import '../services/spot_service.dart';
-import 'diary_page.dart';
-import 'map_page.dart';
 
 class ListPage extends StatefulWidget {
   const ListPage({super.key});
