@@ -1,9 +1,10 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:climbing_diary/pages/list_page.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'config/environment.dart';
 import 'pages/diary_page.dart';
-import 'pages/map_page.dart';
+import 'components/map_page/map_page.dart';
 import 'pages/statistic_page.dart';
 import 'services/locator.dart';
 import 'package:flutter/material.dart';
@@ -23,10 +24,26 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final applicationDocumentDir = await getApplicationDocumentsDirectory();
   await Hive.initFlutter(applicationDocumentDir.path);
+  await Hive.openBox('trips');
+  await Hive.openBox('delete_later_trips');
+  await Hive.openBox('edit_later_trips');
+  await Hive.openBox('upload_later_trips');
   await Hive.openBox('spots');
   await Hive.openBox('delete_later_spots');
   await Hive.openBox('edit_later_spots');
   await Hive.openBox('upload_later_spots');
+  await Hive.openBox('routes');
+  await Hive.openBox('delete_later_routes');
+  await Hive.openBox('edit_later_routes');
+  await Hive.openBox('upload_later_routes');
+  await Hive.openBox('pitches');
+  await Hive.openBox('delete_later_pitches');
+  await Hive.openBox('edit_later_pitches');
+  await Hive.openBox('upload_later_pitches');
+  await Hive.openBox('ascents');
+  await Hive.openBox('delete_later_ascents');
+  await Hive.openBox('edit_later_ascents');
+  await Hive.openBox('upload_later_ascents');
   await setup();
   runApp(const OverlaySupport.global(child: MyApp()));
 }
@@ -54,7 +71,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: MaterialColor(0xffff7f50, color),
       ),
-      home: const MyHomePage(title: 'ClimbingDiary'),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const MyHomePage(title: 'Climbing Diary'),
+      },
     );
   }
 }
@@ -78,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late bool online = true;
 
   int currentIndex = 0;
-  final screens = [const MapPage(), const DiaryPage(), const StatisticPage()];
+  final screens = [const MapPage(), const DiaryPage(), const ListPage(), const StatisticPage()];
 
   @override
   void initState() {
@@ -146,6 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 body: screens[currentIndex],
                 bottomNavigationBar: BottomNavigationBar(
+                  type: BottomNavigationBarType.fixed,
                   currentIndex: currentIndex,
                   onTap: (index) => setState(() => currentIndex = index),
                   items: const [
@@ -156,6 +177,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     BottomNavigationBarItem(
                       icon: Icon(Icons.menu_book),
                       label: 'Diary',
+                    ),
+                    BottomNavigationBarItem(
+                      icon: Icon(Icons.list),
+                      label: 'List',
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(Icons.graphic_eq),
@@ -208,6 +233,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               body: screens[currentIndex],
               bottomNavigationBar: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
                 currentIndex: currentIndex,
                 onTap: (index) => setState(() => currentIndex = index),
                 items: const [
@@ -218,6 +244,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   BottomNavigationBarItem(
                     icon: Icon(Icons.menu_book),
                     label: 'Diary',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.list),
+                    label: 'List',
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.graphic_eq),

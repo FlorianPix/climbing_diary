@@ -1,0 +1,149 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import '../../interfaces/trip/trip.dart';
+import '../../interfaces/trip/update_trip.dart';
+import '../../services/trip_service.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+
+class EditTrip extends StatefulWidget {
+  const EditTrip({super.key, required this.trip, required this.onUpdate});
+
+  final Trip trip;
+  final ValueSetter<Trip> onUpdate;
+
+  @override
+  State<StatefulWidget> createState() => _EditTripState();
+}
+
+class _EditTripState extends State<EditTrip>{
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TripService tripService = TripService();
+  final TextEditingController controllerComment = TextEditingController();
+  final TextEditingController controllerEndDate = TextEditingController();
+  final TextEditingController controllerName = TextEditingController();
+  final TextEditingController controllerStartDate = TextEditingController();
+  final TextEditingController controllerDateRange = TextEditingController();
+
+  int currentSliderValue = 0;
+
+  @override
+  void initState(){
+    controllerComment.text = widget.trip.comment;
+    controllerEndDate.text = widget.trip.endDate;
+    controllerName.text = widget.trip.name;
+    controllerStartDate.text = widget.trip.startDate;
+    controllerDateRange.text = "${widget.trip.startDate} ${widget.trip.endDate}";
+    currentSliderValue = widget.trip.rating;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      title: const Text('Edit this trip'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                validator: (value) {
+                  return value!.isNotEmpty
+                    ? null
+                    : "Please add a name";
+                },
+                controller: controllerName,
+                decoration: const InputDecoration(
+                    hintText: "name", labelText: "name"),
+              ),
+              TextFormField(
+                controller: controllerDateRange,
+                decoration: const InputDecoration(
+                    icon: Icon(Icons.calendar_today),
+                    labelText: "enter date range"
+                ),
+                readOnly: true,
+                onTap: () async {
+                  DateTimeRange? pickedDateRange = await showDateRangePicker(
+                      context: context, initialDateRange: DateTimeRange(start: DateTime.now(), end: DateTime.now()),
+                      firstDate: DateTime(DateTime.now().year - 100),
+                      lastDate: DateTime(DateTime.now().year + 100)
+                  );
+                  if(pickedDateRange != null ){
+                    String formattedStartDate = DateFormat('yyyy-MM-dd').format(pickedDateRange.start);
+                    String formattedEndDate = DateFormat('yyyy-MM-dd').format(pickedDateRange.end);
+                    setState(() {
+                      controllerStartDate.text = formattedStartDate;
+                      controllerEndDate.text = formattedEndDate;//set output date to TextField value.
+                      controllerDateRange.text = "$formattedStartDate $formattedEndDate";
+                    });
+                  }
+                },
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(
+                    "Rating",
+                    style: TextStyle(
+                      color: Colors.black.withOpacity(0.6),
+                      fontSize: 16
+                    )
+                  ),
+                ),
+              ),
+              Slider(
+                value: currentSliderValue.toDouble(),
+                max: 5,
+                divisions: 5,
+                label: currentSliderValue.round().toString(),
+                onChanged: (value) {
+                  setState(() {
+                    currentSliderValue = value.toInt();
+                  });
+                },
+              ),
+              TextFormField(
+                controller: controllerComment,
+                decoration: const InputDecoration(
+                  hintText: "comment", labelText: "comment"),
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        IconButton(
+          onPressed: () async {
+            bool result = await InternetConnectionChecker().hasConnection;
+            if (_formKey.currentState!.validate()) {
+              UpdateTrip trip = UpdateTrip(
+                id: widget.trip.id,
+                name: controllerName.text,
+                rating: currentSliderValue.toInt(),
+                comment: controllerComment.text,
+              );
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+              Trip? updatedTrip = await tripService.editTrip(trip);
+              if (updatedTrip != null) {
+                widget.onUpdate.call(updatedTrip);
+              }
+            }
+          },
+          icon: const Icon(Icons.save)
+        ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        ),
+      ],
+    );
+  }
+}

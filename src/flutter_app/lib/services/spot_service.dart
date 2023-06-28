@@ -3,13 +3,13 @@ import 'package:hive/hive.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 import '../config/environment.dart';
-import '../interfaces/create_spot.dart';
+import '../interfaces/spot/create_spot.dart';
 import 'package:dio/dio.dart';
 
 import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
-import '../interfaces/spot.dart';
-import '../interfaces/update_spot.dart';
+import '../interfaces/spot/spot.dart';
+import '../interfaces/spot/update_spot.dart';
 import 'cache.dart';
 import 'locator.dart';
 
@@ -50,19 +50,46 @@ class SpotService {
     return [];
   }
 
-  Future<Spot> getSpot(String spotId) async {
+  Future<List<Spot>> getSpotsByName(String name) async {
+    try {
+      final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
+
+      if (response.statusCode == 200) {
+        // If the server did return a 200 OK response, then parse the JSON.
+        List<Spot> spots = [];
+        response.data.forEach((s) {
+          Spot spot = Spot.fromJson(s);
+          if (spot.name.contains(name)) {
+            spots.add(spot);
+          }
+        });
+        return spots;
+      }
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          showSimpleNotification(
+            const Text('Couldn\'t connect to API'),
+            background: Colors.red,
+          );
+        }
+      }
+    }
+    return [];
+  }
+
+  Future<Spot?> getSpot(String spotId) async {
     final Response response =
         await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
     if (response.statusCode == 200) {
       return Spot.fromJson(response.data);
     } else {
-      throw Exception('Failed to load spot');
+      return null;
     }
   }
 
   Future<Spot?> createSpot(CreateSpot createSpot, bool hasConnection) async {
     CreateSpot spot = CreateSpot(
-      date: createSpot.date,
       name: createSpot.name,
       coordinates: createSpot.coordinates,
       location: createSpot.location,

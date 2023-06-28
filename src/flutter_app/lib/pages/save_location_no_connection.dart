@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import '../components/add_spot.dart';
+import '../components/add/add_spot.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../interfaces/spot.dart';
+import '../interfaces/spot/spot.dart';
 import '../services/location_service.dart';
 
 class SaveLocationNoConnectionPage extends StatefulWidget {
@@ -34,6 +34,7 @@ class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> 
           Position position = snapshot.data!;
           return Scaffold(
             body: AddSpot(
+              trips: [],
               coordinates: LatLng(position.latitude, position.longitude),
               address: " ",
               onAdd: widget.onAdd
