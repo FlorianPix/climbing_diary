@@ -1,30 +1,24 @@
 import 'package:climbing_diary/components/diary_page/image_list_view.dart';
 import 'package:climbing_diary/components/diary_page/rating_row.dart';
-import 'package:climbing_diary/components/diary_page/route_timeline.dart';
+import 'package:climbing_diary/components/diary_page/timeline/spot_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
-import '../../interfaces/trip/update_trip.dart';
-import '../../services/spot_service.dart';
-import '../../services/trip_service.dart';
-import '../detail/spot_details.dart';
-import '../info/spot_info.dart';
+import '../../../interfaces/trip/trip.dart';
+import '../../../services/trip_service.dart';
+import '../../add/add_trip.dart';
+import '../../detail/trip_details.dart';
+import '../../info/trip_info.dart';
 
-class SpotTimeline extends StatefulWidget {
-  const SpotTimeline({super.key, required this.spotIds, required this.trip});
-
-  final Trip trip;
-  final List<String> spotIds;
+class TripTimeline extends StatefulWidget {
+  const TripTimeline({super.key});
 
   @override
-  State<StatefulWidget> createState() => SpotTimelineState();
+  State<StatefulWidget> createState() => TripTimelineState();
 }
 
-class SpotTimelineState extends State<SpotTimeline> {
-  final SpotService spotService = SpotService();
+class TripTimelineState extends State<TripTimeline> {
   final TripService tripService = TripService();
 
   @override
@@ -35,41 +29,51 @@ class SpotTimelineState extends State<SpotTimeline> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> spotIds = widget.spotIds;
     return FutureBuilder<bool>(
       future: checkConnection(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            return FutureBuilder<List<Spot>>(
-              future: Future.wait(spotIds.map((spotId) => spotService.getSpot(spotId))),
+            return FutureBuilder<List<Trip>>(
+              future: tripService.getTrips(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  List<Spot> spots = snapshot.data!;
+                  List<Trip> trips = snapshot.data!;
+                  trips.sort((a, b) => DateTime.parse(b.startDate).compareTo(DateTime.parse(a.startDate)));
 
-                  updateSpotCallback(Spot spot) {
+                  updateTripCallback(Trip trip) {
                     var index = -1;
-                    for (int i = 0; i < spots.length; i++) {
-                      if (spots[i].id == spot.id) {
+                    for (int i = 0; i < trips.length; i++) {
+                      if (trips[i].id == trip.id) {
                         index = i;
                       }
                     }
-                    spots.removeAt(index);
-                    spots.add(spot);
+                    trips.removeAt(index);
+                    trips.add(trip);
                     setState(() {});
                   }
 
-                  deleteSpotCallback(Spot spot) {
-                    spots.remove(spot);
-                    widget.trip.spotIds.remove(spot.id);
-                    UpdateTrip editTrip = widget.trip.toUpdateTrip();
-                    tripService.editTrip(editTrip);
+                  deleteTripCallback(Trip spot) {
+                    trips.remove(spot);
                     setState(() {});
                   }
 
-                  return Column(
+                  return ListView(
+                    padding: const EdgeInsets.all(20.0),
                     children: [
+                      TextButton.icon(
+                        icon: const Icon(Icons.explore, size: 30.0),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AddTrip(),
+                              )
+                          );
+                        },
+                        label: const Text("add a new trip"),
+                      ),
                       FixedTimeline.tileBuilder(
                         theme: TimelineThemeData(
                           nodePosition: 0,
@@ -84,23 +88,28 @@ class SpotTimelineState extends State<SpotTimeline> {
                         ),
                         builder: TimelineTileBuilder.connected(
                           connectionDirection: ConnectionDirection.before,
-                          itemCount: spots.length,
+                          itemCount: trips.length,
                           contentsBuilder: (_, index) {
                             List<Widget> elements = [];
                             // spot info
-                            elements.add(SpotInfo(spot: spots[index]));
+                            elements.add(TripInfo(trip: trips[index]));
                             // rating as hearts in a row
-                            elements.add(RatingRow(rating: spots[index].rating));
+                            elements.add(RatingRow(rating: trips[index].rating));
                             // images list view
-                            if (spots[index].mediaIds.isNotEmpty) {
+                            if (trips[index].mediaIds.isNotEmpty) {
                               elements.add(
-                                  ImageListView(mediaIds: spots[index].mediaIds)
+                                  ImageListView(mediaIds: trips[index].mediaIds)
                               );
                             }
-                            // routes
-                            if (spots[index].routeIds.isNotEmpty){
+                            // spots
+                            if (trips[index].spotIds.isNotEmpty){
                               elements.add(
-                                  RouteTimeline(trip: widget.trip, spot: spots[index], routeIds: spots[index].routeIds)
+                                SpotTimeline(
+                                    trip: trips[index],
+                                    spotIds: trips[index].spotIds,
+                                    startDate: DateTime.parse(trips[index].startDate),
+                                    endDate: DateTime.parse(trips[index].endDate)
+                                )
                               );
                             }
                             return InkWell(
@@ -112,11 +121,9 @@ class SpotTimelineState extends State<SpotTimeline> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(20),
                                             ),
-                                            child: SpotDetails(
-                                                trip: widget.trip,
-                                                spot: spots[index],
-                                                onDelete: deleteSpotCallback,
-                                                onUpdate: updateSpotCallback)
+                                            child: TripDetails(trip: trips[index],
+                                                onDelete: deleteTripCallback,
+                                                onUpdate: updateTripCallback)
                                         ),
                                   ),
                               child: Ink(

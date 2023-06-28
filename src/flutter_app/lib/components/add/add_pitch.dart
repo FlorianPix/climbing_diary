@@ -33,7 +33,6 @@ class _AddPitchState extends State<AddPitch>{
 
   @override
   void initState(){
-    dropdownValue = widget.routes[0];
     super.initState();
   }
 

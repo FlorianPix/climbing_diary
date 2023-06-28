@@ -8,7 +8,7 @@ import '../../interfaces/trip/trip.dart';
 import '../../pages/navigation_screen_page.dart';
 import '../../services/media_service.dart';
 import '../../services/trip_service.dart';
-import '../diary_page/spot_timeline.dart';
+import '../diary_page/timeline/spot_timeline.dart';
 import '../edit/edit_trip.dart';
 
 class TripDetails extends StatefulWidget {
@@ -327,7 +327,7 @@ class _TripDetailsState extends State<TripDetails>{
     // spots
     if (trip.spotIds.isNotEmpty){
         elements.add(
-            SpotTimeline(trip: trip, spotIds: trip.spotIds)
+            SpotTimeline(trip: trip, spotIds: trip.spotIds, startDate: DateTime.parse(trip.startDate), endDate: DateTime.parse(trip.endDate))
         );
     }
 

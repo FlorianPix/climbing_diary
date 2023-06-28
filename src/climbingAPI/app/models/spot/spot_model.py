@@ -8,7 +8,8 @@ from app.models.py_object_id import PyObjectId
 
 class SpotModel(BaseModel):
     media_ids: List[str] = []
-    route_ids: List[PyObjectId] = []
+    single_pitch_route_ids: List[PyObjectId] = []
+    multi_pitch_route_ids: List[PyObjectId] = []
     spot_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: str = Field(...)
 
@@ -28,7 +29,8 @@ class SpotModel(BaseModel):
             "example": {
                 "_id": "",
                 "media_ids": [],
-                "route_ids": [],
+                "single_pitch_route_ids": [],
+                "multi_pitch_route_ids": [],
                 "user_id": "",
                 "comment": "Great spot close to a lake with solid holds but kinda hard to reach.",
                 "coordinates": [50.746036, 10.642666],

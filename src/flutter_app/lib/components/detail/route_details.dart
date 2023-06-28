@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
-import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/route/route.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
@@ -11,10 +10,8 @@ import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../MyButtonStyles.dart';
 import '../add/add_pitch.dart';
-import '../diary_page/pitch_timeline.dart';
+import '../diary_page/timeline/pitch_timeline.dart';
 import '../edit/edit_route.dart';
-import '../info/multi_pitch_info.dart';
-import '../info/single_pitch_info.dart';
 import '../select/select_pitch.dart';
 
 class RouteDetails extends StatefulWidget {
@@ -317,37 +314,6 @@ class _RouteDetailsState extends State<RouteDetails>{
           ],
         )
     );
-    // pitches
-    if (route.pitchIds.isNotEmpty){
-      if (route.pitchIds.length > 1) {
-        // multi pitch
-        elements.add(
-            Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: MultiPitchInfo(pitchIds: route.pitchIds)
-            )
-        );
-        elements.add(
-            PitchTimeline(trip: widget.trip, spot: widget.spot, route: route, pitchIds: route.pitchIds)
-        );
-      } else {
-        // single pitch
-        elements.add(
-            FutureBuilder<Pitch>(
-                future: pitchService.getPitch(route.pitchIds[0]),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    Pitch pitch = snapshot.data!;
-                    return SinglePitchInfo(spot: widget.spot, route: route, pitch: pitch);
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
-                }
-            )
-        );
-      }
-    }
-
     return Stack(
         children: <Widget>[
           Padding(

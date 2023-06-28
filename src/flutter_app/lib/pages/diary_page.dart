@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../components/diary_page/trip_timeline.dart';
+import '../components/diary_page/timeline/trip_timeline.dart';
 
 class DiaryPage extends StatefulWidget {
   const DiaryPage({super.key});

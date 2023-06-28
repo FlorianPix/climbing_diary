@@ -2,7 +2,8 @@ import 'package:climbing_diary/interfaces/spot/update_spot.dart';
 
 class Spot {
   final List<String> mediaIds;
-  final List<String> routeIds;
+  final List<String> singlePitchRouteIds;
+  final List<String> multiPitchRouteIds;
   final String id;
   final String userId;
 
@@ -16,7 +17,8 @@ class Spot {
 
   const Spot({
     required this.mediaIds,
-    required this.routeIds,
+    required this.singlePitchRouteIds,
+    required this.multiPitchRouteIds,
     required this.id,
     required this.userId,
     required this.comment,
@@ -31,7 +33,8 @@ class Spot {
   factory Spot.fromJson(Map<String, dynamic> json) {
     return Spot(
       mediaIds: List<String>.from(json['media_ids']),
-      routeIds: List<String>.from(json['route_ids']),
+      singlePitchRouteIds: List<String>.from(json['single_pitch_route_ids']),
+      multiPitchRouteIds: List<String>.from(json['multi_pitch_route_ids']),
       id: json['_id'],
       userId: json['user_id'],
       comment: json['comment'],
@@ -47,7 +50,8 @@ class Spot {
   factory Spot.fromCache(Map<dynamic, dynamic> cache) {
     return Spot(
       mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : [],
-      routeIds: cache['routes'] != null ? List<String>.from(cache['routes']) : [],
+      singlePitchRouteIds: cache['single_pitch_route_ids'] != null ? List<String>.from(cache['single_pitch_route_ids']) : [],
+      multiPitchRouteIds: cache['multi_pitch_route_ids'] != null ? List<String>.from(cache['multi_pitch_route_ids']) : [],
       id: cache['_id'],
       userId: cache['user_id'],
       comment: cache['comment'],
@@ -62,7 +66,8 @@ class Spot {
 
   Map toJson() => {
     "media_ids": mediaIds,
-    "route_ids": routeIds,
+    "single_pitch_route_ids": singlePitchRouteIds,
+    "multi_pitch_route_ids": multiPitchRouteIds,
     "_id": id,
     "user_id": userId,
     "comment": comment,
@@ -77,7 +82,8 @@ class Spot {
   UpdateSpot toUpdateSpot() {
     return UpdateSpot(
       mediaIds: mediaIds,
-      routeIds: routeIds,
+      singlePitchRouteIds: singlePitchRouteIds,
+      multiPitchRouteIds: multiPitchRouteIds,
       id: id,
       userId: userId,
       comment: comment,

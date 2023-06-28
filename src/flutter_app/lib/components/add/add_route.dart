@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import '../../interfaces/route/create_route.dart';
+import '../../interfaces/grade.dart';
+import '../../interfaces/grading_system.dart';
+import '../../interfaces/multi_pitch_route/create_multi_pitch_route.dart';
 import '../../interfaces/route/route.dart';
+import '../../interfaces/single_pitch_route/create_single_pitch_route.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../services/route_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -24,9 +28,13 @@ class _AddRouteState extends State<AddRoute>{
   final TextEditingController controllerLocation = TextEditingController();
   final TextEditingController controllerName = TextEditingController();
   final TextEditingController controllerRating = TextEditingController();
+  final TextEditingController controllerGrade = TextEditingController();
+  final TextEditingController controllerLength = TextEditingController();
 
   double currentSliderValue = 0;
   Spot? dropdownValue;
+  GradingSystem? gradingSystem;
+  bool isMultiPitch = false;
 
   @override
   void initState(){
@@ -47,6 +55,54 @@ class _AddRouteState extends State<AddRoute>{
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Row(children: [
+                const Text("Multi-pitch"),
+                Switch(
+                  value: isMultiPitch,
+                  onChanged: (bool value) {
+                    setState(() {
+                      isMultiPitch = value;
+                    });
+                  }
+                )]
+              ),
+              Visibility(
+                visible: !isMultiPitch,
+                child: TextFormField(
+                  controller: controllerGrade,
+                  decoration: const InputDecoration(
+                      hintText: "grade of the route", labelText: "grade"),
+                ),
+              ),
+              Visibility(
+                visible: !isMultiPitch,
+                child: DropdownButton<GradingSystem>(
+                  value: gradingSystem,
+                  items: GradingSystem.values.map<DropdownMenuItem<GradingSystem>>((GradingSystem value) {
+                    return DropdownMenuItem<GradingSystem>(
+                        value: value,
+                        child: Text(value.toShortString())
+                    );
+                  }).toList(),
+                  onChanged: (GradingSystem? value) {
+                    setState(() {
+                      gradingSystem = value!;
+                    });
+                  },
+                )
+              ),
+              Visibility(
+                visible: !isMultiPitch,
+                child:TextFormField(
+                  controller: controllerLength,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                  decoration: const InputDecoration(
+                      hintText: "length of the route", labelText: "length"),
+                ),
+              ),
               DropdownButton<Spot>(
                   value: dropdownValue,
                   items: widget.spots.map<DropdownMenuItem<Spot>>((Spot spot) {
@@ -114,16 +170,29 @@ class _AddRouteState extends State<AddRoute>{
             onPressed: () async {
               bool result = await InternetConnectionChecker().hasConnection;
               if (_formKey.currentState!.validate()) {
-                CreateClimbingRoute route = CreateClimbingRoute(
-                  name: controllerName.text,
-                  location: controllerLocation.text,
-                  rating: currentSliderValue.toInt(),
-                  comment: controllerComment.text,
-                );
                 Navigator.popUntil(context, ModalRoute.withName('/'));
                 final dropdownValue = this.dropdownValue;
                 if (dropdownValue != null){
-                  ClimbingRoute? createdRoute = await routeService.createRoute(route, dropdownValue.id, result);
+                  ClimbingRoute? createdRoute;
+                  if (isMultiPitch){
+                    CreateMultiPitchRoute route = CreateMultiPitchRoute(
+                      name: controllerName.text,
+                      location: controllerLocation.text,
+                      rating: currentSliderValue.toInt(),
+                      comment: controllerComment.text,
+                    );
+                    createdRoute = await routeService.createMultiPitchRoute(route, dropdownValue.id, result);
+                  } else {
+                    CreateSinglePitchRoute route = CreateSinglePitchRoute(
+                      name: controllerName.text,
+                      location: controllerLocation.text,
+                      rating: currentSliderValue.toInt(),
+                      comment: controllerComment.text,
+                      grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
+                      length: int.parse(controllerLength.text)
+                    );
+                    createdRoute = await routeService.createSinglePitchRoute(route, dropdownValue.id, result);
+                  }
                   widget.onAdd?.call(createdRoute!);
                   setState(() {});
                 }

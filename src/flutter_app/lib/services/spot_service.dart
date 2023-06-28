@@ -50,13 +50,41 @@ class SpotService {
     return [];
   }
 
-  Future<Spot> getSpot(String spotId) async {
+  Future<List<Spot>> getSpotsByName(String name) async {
+    try {
+      final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
+
+      if (response.statusCode == 200) {
+        // If the server did return a 200 OK response, then parse the JSON.
+        List<Spot> spots = [];
+        response.data.forEach((s) {
+          Spot spot = Spot.fromJson(s);
+          if (spot.name.contains(name)) {
+            spots.add(spot);
+          }
+        });
+        return spots;
+      }
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          showSimpleNotification(
+            const Text('Couldn\'t connect to API'),
+            background: Colors.red,
+          );
+        }
+      }
+    }
+    return [];
+  }
+
+  Future<Spot?> getSpot(String spotId) async {
     final Response response =
         await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
     if (response.statusCode == 200) {
       return Spot.fromJson(response.data);
     } else {
-      throw Exception('Failed to load spot');
+      return null;
     }
   }
 

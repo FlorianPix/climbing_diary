@@ -66,6 +66,7 @@ class _AddSpotState extends State<AddSpot>{
         )
     );
     elements.add(DropdownButton<Trip>(
+        isExpanded: true,
         value: dropdownValue,
         items: widget.trips.map<DropdownMenuItem<Trip>>((Trip trip) {
           return DropdownMenuItem<Trip>(
@@ -186,10 +187,12 @@ class _AddSpotState extends State<AddSpot>{
               );
               Navigator.popUntil(context, ModalRoute.withName('/'));
               Spot? createdSpot = await spotService.createSpot(spot, result);
-              UpdateTrip editTrip = dropdownValue!.toUpdateTrip();
               if (createdSpot != null) {
-                editTrip.spotIds?.add(createdSpot.id);
-                Trip? editedTrip = await tripService.editTrip(editTrip);
+                if (dropdownValue != null) {
+                  UpdateTrip editTrip = dropdownValue!.toUpdateTrip();
+                  editTrip.spotIds?.add(createdSpot.id);
+                  Trip? editedTrip = await tripService.editTrip(editTrip);
+                }
                 widget.onAdd.call(createdSpot);
               }
             }

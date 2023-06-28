@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class AscentType(Enum):
     ON_SIGHT = 0
     FLASH = 1

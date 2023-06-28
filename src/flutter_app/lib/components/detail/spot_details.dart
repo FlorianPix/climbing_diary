@@ -9,7 +9,7 @@ import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
 import '../MyButtonStyles.dart';
 import '../add/add_route.dart';
-import '../diary_page/route_timeline.dart';
+import '../diary_page/timeline/route_timeline.dart';
 import '../edit/edit_spot.dart';
 import '../select/select_route.dart';
 
@@ -18,8 +18,7 @@ class SpotDetails extends StatefulWidget {
 
   final Trip? trip;
   final Spot spot;
-  final ValueSetter<Spot> onDelete;
-  final ValueSetter<Spot> onUpdate;
+  final ValueSetter<Spot> onDelete, onUpdate;
 
   @override
   State<StatefulWidget> createState() => _SpotDetailsState();
@@ -299,7 +298,7 @@ class _SpotDetailsState extends State<SpotDetails>{
                   builder: (context) => AddRoute(
                     spots: [widget.spot],
                     onAdd: (route) {
-                      widget.spot.routeIds.add(route.id);
+                      widget.spot.multiPitchRouteIds.add(route.id);
                       setState(() {});
                     },
                   ),
@@ -350,9 +349,16 @@ class _SpotDetailsState extends State<SpotDetails>{
         )
     );
     // routes
-    if (widget.spot.routeIds.isNotEmpty){
+    if (widget.spot.multiPitchRouteIds.isNotEmpty){
       elements.add(
-          RouteTimeline(trip: widget.trip, spot: widget.spot, routeIds: widget.spot.routeIds)
+          RouteTimeline(
+              trip: widget.trip,
+              spot: widget.spot,
+              singlePitchRouteIds: widget.spot.singlePitchRouteIds,
+              multiPitchRouteIds: widget.spot.multiPitchRouteIds,
+              startDate: DateTime(1923),
+              endDate: DateTime(2123)
+          )
       );
     }
     return Stack(

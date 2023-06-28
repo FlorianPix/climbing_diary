@@ -8,7 +8,6 @@ from app.models.py_object_id import PyObjectId
 
 class RouteModel(BaseModel):
     media_ids: List[str] = []
-    pitch_ids: List[PyObjectId] = []
     route_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: str = Field(...)
 
@@ -25,7 +24,6 @@ class RouteModel(BaseModel):
             "example": {
                 "_id": "",
                 "media_ids": [],
-                "pitch_ids": [],
                 "user_id": "",
                 "comment": "Top Route",
                 "location": "Sektor Falkensteiner Riss",

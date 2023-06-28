@@ -1,6 +1,7 @@
 class UpdateSpot {
   List<String>? mediaIds;
-  List<String>? routeIds;
+  List<String>? singlePitchRouteIds;
+  List<String>? multiPitchRouteIds;
   final String id;
   String? userId;
   String? comment;
@@ -13,7 +14,8 @@ class UpdateSpot {
 
   UpdateSpot({
     this.mediaIds,
-    this.routeIds,
+    this.singlePitchRouteIds,
+    this.multiPitchRouteIds,
     required this.id,
     this.userId,
     this.comment,
@@ -28,7 +30,8 @@ class UpdateSpot {
   factory UpdateSpot.fromJson(Map<String, dynamic> json) {
     return UpdateSpot(
       mediaIds: List<String>.from(json['media_ids']),
-      routeIds: List<String>.from(json['route_ids']),
+      singlePitchRouteIds: List<String>.from(json['single_pitch_route_ids']),
+      multiPitchRouteIds: List<String>.from(json['single_pitch_route_ids']),
       id: json['_id'],
       userId: json['user_id'],
       comment: json['comment'],
@@ -44,7 +47,8 @@ class UpdateSpot {
   factory UpdateSpot.fromCache(Map<dynamic, dynamic> cache) {
     return UpdateSpot(
       mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : [],
-      routeIds: cache['route_ids'] != null ? List<String>.from(cache['route_ids']) : [],
+      singlePitchRouteIds: cache['single_pitch_route_ids'] != null ? List<String>.from(cache['single_pitch_route_ids']) : [],
+      multiPitchRouteIds: cache['multi_pitch_route_ids'] != null ? List<String>.from(cache['multi_pitch_route_ids']) : [],
       id: cache['_id'],
       userId: cache['user_id'],
       comment: cache['comment'],
@@ -59,7 +63,8 @@ class UpdateSpot {
 
   Map toJson() => {
     "media_ids": mediaIds,
-    "route_ids": routeIds,
+    "single_pitch_route_ids": singlePitchRouteIds,
+    "multi_pitch_route_ids": multiPitchRouteIds,
     "_id": id,
     "user_id": userId,
     "comment": comment,

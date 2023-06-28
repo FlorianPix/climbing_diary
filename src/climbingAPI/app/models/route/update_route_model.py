@@ -6,7 +6,6 @@ from typing import Optional, List
 
 class UpdateRouteModel(BaseModel):
     media_ids: Optional[tuple]
-    pitch_ids: Optional[tuple]
 
     comment: Optional[str]
     location: Optional[str]
@@ -19,7 +18,6 @@ class UpdateRouteModel(BaseModel):
         schema_extra = {
             "example": {
                 "media_ids": [],
-                "pitch_ids": [],
                 "comment": "Top Route",
                 "location": "Sektor Falkensteiner Riss",
                 "name": "Falkenstein Riss",

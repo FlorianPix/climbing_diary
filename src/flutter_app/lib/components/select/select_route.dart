@@ -43,8 +43,8 @@ class _SelectRouteState extends State<SelectRoute>{
                   icon: const Icon(Icons.arrow_forward, size: 30.0, color: Colors.pink),
                   label: Text(routes[i].name),
                   onPressed: () {
-                    if (!widget.spot.routeIds.contains(routes[i].id)){
-                      widget.spot.routeIds.add(routes[i].id);
+                    if (!widget.spot.multiPitchRouteIds.contains(routes[i].id)){
+                      widget.spot.multiPitchRouteIds.add(routes[i].id);
                       tripService.editSpot(widget.spot.toUpdateSpot());
                     }
                     Navigator.of(context).pop();

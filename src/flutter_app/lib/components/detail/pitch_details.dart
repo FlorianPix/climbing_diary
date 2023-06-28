@@ -10,9 +10,9 @@ import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../MyButtonStyles.dart';
 import '../add/add_ascent.dart';
-import '../diary_page/ascent_timeline.dart';
+import '../diary_page/timeline/ascent_timeline.dart';
 import '../edit/edit_pitch.dart';
-import '../info/single_pitch_info.dart';
+import '../info/pitch_info.dart';
 import '../select/select_ascent.dart';
 
 class PitchDetails extends StatefulWidget {
@@ -122,16 +122,7 @@ class _PitchDetailsState extends State<PitchDetails>{
     List<Widget> elements = [];
 
     // general info
-    elements.addAll([
-      Text(
-        pitch.name,
-        style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600
-        ),
-      ),
-      SinglePitchInfo(spot: widget.spot, route: widget.route, pitch: pitch),
-    ]);
+    elements.add(PitchInfo(pitch: pitch));
     // rating
     List<Widget> ratingRowElements = [];
 
@@ -318,12 +309,18 @@ class _PitchDetailsState extends State<PitchDetails>{
     );
     // ascents
     if (pitch.ascentIds.isNotEmpty){
+      DateTime startDate = DateTime(1923);
+      DateTime endDate = DateTime(2123);
+      if (widget.trip != null) {
+        DateTime.parse(widget.trip!.startDate);
+        DateTime.parse(widget.trip!.endDate);
+      }
       elements.add(
           AscentTimeline(
               trip: widget.trip,
               spot: widget.spot,
               route: widget.route,
-              pitch: pitch,
+              pitchId: pitch.id,
               ascentIds: pitch.ascentIds,
               onUpdate: (ascent) {
                 // TODO
@@ -332,6 +329,9 @@ class _PitchDetailsState extends State<PitchDetails>{
                 pitch.ascentIds.remove(ascent.id);
                 setState(() {});
               },
+              startDate: startDate,
+              endDate: endDate,
+              ofMultiPitch: true,
           )
       );
     }
