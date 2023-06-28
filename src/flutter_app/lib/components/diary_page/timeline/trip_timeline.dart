@@ -7,6 +7,7 @@ import 'package:timelines/timelines.dart';
 
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/trip_service.dart';
+import '../../add/add_trip.dart';
 import '../../detail/trip_details.dart';
 import '../../info/trip_info.dart';
 
@@ -61,6 +62,18 @@ class TripTimelineState extends State<TripTimeline> {
                   return ListView(
                     padding: const EdgeInsets.all(20.0),
                     children: [
+                      TextButton.icon(
+                        icon: const Icon(Icons.explore, size: 30.0),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AddTrip(),
+                              )
+                          );
+                        },
+                        label: const Text("add a new trip"),
+                      ),
                       FixedTimeline.tileBuilder(
                         theme: TimelineThemeData(
                           nodePosition: 0,
