@@ -1,13 +1,9 @@
 import 'package:climbing_diary/pages/save_location_no_connection.dart';
 import 'package:flutter/material.dart';
 
-import '../detail/spot_details.dart';
-import '../../services/ascent_service.dart';
+import 'details/spot_details.dart';
 import '../../services/cache.dart';
-import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
-import '../../services/trip_service.dart';
-import '../../pages/navigation_screen_page.dart';
+import 'navigation_screen_page.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';

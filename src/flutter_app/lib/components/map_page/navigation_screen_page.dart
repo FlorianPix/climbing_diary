@@ -3,10 +3,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
 
-import '../../../interfaces/spot/spot.dart';
-import '../../../interfaces/trip/trip.dart';
-import '../../../services/location_service.dart';
-import '../../../services/trip_service.dart';
+import '../../interfaces/spot/spot.dart';
+import '../../interfaces/trip/trip.dart';
+import '../../services/location_service.dart';
+import '../../services/trip_service.dart';
 import 'add_spot.dart';
 
 
