@@ -65,8 +65,6 @@ class SpotTimelineState extends State<SpotTimeline> {
                   deleteSpotCallback(Spot spot) {
                     spots.remove(spot);
                     widget.trip.spotIds.remove(spot.id);
-                    UpdateTrip editTrip = widget.trip.toUpdateTrip();
-                    tripService.editTrip(editTrip);
                     setState(() {});
                   }
 
