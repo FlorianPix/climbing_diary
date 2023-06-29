@@ -50,7 +50,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
       var mediaId = await mediaService.uploadMedia(img);
       SinglePitchRoute route = widget.route;
       route.mediaIds.add(mediaId);
-      routeService.editRoute(route.toUpdateSinglePitchRoute());
+      routeService.editSinglePitchRoute(route.toUpdateSinglePitchRoute());
     }
 
     setState(() {
@@ -288,7 +288,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                routeService.deleteRoute(route, widget.spotId);
+                routeService.deleteSinglePitchRoute(route, widget.spotId);
                 widget.onDelete.call(route);
               },
               icon: const Icon(Icons.delete),

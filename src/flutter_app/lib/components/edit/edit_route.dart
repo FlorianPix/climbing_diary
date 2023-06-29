@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../../interfaces/route/route.dart';
 import '../../interfaces/route/update_route.dart';
 import '../../services/route_service.dart';
@@ -9,8 +10,8 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 class EditRoute extends StatefulWidget {
   const EditRoute({super.key, required this.route, required this.onUpdate});
 
-  final ClimbingRoute route;
-  final ValueSetter<ClimbingRoute> onUpdate;
+  final MultiPitchRoute route;
+  final ValueSetter<MultiPitchRoute> onUpdate;
 
   @override
   State<StatefulWidget> createState() => _EditRouteState();
@@ -110,10 +111,13 @@ class _EditRouteState extends State<EditRoute>{
               );
               Navigator.of(context).pop();
               Navigator.of(context).pop();
+              /*
+              TODO single/multi ?
               ClimbingRoute? updatedRoute = await routeService.editRoute(route);
               if (updatedRoute != null) {
                 widget.onUpdate.call(updatedRoute);
               }
+               */
             }
           },
           icon: const Icon(Icons.save)

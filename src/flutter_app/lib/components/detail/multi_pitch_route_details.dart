@@ -50,7 +50,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
       var mediaId = await mediaService.uploadMedia(img);
       MultiPitchRoute route = widget.route;
       route.mediaIds.add(mediaId);
-      routeService.editRoute(route.toUpdateMultiPitchRoute());
+      routeService.editMultiPitchRoute(route.toUpdateMultiPitchRoute());
     }
 
     setState(() {
@@ -288,7 +288,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                routeService.deleteRoute(route, widget.spotId);
+                routeService.deleteMultiPitchRoute(route, widget.spotId);
                 widget.onDelete.call(route);
               },
               icon: const Icon(Icons.delete),

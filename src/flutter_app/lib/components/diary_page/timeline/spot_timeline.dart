@@ -50,6 +50,7 @@ class SpotTimelineState extends State<SpotTimeline> {
                 if (snapshot.hasData) {
                   List<Spot> spots = snapshot.data!.whereType<Spot>().toList();
                   spots.sort((a, b) => a.name.compareTo(b.name));
+
                   updateSpotCallback(Spot spot) {
                     var index = -1;
                     for (int i = 0; i < spots.length; i++) {

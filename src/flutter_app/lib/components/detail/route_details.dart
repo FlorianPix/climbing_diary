@@ -1,3 +1,4 @@
+import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
@@ -17,9 +18,9 @@ class RouteDetails extends StatefulWidget {
 
   final Trip? trip;
   final Spot spot;
-  final ClimbingRoute route;
-  final ValueSetter<ClimbingRoute> onDelete;
-  final ValueSetter<ClimbingRoute> onUpdate;
+  final MultiPitchRoute route;
+  final ValueSetter<MultiPitchRoute> onDelete;
+  final ValueSetter<MultiPitchRoute> onUpdate;
   final String spotId;
 
   @override
@@ -46,9 +47,9 @@ class _RouteDetailsState extends State<RouteDetails>{
     var img = await picker.pickImage(source: media);
     if (img != null){
       var mediaId = await mediaService.uploadMedia(img);
-      ClimbingRoute route = widget.route;
+      MultiPitchRoute route = widget.route;
       route.mediaIds.add(mediaId);
-      routeService.editRoute(route.toUpdateClimbingRoute());
+      routeService.editMultiPitchRoute(route.toUpdateMultiPitchRoute());
     }
 
     setState(() {
@@ -117,7 +118,7 @@ class _RouteDetailsState extends State<RouteDetails>{
   @override
   Widget build(BuildContext context) {
     List<Widget> elements = [];
-    ClimbingRoute route = widget.route;
+    MultiPitchRoute route = widget.route;
 
     // general info
     elements.addAll([
@@ -281,7 +282,7 @@ class _RouteDetailsState extends State<RouteDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                routeService.deleteRoute(route, widget.spotId);
+                routeService.deleteMultiPitchRoute(route, widget.spotId);
                 widget.onDelete.call(route);
               },
               icon: const Icon(Icons.delete),

@@ -54,6 +54,8 @@ class RouteListState extends State<RouteList> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   List<MultiPitchRoute> multiPitchRoutes = snapshot.data!.whereType<MultiPitchRoute>().toList();
+                  multiPitchRoutes.sort((a, b) => a.name.compareTo(b.name));
+
                   updateMultiPitchRouteCallback(MultiPitchRoute route) {
                     var index = -1;
                     for (int i = 0; i < multiPitchRoutes.length; i++) {
@@ -70,7 +72,6 @@ class RouteListState extends State<RouteList> {
                     multiPitchRoutes.remove(route);
                     setState(() {});
                   }
-
                   if (multiPitchRoutes.isNotEmpty){
                     elements.add(
                       FixedTimeline.tileBuilder(
@@ -89,27 +90,27 @@ class RouteListState extends State<RouteList> {
                           connectionDirection: ConnectionDirection.before,
                           itemCount: multiPitchRoutes.length,
                           contentsBuilder: (_, index) {
-                            List<Widget> elements = [];
+                            List<Widget> timeLineElements = [];
                             // route info
                             MultiPitchRoute multiPitchRoute = multiPitchRoutes[index];
-                            elements.add(RouteInfo(route: multiPitchRoute));
+                            timeLineElements.add(RouteInfo(route: multiPitchRoute));
                             // rating as hearts in a row
-                            elements.add(RatingRow(rating: multiPitchRoute.rating));
+                            timeLineElements.add(RatingRow(rating: multiPitchRoute.rating));
                             // images list view
                             if (multiPitchRoute.mediaIds.isNotEmpty) {
-                              elements.add(
+                              timeLineElements.add(
                                   ImageListView(mediaIds: multiPitchRoute.mediaIds)
                               );
                             }
                             // pitches
                             if (multiPitchRoute.pitchIds.isNotEmpty) {
                               // multi pitch
-                              elements.add(
+                              timeLineElements.add(
                                   MultiPitchInfo(
                                       pitchIds: multiPitchRoute.pitchIds
                                   )
                               );
-                              elements.add(
+                              timeLineElements.add(
                                   PitchTimeline(
                                       trip: widget.trip,
                                       spot: widget.spot,
@@ -141,7 +142,7 @@ class RouteListState extends State<RouteList> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
-                                      children: elements,
+                                      children: timeLineElements,
                                     ),
                                   )
                               ),
@@ -159,95 +160,98 @@ class RouteListState extends State<RouteList> {
                       ),
                     );
                   }
-                }
-                return FutureBuilder<List<SinglePitchRoute?>>(
-                    future: Future.wait(singlePitchRouteIds.map((routeId) => routeService.getSinglePitchRoute(routeId))),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        List<SinglePitchRoute> singlePitchRoutes = snapshot.data!.whereType<SinglePitchRoute>().toList();
+                  return FutureBuilder<List<SinglePitchRoute?>>(
+                      future: Future.wait(singlePitchRouteIds.map((routeId) => routeService.getSinglePitchRoute(routeId))),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          List<SinglePitchRoute> singlePitchRoutes = snapshot.data!.whereType<SinglePitchRoute>().toList();
+                          singlePitchRoutes.sort((a, b) => a.name.compareTo(b.name));
 
-                        if (singlePitchRoutes.isNotEmpty){
-                          elements.add(
-                              FixedTimeline.tileBuilder(
-                                theme: TimelineThemeData(
-                                  nodePosition: 0,
-                                  color: const Color(0xff989898),
-                                  indicatorTheme: const IndicatorThemeData(
-                                    position: 0,
-                                    size: 20.0,
+                          if (singlePitchRoutes.isNotEmpty){
+                            elements.add(
+                                FixedTimeline.tileBuilder(
+                                  theme: TimelineThemeData(
+                                    nodePosition: 0,
+                                    color: const Color(0xff989898),
+                                    indicatorTheme: const IndicatorThemeData(
+                                      position: 0,
+                                      size: 20.0,
+                                    ),
+                                    connectorTheme: const ConnectorThemeData(
+                                      thickness: 2.5,
+                                    ),
                                   ),
-                                  connectorTheme: const ConnectorThemeData(
-                                    thickness: 2.5,
-                                  ),
-                                ),
-                                builder: TimelineTileBuilder.connected(
-                                  connectionDirection: ConnectionDirection.before,
-                                  itemCount: singlePitchRoutes.length,
-                                  contentsBuilder: (_, index) {
-                                    List<Widget> elements = [];
-                                    // route info
-                                    SinglePitchRoute singlePitchRoute = singlePitchRoutes[index];
-                                    elements.add(SinglePitchRouteInfo(
-                                        spot: widget.spot,
-                                        route: singlePitchRoute
-                                    ));
-                                    // rating as hearts in a row
-                                    elements.add(RatingRow(rating: singlePitchRoute.rating));
-                                    // images list view
-                                    if (singlePitchRoute.mediaIds.isNotEmpty) {
-                                      elements.add(
-                                          ImageListView(mediaIds: singlePitchRoute.mediaIds)
+                                  builder: TimelineTileBuilder.connected(
+                                    connectionDirection: ConnectionDirection.before,
+                                    itemCount: singlePitchRoutes.length,
+                                    contentsBuilder: (_, index) {
+                                      List<Widget> elements = [];
+                                      // route info
+                                      SinglePitchRoute singlePitchRoute = singlePitchRoutes[index];
+                                      elements.add(SinglePitchRouteInfo(
+                                          spot: widget.spot,
+                                          route: singlePitchRoute
+                                      ));
+                                      // rating as hearts in a row
+                                      elements.add(RatingRow(rating: singlePitchRoute.rating));
+                                      // images list view
+                                      if (singlePitchRoute.mediaIds.isNotEmpty) {
+                                        elements.add(
+                                            ImageListView(mediaIds: singlePitchRoute.mediaIds)
+                                        );
+                                      }
+
+                                      return InkWell(
+                                        onTap: () => showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) =>
+                                                Dialog(
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(20),
+                                                    ),
+                                                    child: SinglePitchRouteDetails(
+                                                        spot: widget.spot,
+                                                        route: singlePitchRoute,
+                                                        onDelete: (SinglePitchRoute sPR) => {},
+                                                        onUpdate: (SinglePitchRoute sPR) => {},
+                                                        spotId: widget.spot.id)
+                                                )
+                                        ),
+                                        child: Ink(
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(left: 8.0),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: elements,
+                                              ),
+                                            )
+                                        ),
                                       );
-                                    }
-
-                                    return InkWell(
-                                      onTap: () => showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) =>
-                                              Dialog(
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(20),
-                                                  ),
-                                                  child: SinglePitchRouteDetails(
-                                                      spot: widget.spot,
-                                                      route: singlePitchRoute,
-                                                      onDelete: (SinglePitchRoute sPR) => {},
-                                                      onUpdate: (SinglePitchRoute sPR) => {},
-                                                      spotId: widget.spot.id)
-                                              )
-                                      ),
-                                      child: Ink(
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(left: 8.0),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: elements,
-                                            ),
-                                          )
-                                      ),
-                                    );
-                                  },
-                                  indicatorBuilder: (_, index) {
-                                    return const OutlinedDotIndicator(
-                                      borderWidth: 2.5,
-                                      color: Color(0xff66c97f),
-                                    );
-                                  },
-                                  connectorBuilder: (_, index, ___) =>
-                                  const SolidLineConnector(color: Color(0xff66c97f)),
-                                ),
-                              )
+                                    },
+                                    indicatorBuilder: (_, index) {
+                                      return const OutlinedDotIndicator(
+                                        borderWidth: 2.5,
+                                        color: Color(0xff66c97f),
+                                      );
+                                    },
+                                    connectorBuilder: (_, index, ___) =>
+                                    const SolidLineConnector(color: Color(0xff66c97f)),
+                                  ),
+                                )
+                            );
+                          }
+                          return Column(
+                            children: elements,
                           );
+                        } else {
+                          return const CircularProgressIndicator();
                         }
-                        return Column(
-                          children: elements,
-                        );
-                      } else {
-                        return const CircularProgressIndicator();
                       }
-                    }
-                );
+                  );
+                } else {
+                  return const CircularProgressIndicator();
+                }
               }
             );
           } else {
