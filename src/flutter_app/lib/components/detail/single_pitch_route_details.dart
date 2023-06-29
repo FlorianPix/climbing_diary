@@ -286,21 +286,6 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
       ),
     );
     elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add existing ascent'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SelectAscentOfSinglePitchRoute(singlePitchRoute: widget.route),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

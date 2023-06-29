@@ -1,7 +1,9 @@
+import 'package:climbing_diary/components/diary_page/timeline/spot_timeline.dart';
+import 'package:climbing_diary/components/list_page/spot_list.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
-import '../interfaces/spot/spot.dart';
-import '../services/spot_service.dart';
+import '../../interfaces/spot/spot.dart';
+import '../../services/spot_service.dart';
 
 class ListPage extends StatefulWidget {
   const ListPage({super.key});
@@ -15,10 +17,16 @@ class ListPageState extends State<ListPage> {
   final TextEditingController controllerSearch = TextEditingController();
 
   final SpotService spotService = SpotService();
+  bool searchSpots = true;
+  bool searchRoutes = false;
+  bool searchPitches = false;
 
   @override
   void initState(){
     super.initState();
+    searchSpots = true;
+    searchRoutes = false;
+    searchPitches = false;
   }
 
   @override
@@ -43,8 +51,8 @@ class ListPageState extends State<ListPage> {
                         borderRadius: BorderRadius.all(Radius.circular(25.0)),
                         borderSide: BorderSide(color: Colors.blue),
                       ),
-                      hintText: "spot, route or pitch name",
-                      labelText: "spot, route or pitch name"
+                      hintText: "name",
+                      labelText: "name"
                   ),
                   onChanged: (String s) {
                     setState(() {});
@@ -52,38 +60,43 @@ class ListPageState extends State<ListPage> {
                 ),
               ),
             ));
-            for (Spot spot in spots){
-              elements.add(
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            spot.name,
-                            style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Text(
-                            '${round(spot.coordinates[0], decimals: 8)}, ${round(spot.coordinates[1], decimals: 8)}',
-                            style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400
-                            ),
-                          ),
-                        ]
-                      ),
-                    )
-                  )
-                )
-              );
-            }
+            elements.add(Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  const Text("spots"),
+                  Switch(
+                      value: searchSpots,
+                      onChanged: (bool value) {
+                        setState(() {
+                          searchSpots = value;
+                        });
+                      }
+                  ),
+                  const Text("routes"),
+                  Switch(
+                      value: searchRoutes,
+                      onChanged: (bool value) {
+                        setState(() {
+                          searchRoutes = value;
+                        });
+                      }
+                  ),
+                  const Text("pitches"),
+                  Switch(
+                      value: searchPitches,
+                      onChanged: (bool value) {
+                        setState(() {
+                          searchPitches = value;
+                        });
+                      }
+                  ),
+                ]
+            ));
+            elements.add( Padding(
+                padding: const EdgeInsets.all(10),
+                child: SpotList(
+                  spots: spots
+            )));
             return ListView(
               children: elements,
             );

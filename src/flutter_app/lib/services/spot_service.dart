@@ -3,6 +3,10 @@ import 'package:hive/hive.dart';
 import 'package:overlay_support/overlay_support.dart';
 
 import '../config/environment.dart';
+import '../interfaces/ascent/ascent.dart';
+import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
+import '../interfaces/pitch/pitch.dart';
+import '../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../interfaces/spot/create_spot.dart';
 import 'package:dio/dio.dart';
 
@@ -51,6 +55,9 @@ class SpotService {
   }
 
   Future<List<Spot>> getSpotsByName(String name) async {
+    if (name == ""){
+      return [];
+    }
     try {
       final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
 
@@ -86,6 +93,47 @@ class SpotService {
     } else {
       return null;
     }
+  }
+
+  Future<Spot?> getSpotIfWithinDateRange(String spotId, DateTime startDate, DateTime endDate) async {
+    final Response spotResponse =
+    await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
+    if (spotResponse.statusCode == 200) {
+      Spot spot = Spot.fromJson(spotResponse.data);
+      for (String routeId in spot.multiPitchRouteIds){
+        final Response multiPitchResponse = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route/$routeId');
+        if (multiPitchResponse.statusCode == 200) {
+          MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromJson(multiPitchResponse.data);
+          for (String pitchId in multiPitchRoute.pitchIds){
+            final Response pitchResponse = await netWorkLocator.dio.get('$climbingApiHost/pitch/$pitchId');
+            Pitch pitch = Pitch.fromJson(pitchResponse.data);
+            for (String ascentId in pitch.ascentIds){
+              final Response ascentResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
+              Ascent ascent = Ascent.fromJson(ascentResponse.data);
+              DateTime dateOfAscent = DateTime.parse(ascent.date);
+              if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
+                return spot;
+              }
+            }
+          }
+        }
+      }
+      for (String routeId in spot.singlePitchRouteIds){
+        final Response singlePitchResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$routeId');
+        if (singlePitchResponse.statusCode == 200) {
+          SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(singlePitchResponse.data);
+          for (String ascentId in singlePitchRoute.ascentIds){
+            final Response ascentResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
+            Ascent ascent = Ascent.fromJson(ascentResponse.data);
+            DateTime dateOfAscent = DateTime.parse(ascent.date);
+            if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
+              return spot;
+            }
+          }
+        }
+      }
+    }
+    return null;
   }
 
   Future<Spot?> createSpot(CreateSpot createSpot, bool hasConnection) async {

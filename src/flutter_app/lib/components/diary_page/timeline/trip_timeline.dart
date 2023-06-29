@@ -68,7 +68,12 @@ class TripTimelineState extends State<TripTimeline> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const AddTrip(),
+                                builder: (context) => AddTrip(
+                                  onAdd: (trip) {
+                                    trips.add(trip);
+                                    setState(() {});
+                                  }
+                                ),
                               )
                           );
                         },
@@ -108,7 +113,7 @@ class TripTimelineState extends State<TripTimeline> {
                                     trip: trips[index],
                                     spotIds: trips[index].spotIds,
                                     startDate: DateTime.parse(trips[index].startDate),
-                                    endDate: DateTime.parse(trips[index].endDate)
+                                    endDate: DateTime.parse(trips[index].endDate),
                                 )
                               );
                             }
@@ -122,8 +127,13 @@ class TripTimelineState extends State<TripTimeline> {
                                               borderRadius: BorderRadius.circular(20),
                                             ),
                                             child: TripDetails(trip: trips[index],
-                                                onDelete: deleteTripCallback,
-                                                onUpdate: updateTripCallback)
+                                                onTripDelete: deleteTripCallback,
+                                                onTripUpdate: updateTripCallback,
+                                                onSpotAdd: (spot) {
+                                                  trips[index].spotIds.add(spot.id);
+                                                  setState(() {});
+                                                },
+                                            )
                                         ),
                                   ),
                               child: Ink(

@@ -1,9 +1,11 @@
+import 'dart:ffi';
+
 import 'package:climbing_diary/pages/save_location_no_connection.dart';
 import 'package:flutter/material.dart';
 
+import 'add_spot.dart';
 import 'details/spot_details.dart';
 import '../../services/cache.dart';
-import 'navigation_screen_page.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -94,25 +96,17 @@ class _MapPageState extends State<MapPage> {
                           ],
                         )
                       ),
-                      floatingActionButton: IconButton(
-                        icon: const Icon(Icons.add, size: 50.0),
+                      floatingActionButton: FloatingActionButton(
                         onPressed: () {
-                          if (online) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (
-                                      context) => NavigationScreenPage(onAdd: addSpotCallback)),
-                            );
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (
-                                      context) => SaveLocationNoConnectionPage(onAdd: addSpotCallback)),
-                            );
-                          }
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AddSpot(onAdd: (spot) => addSpotCallback(spot))),
+                          );
                         },
+                        backgroundColor: Colors.green,
+                        elevation: 5,
+                        child: const Icon(Icons.add, size: 50.0),
                       )
                     );
                   }
@@ -141,25 +135,18 @@ class _MapPageState extends State<MapPage> {
                         ],
                       )
                     ),
-                    floatingActionButton: IconButton(
-                      icon: const Icon(Icons.add, size: 50.0),
+                    floatingActionButton: FloatingActionButton(
                       onPressed: () {
-                        if (online) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (
-                                    context) => NavigationScreenPage(onAdd: addSpotCallback)),
-                          );
-                        } else {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (
-                                    context) => SaveLocationNoConnectionPage(onAdd: addSpotCallback)),
-                          );
-                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AddSpot(onAdd: (spot) => addSpotCallback(spot)),
+                          )
+                        );
                       },
+                      backgroundColor: Colors.green,
+                      elevation: 5,
+                      child: const Icon(Icons.add, size: 50.0, color: Colors.white,),
                     )
                   );
                 } else if (snapshot.hasError) {
@@ -182,6 +169,8 @@ class _MapPageState extends State<MapPage> {
                       builder: (context) => SaveLocationNoConnectionPage(onAdd: (Spot value) {})),
                   );
                 },
+                backgroundColor: Colors.green,
+                elevation: 5,
                 child: const Icon(Icons.add),
               ),
             );

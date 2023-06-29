@@ -286,28 +286,6 @@ class _SpotDetailsState extends State<SpotDetails>{
         ),
       );
     }
-    // add route
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add new route'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddRoute(
-                    spots: [widget.spot],
-                    onAdd: (route) {
-                      widget.spot.multiPitchRouteIds.add(route.id);
-                      setState(() {});
-                    },
-                  ),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
     // delete, edit, close
     elements.add(
         Row(

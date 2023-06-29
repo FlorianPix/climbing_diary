@@ -49,8 +49,17 @@ class _RouteInfoState extends State<RouteInfo>{
               crossAxisAlignment: CrossAxisAlignment.start,
               children: listInfo,
             );
+          } else {
+            List<Widget> listInfo = [];
+            listInfo.add(Text(
+              widget.route.name,
+              style: MyTextStyles.title,
+            ));
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: listInfo,
+            );
           }
-          return const CircularProgressIndicator();
         }
     );
   }

@@ -9,9 +9,8 @@ import '../../../services/media_service.dart';
 import '../../../services/spot_service.dart';
 import '../../MyButtonStyles.dart';
 import '../../add/add_route.dart';
-import '../../diary_page/timeline/route_timeline.dart';
 import '../../edit/edit_spot.dart';
-import '../../select/select_route.dart';
+import '../route_list.dart';
 
 class SpotDetails extends StatefulWidget {
   const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate });
@@ -334,16 +333,13 @@ class _SpotDetailsState extends State<SpotDetails>{
         )
     );
     // routes
-    // routes
     if (widget.spot.multiPitchRouteIds.isNotEmpty || widget.spot.singlePitchRouteIds.isNotEmpty){
       elements.add(
-          RouteTimeline(
+          RouteList(
             trip: widget.trip,
             spot: widget.spot,
             singlePitchRouteIds: widget.spot.singlePitchRouteIds,
             multiPitchRouteIds: widget.spot.multiPitchRouteIds,
-            startDate: DateTime(1923),
-            endDate: DateTime(2123),
           )
       );
     }

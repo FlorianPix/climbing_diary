@@ -1,5 +1,5 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
-import 'package:climbing_diary/pages/list_page.dart';
+import 'package:climbing_diary/components/list_page/list_page.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'config/environment.dart';

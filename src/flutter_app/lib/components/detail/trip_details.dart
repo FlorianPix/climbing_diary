@@ -4,19 +4,21 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
+import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
 import '../../pages/navigation_screen_page.dart';
 import '../../services/media_service.dart';
 import '../../services/trip_service.dart';
+import '../add/add_spot.dart';
 import '../diary_page/timeline/spot_timeline.dart';
 import '../edit/edit_trip.dart';
 
 class TripDetails extends StatefulWidget {
-  const TripDetails({super.key, required this.trip, required this.onDelete, required this.onUpdate });
+  const TripDetails({super.key, required this.trip, required this.onTripDelete, required this.onTripUpdate, required this.onSpotAdd });
 
   final Trip trip;
-  final ValueSetter<Trip> onDelete;
-  final ValueSetter<Trip> onUpdate;
+  final ValueSetter<Trip> onTripDelete, onTripUpdate;
+  final ValueSetter<Spot> onSpotAdd;
 
   @override
   State<StatefulWidget> createState() => _TripDetailsState();
@@ -100,7 +102,7 @@ class _TripDetailsState extends State<TripDetails>{
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return EditTrip(trip: widget.trip, onUpdate: widget.onUpdate);
+        return EditTrip(trip: widget.trip, onUpdate: widget.onTripUpdate);
       });
   }
 
@@ -273,10 +275,12 @@ class _TripDetailsState extends State<TripDetails>{
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => NavigationScreenPage(
+                  builder: (context) => AddSpot(
                     onAdd: (spot) {
-                      trip.spotIds.add(spot.id);
+                      widget.onSpotAdd.call(spot);
+                      setState(() {});
                     },
+                    trip: trip,
                   ),
                 )
             );
@@ -309,7 +313,7 @@ class _TripDetailsState extends State<TripDetails>{
               onPressed: () {
                 Navigator.pop(context);
                 tripService.deleteTrip(trip);
-                widget.onDelete.call(trip);
+                widget.onTripDelete.call(trip);
               },
               icon: const Icon(Icons.delete),
             ),
@@ -326,9 +330,12 @@ class _TripDetailsState extends State<TripDetails>{
     );
     // spots
     if (trip.spotIds.isNotEmpty){
-        elements.add(
-            SpotTimeline(trip: trip, spotIds: trip.spotIds, startDate: DateTime.parse(trip.startDate), endDate: DateTime.parse(trip.endDate))
-        );
+        elements.add(SpotTimeline(
+            trip: trip,
+            spotIds: trip.spotIds,
+            startDate: DateTime.parse(trip.startDate),
+            endDate: DateTime.parse(trip.endDate)
+        ));
     }
 
     return Stack(

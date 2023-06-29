@@ -10,7 +10,7 @@ import '../../../interfaces/trip/trip.dart';
 import '../../../interfaces/trip/update_trip.dart';
 import '../../../services/spot_service.dart';
 import '../../../services/trip_service.dart';
-import '../../detail/spot_details.dart';
+import '../spot_details.dart';
 import '../../info/spot_info.dart';
 
 class SpotTimeline extends StatefulWidget {
@@ -43,12 +43,13 @@ class SpotTimelineState extends State<SpotTimeline> {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
+
             return FutureBuilder<List<Spot?>>(
               future: Future.wait(spotIds.map((spotId) => spotService.getSpot(spotId))),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   List<Spot> spots = snapshot.data!.whereType<Spot>().toList();
-
+                  spots.sort((a, b) => a.name.compareTo(b.name));
                   updateSpotCallback(Spot spot) {
                     var index = -1;
                     for (int i = 0; i < spots.length; i++) {
