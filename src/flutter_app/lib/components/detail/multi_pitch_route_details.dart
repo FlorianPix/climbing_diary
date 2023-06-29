@@ -3,7 +3,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../../interfaces/route/route.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
 import '../../services/media_service.dart';
@@ -13,9 +12,7 @@ import '../MyButtonStyles.dart';
 import '../add/add_pitch.dart';
 import '../diary_page/timeline/pitch_timeline.dart';
 import '../edit/edit_multi_pitch_route.dart';
-import '../edit/edit_route.dart';
 import '../info/multi_pitch_route_info.dart';
-import '../select/select_pitch.dart';
 
 class MultiPitchRouteDetails extends StatefulWidget {
   const MultiPitchRouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
@@ -277,21 +274,6 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddPitch(routes: [widget.route],),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add existing pitch'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SelectPitch(route: widget.route),
                 )
             );
           },

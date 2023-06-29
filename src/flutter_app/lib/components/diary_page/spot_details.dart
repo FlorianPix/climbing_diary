@@ -8,10 +8,8 @@ import '../../interfaces/trip/trip.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
 import '../MyButtonStyles.dart';
-import '../add/add_route.dart';
 import '../diary_page/timeline/route_timeline.dart';
 import '../edit/edit_spot.dart';
-import '../select/select_route.dart';
 
 class SpotDetails extends StatefulWidget {
   const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate });

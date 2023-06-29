@@ -13,7 +13,6 @@ import '../add/add_ascent.dart';
 import '../diary_page/timeline/ascent_timeline.dart';
 import '../edit/edit_pitch.dart';
 import '../info/pitch_info.dart';
-import '../select/select_ascent.dart';
 
 class PitchDetails extends StatefulWidget {
   const PitchDetails({super.key, this.trip, required this.spot, required this.route, required this.pitch, required this.onDelete, required this.onUpdate });
@@ -261,21 +260,6 @@ class _PitchDetailsState extends State<PitchDetails>{
                       setState(() {});
                     },
                   ),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add existing ascent'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SelectAscent(pitch: widget.pitch),
                 )
             );
           },

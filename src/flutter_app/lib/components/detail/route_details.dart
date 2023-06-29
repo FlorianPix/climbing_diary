@@ -10,9 +10,7 @@ import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../MyButtonStyles.dart';
 import '../add/add_pitch.dart';
-import '../diary_page/timeline/pitch_timeline.dart';
 import '../edit/edit_route.dart';
-import '../select/select_pitch.dart';
 
 class RouteDetails extends StatefulWidget {
   const RouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
@@ -269,21 +267,6 @@ class _RouteDetailsState extends State<RouteDetails>{
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddPitch(routes: [widget.route],),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add existing pitch'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SelectPitch(route: widget.route),
                 )
             );
           },

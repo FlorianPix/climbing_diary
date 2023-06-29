@@ -1,5 +1,4 @@
 import 'package:climbing_diary/components/add/add_ascent_to_single_pitch_route.dart';
-import 'package:climbing_diary/components/select/select_ascent_of_single_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
@@ -11,13 +10,9 @@ import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../MyButtonStyles.dart';
-import '../add/add_ascent.dart';
-import '../add/add_pitch.dart';
 import '../diary_page/timeline/ascent_timeline.dart';
 import '../edit/edit_single_pitch_route.dart';
 import '../info/single_pitch_route_info.dart';
-import '../select/select_ascent.dart';
-import '../select/select_pitch.dart';
 
 class SinglePitchRouteDetails extends StatefulWidget {
   const SinglePitchRouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
