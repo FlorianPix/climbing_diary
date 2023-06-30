@@ -226,15 +226,8 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         ),
       );
     }
-    return Stack(
-        children: <Widget>[
-          Padding(
-              padding: const EdgeInsets.all(20),
-              child: ListView(
-                  children: elements
-              )
-          )
-        ]
+    return Column(
+        children: elements
     );
   }
 }
