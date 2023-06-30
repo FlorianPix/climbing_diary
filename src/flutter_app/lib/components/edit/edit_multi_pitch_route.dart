@@ -1,3 +1,4 @@
+import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -102,22 +103,18 @@ class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
           onPressed: () async {
             bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
-              UpdateClimbingRoute route = UpdateClimbingRoute(
+              UpdateMultiPitchRoute route = UpdateMultiPitchRoute(
                 id: widget.route.id,
                 comment: controllerComment.text,
                 location: controllerLocation.text,
                 name: controllerName.text,
                 rating: currentSliderValue.toInt(),
               );
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-              /*
-              TODO single/multi ?
-              ClimbingRoute? updatedRoute = await routeService.editRoute(route);
+              Navigator.popUntil(context, ModalRoute.withName('/'));
+              MultiPitchRoute? updatedRoute = await routeService.editMultiPitchRoute(route);
               if (updatedRoute != null) {
                 widget.onUpdate.call(updatedRoute);
               }
-               */
             }
           },
           icon: const Icon(Icons.save)

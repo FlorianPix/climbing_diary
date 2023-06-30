@@ -144,8 +144,7 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
                 name: controllerName.text,
                 rating: currentSliderValue.toInt(),
               );
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              Navigator.popUntil(context, ModalRoute.withName('/'));
               SinglePitchRoute? updatedRoute = await routeService.editSinglePitchRoute(route);
               if (updatedRoute != null) {
                 widget.onUpdate.call(updatedRoute);
