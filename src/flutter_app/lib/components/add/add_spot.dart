@@ -1,3 +1,4 @@
+import 'package:climbing_diary/components/MyTextStyles.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -6,18 +7,17 @@ import 'package:latlong2/latlong.dart';
 import '../../interfaces/spot/create_spot.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
+import '../../pages/map_page/navigation_screen_page.dart';
 import '../../services/spot_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../../services/trip_service.dart';
 
 class AddSpot extends StatefulWidget {
-  const AddSpot({super.key, required this.trips, required this.coordinates, required this.address, required this.onAdd});
+  const AddSpot({super.key, this.trip, required this.onAdd});
 
-  final LatLng coordinates;
-  final String address;
   final ValueSetter<Spot> onAdd;
-  final List<Trip> trips;
+  final Trip? trip;
 
   @override
   State<StatefulWidget> createState() => _AddSpotState();
@@ -37,7 +37,6 @@ class _AddSpotState extends State<AddSpot>{
   final TextEditingController controllerCar = TextEditingController();
 
   double currentSliderValue = 0;
-  Trip? dropdownValue;
 
   @override
   void initState(){
@@ -47,12 +46,17 @@ class _AddSpotState extends State<AddSpot>{
 
   @override
   Widget build(BuildContext context) {
-    controllerAddress.text = widget.address;
-    controllerLat.text = widget.coordinates.latitude.toString();
-    controllerLong.text = widget.coordinates.longitude.toString();
+    // controllerLat.text = widget.coordinates.latitude.toString();
+    // controllerLong.text = widget.coordinates.longitude.toString();
 
     List<Widget> elements = [];
 
+    if (widget.trip != null){
+      elements.add(Text(
+        widget.trip!.name,
+        style: MyTextStyles.title,
+      ));
+    }
     elements.add(
         TextFormField(
           validator: (value) {
@@ -65,20 +69,24 @@ class _AddSpotState extends State<AddSpot>{
               hintText: "name", labelText: "name"),
         )
     );
-    elements.add(DropdownButton<Trip>(
-        isExpanded: true,
-        value: dropdownValue,
-        items: widget.trips.map<DropdownMenuItem<Trip>>((Trip trip) {
-          return DropdownMenuItem<Trip>(
-            value: trip,
-            child: Text(trip.name),
-          );
-        }).toList(),
-        onChanged: (Trip? trip) {
-          setState(() {
-            dropdownValue = trip!;
-          });
-        }
+    elements.add(TextButton.icon(
+      icon: const Icon(Icons.place, size: 30.0),
+      onPressed: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => NavigationScreenPage(
+                  onAdd: (List<String> results) {
+                    controllerAddress.text = results[0];
+                    controllerLat.text = results[1];
+                    controllerLong.text = results[2];
+                    setState(() {});
+                  }
+              ),
+            )
+        );
+      },
+      label: const Text("select location"),
     ));
     elements.add(TextFormField(
       controller: controllerAddress,
@@ -132,6 +140,7 @@ class _AddSpotState extends State<AddSpot>{
         }
         return null;
       },
+      keyboardType: TextInputType.number,
       controller: controllerBus,
       decoration: const InputDecoration(
           hintText: "in minutes",
@@ -149,6 +158,7 @@ class _AddSpotState extends State<AddSpot>{
         return null;
       },
       controller: controllerCar,
+      keyboardType: TextInputType.number,
       decoration: const InputDecoration(
           hintText: "in minutes",
           labelText: "Distance to parking"
@@ -161,43 +171,44 @@ class _AddSpotState extends State<AddSpot>{
       ),
       title: const Text('Add a new spot'),
       content: SingleChildScrollView(
-          child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: elements,
-              ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: elements,
           ),
+        ),
       ),
       actions: <Widget>[
         TextButton(
-          onPressed: () async {
-            bool result = await InternetConnectionChecker().hasConnection;
-            if (_formKey.currentState!.validate()) {
-              var valDistanceParking = int.tryParse(controllerCar.text);
-              var valDistancePublicTransport = int.tryParse(controllerBus.text);
-              CreateSpot spot = CreateSpot(
-                comment: controllerComment.text,
-                coordinates: [double.parse(controllerLat.text), double.parse(controllerLong.text)],
-                distanceParking: (valDistanceParking != null) ? valDistanceParking : 0,
-                distancePublicTransport: (valDistancePublicTransport != null) ? valDistancePublicTransport : 0,
-                location: controllerAddress.text,
-                name: controllerTitle.text,
-                rating: currentSliderValue.toInt(),
-              );
-              Navigator.popUntil(context, ModalRoute.withName('/'));
-              Spot? createdSpot = await spotService.createSpot(spot, result);
-              if (createdSpot != null) {
-                if (dropdownValue != null) {
-                  UpdateTrip editTrip = dropdownValue!.toUpdateTrip();
-                  editTrip.spotIds?.add(createdSpot.id);
-                  Trip? editedTrip = await tripService.editTrip(editTrip);
+            onPressed: () async {
+              bool result = await InternetConnectionChecker().hasConnection;
+              if (_formKey.currentState!.validate()) {
+                var valDistanceParking = int.tryParse(controllerCar.text);
+                var valDistancePublicTransport = int.tryParse(controllerBus.text);
+                CreateSpot spot = CreateSpot(
+                  comment: controllerComment.text,
+                  coordinates: [double.parse(controllerLat.text), double.parse(controllerLong.text)],
+                  distanceParking: (valDistanceParking != null) ? valDistanceParking : 0,
+                  distancePublicTransport: (valDistancePublicTransport != null) ? valDistancePublicTransport : 0,
+                  location: controllerAddress.text,
+                  name: controllerTitle.text,
+                  rating: currentSliderValue.toInt(),
+                );
+                Navigator.popUntil(context, ModalRoute.withName('/'));
+                Spot? createdSpot = await spotService.createSpot(spot, result);
+                if (createdSpot != null) {
+                  if (widget.trip != null) {
+                    Trip trip = widget.trip!;
+                    UpdateTrip editTrip = trip.toUpdateTrip();
+                    editTrip.spotIds?.add(createdSpot.id);
+                    Trip? editedTrip = await tripService.editTrip(editTrip);
+                  }
+                  widget.onAdd.call(createdSpot);
                 }
-                widget.onAdd.call(createdSpot);
               }
-            }
-          },
-          child: const Icon(Icons.save))
+            },
+            child: const Icon(Icons.save))
       ],
     );
   }

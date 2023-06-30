@@ -3,19 +3,16 @@ import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../../interfaces/route/route.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
+import '../../pages/diary_page/timeline/pitch_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../MyButtonStyles.dart';
 import '../add/add_pitch.dart';
-import '../diary_page/timeline/pitch_timeline.dart';
 import '../edit/edit_multi_pitch_route.dart';
-import '../edit/edit_route.dart';
 import '../info/multi_pitch_route_info.dart';
-import '../select/select_pitch.dart';
 
 class MultiPitchRouteDetails extends StatefulWidget {
   const MultiPitchRouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
@@ -53,7 +50,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
       var mediaId = await mediaService.uploadMedia(img);
       MultiPitchRoute route = widget.route;
       route.mediaIds.add(mediaId);
-      routeService.editRoute(route.toUpdateMultiPitchRoute());
+      routeService.editMultiPitchRoute(route.toUpdateMultiPitchRoute());
     }
 
     setState(() {
@@ -276,22 +273,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddPitch(routes: [widget.route],),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add existing pitch'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SelectPitch(route: widget.route),
+                  builder: (context) => AddPitch(route: widget.route,),
                 )
             );
           },
@@ -306,7 +288,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                routeService.deleteRoute(route, widget.spotId);
+                routeService.deleteMultiPitchRoute(route, widget.spotId);
                 widget.onDelete.call(route);
               },
               icon: const Icon(Icons.delete),

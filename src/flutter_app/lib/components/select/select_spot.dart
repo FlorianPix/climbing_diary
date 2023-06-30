@@ -8,9 +8,11 @@ import '../../services/trip_service.dart';
 import '../MyButtonStyles.dart';
 
 class SelectSpot extends StatefulWidget {
-  const SelectSpot({super.key, required this.trip});
+  const SelectSpot({super.key, required this.trip, required this.onAdd});
 
   final Trip trip;
+  final ValueSetter<Spot> onAdd;
+
   @override
   State<StatefulWidget> createState() => _SelectSpotState();
 }
@@ -42,12 +44,13 @@ class _SelectSpotState extends State<SelectSpot>{
               elements.add(ElevatedButton.icon(
                   icon: const Icon(Icons.arrow_forward, size: 30.0, color: Colors.pink),
                   label: Text(spots[i].name),
-                  onPressed: () {
+                  onPressed: () async {
                     if (!widget.trip.spotIds.contains(spots[i].id)){
                       widget.trip.spotIds.add(spots[i].id);
-                      tripService.editTrip(widget.trip.toUpdateTrip());
+                      Trip? updatedTrip = await tripService.editTrip(widget.trip.toUpdateTrip());
+                      widget.onAdd.call(spots[i]);
                     }
-                    Navigator.of(context).pop();
+                    Navigator.popUntil(context, ModalRoute.withName('/'));
                   },
                   style: MyButtonStyles.rounded
               ));

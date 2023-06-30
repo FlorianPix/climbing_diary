@@ -7,7 +7,8 @@ import '../../services/trip_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class AddTrip extends StatefulWidget {
-  const AddTrip({super.key});
+  const AddTrip({super.key, required this.onAdd});
+  final ValueSetter<Trip> onAdd;
 
   @override
   State<StatefulWidget> createState() => _AddTripState();
@@ -127,6 +128,9 @@ class _AddTripState extends State<AddTrip>{
               );
               Navigator.popUntil(context, ModalRoute.withName('/'));
               Trip? createdTrip = await tripService.createTrip(trip, result);
+              if (createdTrip != null) {
+                widget.onAdd.call(createdTrip);
+              }
             }
           },
           child: const Text("Save"))

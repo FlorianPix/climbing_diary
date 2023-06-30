@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 
-import '../interfaces/ascent/ascent.dart';
-import '../services/ascent_service.dart';
+import '../../interfaces/ascent/ascent.dart';
+import '../../services/ascent_service.dart';
 
 class StatisticPage extends StatefulWidget {
   const StatisticPage({super.key});

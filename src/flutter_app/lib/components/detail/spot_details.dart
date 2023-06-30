@@ -5,13 +5,12 @@ import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
+import '../../pages/diary_page/timeline/route_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
 import '../MyButtonStyles.dart';
 import '../add/add_route.dart';
-import '../diary_page/timeline/route_timeline.dart';
 import '../edit/edit_spot.dart';
-import '../select/select_route.dart';
 
 class SpotDetails extends StatefulWidget {
   const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate });
@@ -296,27 +295,16 @@ class _SpotDetailsState extends State<SpotDetails>{
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddRoute(
-                    spots: [widget.spot],
-                    onAdd: (route) {
+                    spot: widget.spot,
+                    onAddMultiPitchRoute: (route) {
                       widget.spot.multiPitchRouteIds.add(route.id);
                       setState(() {});
                     },
+                    onAddSinglePitchRoute: (route) {
+                      widget.spot.singlePitchRouteIds.add(route.id);
+                      setState(() {});
+                    },
                   ),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add existing route'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SelectRoute(spot: widget.spot),
                 )
             );
           },

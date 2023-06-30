@@ -60,6 +60,37 @@ class PitchService {
     }
   }
 
+  Future<List<Pitch>> getPitchesByName(String name) async {
+    if (name == ""){
+      return [];
+    }
+    try {
+      final Response response = await netWorkLocator.dio.get('$climbingApiHost/pitch');
+
+      if (response.statusCode == 200) {
+        // If the server did return a 200 OK response, then parse the JSON.
+        List<Pitch> pitches = [];
+        response.data.forEach((s) {
+          Pitch pitch = Pitch.fromJson(s);
+          if (pitch.name.contains(name)) {
+            pitches.add(pitch);
+          }
+        });
+        return pitches;
+      }
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          showSimpleNotification(
+            const Text('Couldn\'t connect to API'),
+            background: Colors.red,
+          );
+        }
+      }
+    }
+    return [];
+  }
+
   Future<Pitch?> createPitch(CreatePitch createPitch, String routeId, bool hasConnection) async {
     CreatePitch pitch = CreatePitch(
       comment: (createPitch.comment != null) ? createPitch.comment! : "",

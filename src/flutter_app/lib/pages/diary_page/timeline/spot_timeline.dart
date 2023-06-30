@@ -1,31 +1,31 @@
-import 'package:climbing_diary/components/diary_page/image_list_view.dart';
-import 'package:climbing_diary/components/diary_page/rating_row.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/route_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
-import '../../../interfaces/pitch/pitch.dart';
-import '../../../interfaces/route/route.dart';
+import '../../../components/info/spot_info.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
-import '../../../services/pitch_service.dart';
-import '../../detail/pitch_details.dart';
-import '../../info/pitch_info.dart';
+import '../../../services/spot_service.dart';
+import '../../../services/trip_service.dart';
+import '../image_list_view.dart';
+import '../rating_row.dart';
+import '../spot_details.dart';
 
-class PitchTimeline extends StatefulWidget {
-  const PitchTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchIds});
+class SpotTimeline extends StatefulWidget {
+  const SpotTimeline({super.key, required this.spotIds, required this.trip, required this.startDate, required this.endDate});
 
-  final Trip? trip;
-  final Spot spot;
-  final ClimbingRoute route;
-  final List<String> pitchIds;
+  final Trip trip;
+  final List<String> spotIds;
+  final DateTime startDate, endDate;
 
   @override
-  State<StatefulWidget> createState() => PitchTimelineState();
+  State<StatefulWidget> createState() => SpotTimelineState();
 }
 
-class PitchTimelineState extends State<PitchTimeline> {
-  final PitchService pitchService = PitchService();
+class SpotTimelineState extends State<SpotTimeline> {
+  final SpotService spotService = SpotService();
+  final TripService tripService = TripService();
 
   @override
   void initState(){
@@ -35,44 +35,42 @@ class PitchTimelineState extends State<PitchTimeline> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> pitchIds = widget.pitchIds;
+    List<String> spotIds = widget.spotIds;
     return FutureBuilder<bool>(
       future: checkConnection(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            return FutureBuilder<List<Pitch>>(
-              future: Future.wait(pitchIds.map((pitchId) => pitchService.getPitch(pitchId))),
+
+            return FutureBuilder<List<Spot?>>(
+              future: Future.wait(spotIds.map((spotId) => spotService.getSpot(spotId))),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  List<Pitch> pitches = snapshot.data!;
-                  pitches.sort((a, b) {
-                    if (a.num > b.num) {
-                      return 1;
-                    } else {
-                      return a.num < b.num ? -1 : 0;
-                    }
-                  });
+                  List<Spot> spots = snapshot.data!.whereType<Spot>().toList();
+                  spots.sort((a, b) => a.name.compareTo(b.name));
 
-                  updatePitchCallback(Pitch pitch) {
+                  updateSpotCallback(Spot spot) {
                     var index = -1;
-                    for (int i = 0; i < pitches.length; i++) {
-                      if (pitches[i].id == pitch.id) {
+                    for (int i = 0; i < spots.length; i++) {
+                      if (spots[i].id == spot.id) {
                         index = i;
                       }
                     }
-                    pitches.removeAt(index);
-                    pitches.add(pitch);
+                    spots.removeAt(index);
+                    spots.add(spot);
                     setState(() {});
                   }
 
-                  deletePitchCallback(Pitch pitch) {
-                    pitches.remove(pitch);
+                  deleteSpotCallback(Spot spot) {
+                    spots.remove(spot);
+                    widget.trip.spotIds.remove(spot.id);
                     setState(() {});
                   }
 
-                  return Column(
+                  return Column(children: [ExpansionTile(
+                    leading: const Icon(Icons.place),
+                    title: const Text("spots"),
                     children: [
                       FixedTimeline.tileBuilder(
                         theme: TimelineThemeData(
@@ -88,17 +86,30 @@ class PitchTimelineState extends State<PitchTimeline> {
                         ),
                         builder: TimelineTileBuilder.connected(
                           connectionDirection: ConnectionDirection.before,
-                          itemCount: pitches.length,
+                          itemCount: spots.length,
                           contentsBuilder: (_, index) {
                             List<Widget> elements = [];
-                            // pitch info
-                            elements.add(PitchInfo(pitch: pitches[index]));
+                            // spot info
+                            elements.add(SpotInfo(spot: spots[index]));
                             // rating as hearts in a row
-                            elements.add(RatingRow(rating: pitches[index].rating));
+                            elements.add(RatingRow(rating: spots[index].rating));
                             // images list view
-                            if (pitches[index].mediaIds.isNotEmpty) {
+                            if (spots[index].mediaIds.isNotEmpty) {
                               elements.add(
-                                  ImageListView(mediaIds: pitches[index].mediaIds)
+                                  ImageListView(mediaIds: spots[index].mediaIds)
+                              );
+                            }
+                            // routes
+                            if (spots[index].multiPitchRouteIds.isNotEmpty || spots[index].singlePitchRouteIds.isNotEmpty){
+                              elements.add(
+                                  RouteTimeline(
+                                      trip: widget.trip,
+                                      spot: spots[index],
+                                      singlePitchRouteIds: spots[index].singlePitchRouteIds,
+                                      multiPitchRouteIds: spots[index].multiPitchRouteIds,
+                                      startDate: widget.startDate,
+                                      endDate: widget.endDate,
+                                  )
                               );
                             }
                             return InkWell(
@@ -110,9 +121,11 @@ class PitchTimelineState extends State<PitchTimeline> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(20),
                                             ),
-                                            child: PitchDetails(trip: widget.trip, spot: widget.spot, route: widget.route, pitch: pitches[index],
-                                                onDelete: deletePitchCallback,
-                                                onUpdate: updatePitchCallback)
+                                            child: SpotDetails(
+                                                trip: widget.trip,
+                                                spot: spots[index],
+                                                onDelete: deleteSpotCallback,
+                                                onUpdate: updateSpotCallback)
                                         ),
                                   ),
                               child: Ink(
@@ -136,8 +149,8 @@ class PitchTimelineState extends State<PitchTimeline> {
                           connectorBuilder: (_, index, ___) =>
                           const SolidLineConnector(color: Color(0xff66c97f)),
                         ),
-                      )
-                    ],
+                      )]
+                  )],
                   );
                 } else {
                   return const CircularProgressIndicator();

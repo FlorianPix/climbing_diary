@@ -1,40 +1,34 @@
-import 'package:climbing_diary/interfaces/route/route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
-import '../../interfaces/pitch/pitch.dart';
+import '../../components/MyButtonStyles.dart';
+import '../../components/edit/edit_spot.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
-import '../../pages/diary_page/timeline/ascent_timeline.dart';
 import '../../services/media_service.dart';
-import '../../services/pitch_service.dart';
-import '../MyButtonStyles.dart';
-import '../add/add_ascent.dart';
-import '../edit/edit_pitch.dart';
-import '../info/pitch_info.dart';
+import '../../services/spot_service.dart';
+import 'timeline/route_timeline.dart';
 
-class PitchDetails extends StatefulWidget {
-  const PitchDetails({super.key, this.trip, required this.spot, required this.route, required this.pitch, required this.onDelete, required this.onUpdate });
+class SpotDetails extends StatefulWidget {
+  const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate });
 
   final Trip? trip;
   final Spot spot;
-  final ClimbingRoute route;
-  final Pitch pitch;
-  final ValueSetter<Pitch> onDelete;
-  final ValueSetter<Pitch> onUpdate;
+  final ValueSetter<Spot> onDelete, onUpdate;
 
   @override
-  State<StatefulWidget> createState() => _PitchDetailsState();
+  State<StatefulWidget> createState() => _SpotDetailsState();
 }
 
-class _PitchDetailsState extends State<PitchDetails>{
+class _SpotDetailsState extends State<SpotDetails>{
   final MediaService mediaService = MediaService();
-  final PitchService pitchService = PitchService();
+  final SpotService spotService = SpotService();
 
   Future<List<String>> fetchURLs() {
     List<Future<String>> futures = [];
-    for (var mediaId in widget.pitch.mediaIds) {
+    for (var mediaId in widget.spot.mediaIds) {
       futures.add(mediaService.getMediumUrl(mediaId));
     }
     return Future.wait(futures);
@@ -47,9 +41,9 @@ class _PitchDetailsState extends State<PitchDetails>{
     var img = await picker.pickImage(source: media);
     if (img != null){
       var mediaId = await mediaService.uploadMedia(img);
-      Pitch pitch = widget.pitch;
-      pitch.mediaIds.add(mediaId);
-      pitchService.editPitch(pitch.toUpdatePitch());
+      Spot spot = widget.spot;
+      spot.mediaIds.add(mediaId);
+      spotService.editSpot(spot.toUpdateSpot());
     }
 
     setState(() {
@@ -102,11 +96,11 @@ class _PitchDetailsState extends State<PitchDetails>{
       });
   }
 
-  void editPitchDialog() {
+  void editSpotDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return EditPitch(pitch: widget.pitch, onUpdate: widget.onUpdate);
+        return EditSpot(spot: widget.spot, onUpdate: widget.onUpdate);
       });
   }
 
@@ -117,16 +111,36 @@ class _PitchDetailsState extends State<PitchDetails>{
 
   @override
   Widget build(BuildContext context) {
-    Pitch pitch = widget.pitch;
     List<Widget> elements = [];
 
     // general info
-    elements.add(PitchInfo(pitch: pitch));
+    elements.addAll([
+      Text(
+        widget.spot.name,
+        style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600
+        ),
+      ),
+      Text(
+        '${round(widget.spot.coordinates[0], decimals: 8)}, ${round(widget.spot.coordinates[1], decimals: 8)}',
+        style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400
+        ),
+      ),
+      Text(
+        widget.spot.location,
+        style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400
+        ),
+      )]);
     // rating
     List<Widget> ratingRowElements = [];
 
     for (var i = 0; i < 5; i++){
-      if (pitch.rating > i) {
+      if (widget.spot.rating > i) {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
       } else {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
@@ -141,7 +155,33 @@ class _PitchDetailsState extends State<PitchDetails>{
         )
     )));
 
-    if (pitch.comment.isNotEmpty) {
+    // time to walk transport
+    elements.add(Center(child: Padding(
+        padding: const EdgeInsets.all(5),
+        child:Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            const Icon(Icons.train, size: 30.0, color: Colors.green),
+            Text(
+              '${widget.spot.distancePublicTransport} min',
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400
+              ),
+            ),
+            const Icon(Icons.directions_car, size: 30.0, color: Colors.red),
+            Text(
+              '${widget.spot.distanceParking} min',
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400
+              ),
+            )
+          ],
+        )
+    )));
+
+    if (widget.spot.comment.isNotEmpty) {
       elements.add(Container(
           margin: const EdgeInsets.all(15.0),
           padding: const EdgeInsets.all(5.0),
@@ -150,12 +190,12 @@ class _PitchDetailsState extends State<PitchDetails>{
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            pitch.comment,
+            widget.spot.comment,
           )
       ));
     }
     // images
-    if (pitch.mediaIds.isNotEmpty) {
+    if (widget.spot.mediaIds.isNotEmpty) {
       List<Widget> imageWidgets = [];
       Future<List<String>> futureMediaUrls = fetchURLs();
 
@@ -204,7 +244,7 @@ class _PitchDetailsState extends State<PitchDetails>{
               );
             }
             List<Widget> skeletons = [];
-            for (var i = 0; i < pitch.mediaIds.length; i++){
+            for (var i = 0; i < widget.spot.mediaIds.length; i++){
               skeletons.add(skeleton);
             }
             return Container(
@@ -244,44 +284,22 @@ class _PitchDetailsState extends State<PitchDetails>{
         ),
       );
     }
-    // add ascent
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add new ascent'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddAscent(
-                    pitch: widget.pitch,
-                    onAdd: (ascent) {
-                      widget.pitch.ascentIds.add(ascent.id);
-                      setState(() {});
-                    },
-                  ),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
     // delete, edit, close
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // delete pitch button
+            // delete spot button
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                pitchService.deletePitch(widget.route.id, pitch);
-                widget.onDelete.call(pitch);
+                spotService.deleteSpot(widget.spot);
+                widget.onDelete.call(widget.spot);
               },
               icon: const Icon(Icons.delete),
             ),
             IconButton(
-              onPressed: () => editPitchDialog(),
+              onPressed: () => editSpotDialog(),
               icon: const Icon(Icons.edit),
             ),
             IconButton(
@@ -291,35 +309,19 @@ class _PitchDetailsState extends State<PitchDetails>{
           ],
         )
     );
-    // ascents
-    if (pitch.ascentIds.isNotEmpty){
-      DateTime startDate = DateTime(1923);
-      DateTime endDate = DateTime(2123);
-      if (widget.trip != null) {
-        DateTime.parse(widget.trip!.startDate);
-        DateTime.parse(widget.trip!.endDate);
-      }
+    // routes
+    if (widget.spot.multiPitchRouteIds.isNotEmpty){
       elements.add(
-          AscentTimeline(
+          RouteTimeline(
               trip: widget.trip,
               spot: widget.spot,
-              route: widget.route,
-              pitchId: pitch.id,
-              ascentIds: pitch.ascentIds,
-              onUpdate: (ascent) {
-                // TODO
-              },
-              onDelete: (ascent) {
-                pitch.ascentIds.remove(ascent.id);
-                setState(() {});
-              },
-              startDate: startDate,
-              endDate: endDate,
-              ofMultiPitch: true,
+              singlePitchRouteIds: widget.spot.singlePitchRouteIds,
+              multiPitchRouteIds: widget.spot.multiPitchRouteIds,
+              startDate: DateTime(1923),
+              endDate: DateTime(2123)
           )
       );
     }
-
     return Stack(
         children: <Widget>[
           Container(
