@@ -1,16 +1,16 @@
-import 'package:climbing_diary/components/diary_page/image_list_view.dart';
-import 'package:climbing_diary/components/diary_page/rating_row.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
+import '../../../components/detail/pitch_details.dart';
+import '../../../components/info/pitch_info.dart';
 import '../../../interfaces/pitch/pitch.dart';
 import '../../../interfaces/route/route.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/pitch_service.dart';
-import '../../detail/pitch_details.dart';
-import '../../info/pitch_info.dart';
+import '../image_list_view.dart';
+import '../rating_row.dart';
 
 class PitchTimeline extends StatefulWidget {
   const PitchTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchIds});

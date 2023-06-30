@@ -1,9 +1,7 @@
 import 'package:climbing_diary/components/MyTextStyles.dart';
-import 'package:climbing_diary/components/map_page/navigation_screen_page.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/spot/create_spot.dart';
 import '../../interfaces/spot/spot.dart';
@@ -12,6 +10,7 @@ import '../../services/spot_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../../services/trip_service.dart';
+import '../navigation_screen_page.dart';
 
 class AddSpot extends StatefulWidget {
   const AddSpot({super.key, this.trip, required this.onAdd});

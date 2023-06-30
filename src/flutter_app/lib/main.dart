@@ -1,11 +1,11 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
-import 'package:climbing_diary/components/list_page/list_page.dart';
+import 'package:climbing_diary/pages/list_page/list_page.dart';
+import 'package:climbing_diary/pages/map_page/map_page.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'config/environment.dart';
-import 'pages/diary_page.dart';
-import 'components/map_page/map_page.dart';
-import 'pages/statistic_page.dart';
+import 'pages/diary_page/diary_page.dart';
+import 'pages/statistic_page/statistic_page.dart';
 import 'services/locator.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../../interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import '../../interfaces/route/route.dart';
 import '../../interfaces/route/update_route.dart';
 import '../../services/route_service.dart';
@@ -103,7 +102,7 @@ class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
           onPressed: () async {
             bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
-              UpdateMultiPitchRoute route = UpdateMultiPitchRoute(
+              UpdateClimbingRoute route = UpdateClimbingRoute(
                 id: widget.route.id,
                 comment: controllerComment.text,
                 location: controllerLocation.text,
@@ -112,10 +111,13 @@ class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
               );
               Navigator.of(context).pop();
               Navigator.of(context).pop();
-              MultiPitchRoute? updatedRoute = await routeService.editMultiPitchRoute(route);
+              /*
+              TODO single/multi ?
+              ClimbingRoute? updatedRoute = await routeService.editRoute(route);
               if (updatedRoute != null) {
                 widget.onUpdate.call(updatedRoute);
               }
+               */
             }
           },
           icon: const Icon(Icons.save)

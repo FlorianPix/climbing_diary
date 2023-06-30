@@ -1,14 +1,13 @@
-import 'package:climbing_diary/components/diary_page/image_list_view.dart';
-import 'package:climbing_diary/components/diary_page/rating_row.dart';
-import 'package:climbing_diary/components/diary_page/timeline/route_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
 import '../../../interfaces/spot/spot.dart';
 import '../../../services/spot_service.dart';
-import '../detail/spot_details.dart';
-import '../info/spot_info.dart';
+import '../../components/detail/spot_details.dart';
+import '../../components/info/spot_info.dart';
+import '../diary_page/image_list_view.dart';
+import '../diary_page/rating_row.dart';
 
 class SpotList extends StatefulWidget {
   const SpotList({super.key, required this.spots});

@@ -4,17 +4,22 @@ import 'package:flutter/services.dart';
 import '../../interfaces/grade.dart';
 import '../../interfaces/grading_system.dart';
 import '../../interfaces/multi_pitch_route/create_multi_pitch_route.dart';
+import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../../interfaces/route/route.dart';
 import '../../interfaces/single_pitch_route/create_single_pitch_route.dart';
+import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../services/route_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-class AddRoute extends StatefulWidget {
-  const AddRoute({super.key, required this.spots, this.onAdd});
+import '../MyTextStyles.dart';
 
-  final List<Spot> spots;
-  final ValueSetter<ClimbingRoute>? onAdd;
+class AddRoute extends StatefulWidget {
+  const AddRoute({super.key, required this.spot, this.onAddMultiPitchRoute, this.onAddSinglePitchRoute});
+
+  final Spot spot;
+  final ValueSetter<MultiPitchRoute>? onAddMultiPitchRoute;
+  final ValueSetter<SinglePitchRoute>? onAddSinglePitchRoute;
 
   @override
   State<StatefulWidget> createState() => _AddRouteState();
@@ -23,7 +28,6 @@ class AddRoute extends StatefulWidget {
 class _AddRouteState extends State<AddRoute>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final RouteService routeService = RouteService();
-  final TextEditingController controllerSpotId = TextEditingController();
   final TextEditingController controllerComment = TextEditingController();
   final TextEditingController controllerLocation = TextEditingController();
   final TextEditingController controllerName = TextEditingController();
@@ -32,18 +36,17 @@ class _AddRouteState extends State<AddRoute>{
   final TextEditingController controllerLength = TextEditingController();
 
   double currentSliderValue = 0;
-  Spot? dropdownValue;
   GradingSystem? gradingSystem;
   bool isMultiPitch = false;
 
   @override
   void initState(){
-    dropdownValue = widget.spots[0];
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    Spot spot = widget.spot;
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -55,6 +58,20 @@ class _AddRouteState extends State<AddRoute>{
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Text(
+                spot.name,
+                style: MyTextStyles.title,
+              ),
+              TextFormField(
+                validator: (value) {
+                  return value!.isNotEmpty
+                      ? null
+                      : "please add a name";
+                },
+                controller: controllerName,
+                decoration: const InputDecoration(
+                    hintText: "name of the route", labelText: "name"),
+              ),
               Row(children: [
                 const Text("Multi-pitch"),
                 Switch(
@@ -103,30 +120,6 @@ class _AddRouteState extends State<AddRoute>{
                       hintText: "length of the route", labelText: "length"),
                 ),
               ),
-              DropdownButton<Spot>(
-                  value: dropdownValue,
-                  items: widget.spots.map<DropdownMenuItem<Spot>>((Spot spot) {
-                    return DropdownMenuItem<Spot>(
-                        value: spot,
-                        child: Text(spot.name),
-                    );
-                  }).toList(),
-                  onChanged: (Spot? spot) {
-                    setState(() {
-                      dropdownValue = spot!;
-                    });
-                  }
-              ),
-              TextFormField(
-                validator: (value) {
-                  return value!.isNotEmpty
-                      ? null
-                      : "please add a name";
-                },
-                controller: controllerName,
-                decoration: const InputDecoration(
-                    hintText: "name of the route", labelText: "name"),
-              ),
               TextFormField(
                 controller: controllerLocation,
                 decoration: const InputDecoration(
@@ -171,31 +164,28 @@ class _AddRouteState extends State<AddRoute>{
               bool result = await InternetConnectionChecker().hasConnection;
               if (_formKey.currentState!.validate()) {
                 Navigator.popUntil(context, ModalRoute.withName('/'));
-                final dropdownValue = this.dropdownValue;
-                if (dropdownValue != null){
-                  ClimbingRoute? createdRoute;
-                  if (isMultiPitch){
-                    CreateMultiPitchRoute route = CreateMultiPitchRoute(
-                      name: controllerName.text,
-                      location: controllerLocation.text,
-                      rating: currentSliderValue.toInt(),
-                      comment: controllerComment.text,
-                    );
-                    createdRoute = await routeService.createMultiPitchRoute(route, dropdownValue.id, result);
-                  } else {
-                    CreateSinglePitchRoute route = CreateSinglePitchRoute(
-                      name: controllerName.text,
-                      location: controllerLocation.text,
-                      rating: currentSliderValue.toInt(),
-                      comment: controllerComment.text,
-                      grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
-                      length: int.parse(controllerLength.text)
-                    );
-                    createdRoute = await routeService.createSinglePitchRoute(route, dropdownValue.id, result);
-                  }
-                  widget.onAdd?.call(createdRoute!);
-                  setState(() {});
+                if (isMultiPitch){
+                  CreateMultiPitchRoute route = CreateMultiPitchRoute(
+                    name: controllerName.text,
+                    location: controllerLocation.text,
+                    rating: currentSliderValue.toInt(),
+                    comment: controllerComment.text,
+                  );
+                  MultiPitchRoute? createdRoute = await routeService.createMultiPitchRoute(route, spot.id, result);
+                  widget.onAddMultiPitchRoute?.call(createdRoute!);
+                } else {
+                  CreateSinglePitchRoute route = CreateSinglePitchRoute(
+                    name: controllerName.text,
+                    location: controllerLocation.text,
+                    rating: currentSliderValue.toInt(),
+                    comment: controllerComment.text,
+                    grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
+                    length: int.parse(controllerLength.text)
+                  );
+                  SinglePitchRoute? createdRoute = await routeService.createSinglePitchRoute(route, spot.id, result);
+                  widget.onAddSinglePitchRoute?.call(createdRoute!);
                 }
+                setState(() {});
               }
             },
             child: const Text("Save"))

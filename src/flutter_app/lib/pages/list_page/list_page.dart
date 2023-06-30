@@ -1,5 +1,4 @@
-import 'package:climbing_diary/components/diary_page/timeline/spot_timeline.dart';
-import 'package:climbing_diary/components/list_page/spot_list.dart';
+import 'package:climbing_diary/pages/list_page/spot_list.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import '../../interfaces/spot/spot.dart';

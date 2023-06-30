@@ -1,15 +1,15 @@
-import 'package:climbing_diary/components/diary_page/image_list_view.dart';
-import 'package:climbing_diary/components/diary_page/rating_row.dart';
-import 'package:climbing_diary/components/diary_page/timeline/spot_timeline.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/spot_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
+import '../../../components/add/add_trip.dart';
+import '../../../components/detail/trip_details.dart';
+import '../../../components/info/trip_info.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/trip_service.dart';
-import '../../add/add_trip.dart';
-import '../../detail/trip_details.dart';
-import '../../info/trip_info.dart';
+import '../image_list_view.dart';
+import '../rating_row.dart';
 
 class TripTimeline extends StatefulWidget {
   const TripTimeline({super.key});

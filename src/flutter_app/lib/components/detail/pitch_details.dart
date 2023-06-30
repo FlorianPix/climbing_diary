@@ -6,11 +6,11 @@ import 'package:skeletons/skeletons.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
+import '../../pages/diary_page/timeline/ascent_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../MyButtonStyles.dart';
 import '../add/add_ascent.dart';
-import '../diary_page/timeline/ascent_timeline.dart';
 import '../edit/edit_pitch.dart';
 import '../info/pitch_info.dart';
 

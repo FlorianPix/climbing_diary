@@ -5,12 +5,12 @@ import 'package:skeletons/skeletons.dart';
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
+import '../../pages/diary_page/timeline/pitch_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../MyButtonStyles.dart';
 import '../add/add_pitch.dart';
-import '../diary_page/timeline/pitch_timeline.dart';
 import '../edit/edit_multi_pitch_route.dart';
 import '../info/multi_pitch_route_info.dart';
 

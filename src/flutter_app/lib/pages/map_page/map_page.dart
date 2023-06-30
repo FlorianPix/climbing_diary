@@ -1,10 +1,8 @@
-import 'dart:ffi';
-
 import 'package:climbing_diary/pages/save_location_no_connection.dart';
 import 'package:flutter/material.dart';
 
 import 'add_spot.dart';
-import 'details/spot_details.dart';
+import 'spot_details.dart';
 import '../../services/cache.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';

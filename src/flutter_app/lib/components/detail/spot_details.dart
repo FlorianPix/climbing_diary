@@ -5,11 +5,11 @@ import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
+import '../../pages/diary_page/timeline/route_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
 import '../MyButtonStyles.dart';
 import '../add/add_route.dart';
-import '../diary_page/timeline/route_timeline.dart';
 import '../edit/edit_spot.dart';
 
 class SpotDetails extends StatefulWidget {
@@ -295,9 +295,13 @@ class _SpotDetailsState extends State<SpotDetails>{
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddRoute(
-                    spots: [widget.spot],
-                    onAdd: (route) {
+                    spot: widget.spot,
+                    onAddMultiPitchRoute: (route) {
                       widget.spot.multiPitchRouteIds.add(route.id);
+                      setState(() {});
+                    },
+                    onAddSinglePitchRoute: (route) {
+                      widget.spot.singlePitchRouteIds.add(route.id);
                       setState(() {});
                     },
                   ),

@@ -1,40 +1,35 @@
-import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
-import '../../interfaces/route/route.dart';
+import '../../components/MyButtonStyles.dart';
+import '../../components/add/add_route.dart';
+import '../../components/edit/edit_spot.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
 import '../../services/media_service.dart';
-import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
-import '../MyButtonStyles.dart';
-import '../add/add_pitch.dart';
-import '../edit/edit_route.dart';
+import '../../services/spot_service.dart';
+import 'route_list.dart';
 
-class RouteDetails extends StatefulWidget {
-  const RouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
+class SpotDetails extends StatefulWidget {
+  const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate });
 
   final Trip? trip;
   final Spot spot;
-  final MultiPitchRoute route;
-  final ValueSetter<MultiPitchRoute> onDelete;
-  final ValueSetter<MultiPitchRoute> onUpdate;
-  final String spotId;
+  final ValueSetter<Spot> onDelete, onUpdate;
 
   @override
-  State<StatefulWidget> createState() => _RouteDetailsState();
+  State<StatefulWidget> createState() => _SpotDetailsState();
 }
 
-class _RouteDetailsState extends State<RouteDetails>{
+class _SpotDetailsState extends State<SpotDetails>{
   final MediaService mediaService = MediaService();
-  final RouteService routeService = RouteService();
-  final PitchService pitchService = PitchService();
+  final SpotService spotService = SpotService();
 
   Future<List<String>> fetchURLs() {
     List<Future<String>> futures = [];
-    for (var mediaId in widget.route.mediaIds) {
+    for (var mediaId in widget.spot.mediaIds) {
       futures.add(mediaService.getMediumUrl(mediaId));
     }
     return Future.wait(futures);
@@ -47,9 +42,9 @@ class _RouteDetailsState extends State<RouteDetails>{
     var img = await picker.pickImage(source: media);
     if (img != null){
       var mediaId = await mediaService.uploadMedia(img);
-      MultiPitchRoute route = widget.route;
-      route.mediaIds.add(mediaId);
-      routeService.editMultiPitchRoute(route.toUpdateMultiPitchRoute());
+      Spot spot = widget.spot;
+      spot.mediaIds.add(mediaId);
+      spotService.editSpot(spot.toUpdateSpot());
     }
 
     setState(() {
@@ -102,11 +97,11 @@ class _RouteDetailsState extends State<RouteDetails>{
       });
   }
 
-  void editRouteDialog() {
+  void editSpotDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return EditRoute(route: widget.route, onUpdate: widget.onUpdate);
+        return EditSpot(spot: widget.spot, onUpdate: widget.onUpdate);
       });
   }
 
@@ -118,19 +113,25 @@ class _RouteDetailsState extends State<RouteDetails>{
   @override
   Widget build(BuildContext context) {
     List<Widget> elements = [];
-    MultiPitchRoute route = widget.route;
 
     // general info
     elements.addAll([
       Text(
-        route.name,
+        widget.spot.name,
         style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600
         ),
       ),
       Text(
-        route.location,
+        '${round(widget.spot.coordinates[0], decimals: 8)}, ${round(widget.spot.coordinates[1], decimals: 8)}',
+        style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400
+        ),
+      ),
+      Text(
+        widget.spot.location,
         style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400
@@ -140,7 +141,7 @@ class _RouteDetailsState extends State<RouteDetails>{
     List<Widget> ratingRowElements = [];
 
     for (var i = 0; i < 5; i++){
-      if (route.rating > i) {
+      if (widget.spot.rating > i) {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
       } else {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
@@ -148,14 +149,40 @@ class _RouteDetailsState extends State<RouteDetails>{
     }
 
     elements.add(Center(child: Padding(
-        padding: const EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.all(10),
         child:Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: ratingRowElements,
         )
     )));
 
-    if (route.comment.isNotEmpty) {
+    // time to walk transport
+    elements.add(Center(child: Padding(
+        padding: const EdgeInsets.all(5),
+        child:Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            const Icon(Icons.train, size: 30.0, color: Colors.green),
+            Text(
+              '${widget.spot.distancePublicTransport} min',
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400
+              ),
+            ),
+            const Icon(Icons.directions_car, size: 30.0, color: Colors.red),
+            Text(
+              '${widget.spot.distanceParking} min',
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400
+              ),
+            )
+          ],
+        )
+    )));
+
+    if (widget.spot.comment.isNotEmpty) {
       elements.add(Container(
           margin: const EdgeInsets.all(15.0),
           padding: const EdgeInsets.all(5.0),
@@ -164,12 +191,12 @@ class _RouteDetailsState extends State<RouteDetails>{
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            route.comment,
+            widget.spot.comment,
           )
       ));
     }
     // images
-    if (route.mediaIds.isNotEmpty) {
+    if (widget.spot.mediaIds.isNotEmpty) {
       List<Widget> imageWidgets = [];
       Future<List<String>> futureMediaUrls = fetchURLs();
 
@@ -218,7 +245,7 @@ class _RouteDetailsState extends State<RouteDetails>{
               );
             }
             List<Widget> skeletons = [];
-            for (var i = 0; i < route.mediaIds.length; i++){
+            for (var i = 0; i < widget.spot.mediaIds.length; i++){
               skeletons.add(skeleton);
             }
             return Container(
@@ -258,37 +285,48 @@ class _RouteDetailsState extends State<RouteDetails>{
         ),
       );
     }
-    // add pitch
+    // add route
     elements.add(
       ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add new pitch'),
+          label: const Text('Add new route'),
           onPressed: () {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddPitch(routes: [widget.route],),
+                  builder: (context) => AddRoute(
+                    spot: widget.spot,
+                    onAddMultiPitchRoute: (route) {
+                      widget.spot.multiPitchRouteIds.add(route.id);
+                      setState(() {});
+                    },
+                    onAddSinglePitchRoute: (route) {
+                      widget.spot.singlePitchRouteIds.add(route.id);
+                      setState(() {});
+                    },
+                  ),
                 )
             );
           },
           style: MyButtonStyles.rounded
       ),
     );
+    // delete, edit, close
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // delete route button
+            // delete spot button
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                routeService.deleteMultiPitchRoute(route, widget.spotId);
-                widget.onDelete.call(route);
+                spotService.deleteSpot(widget.spot);
+                widget.onDelete.call(widget.spot);
               },
               icon: const Icon(Icons.delete),
             ),
             IconButton(
-              onPressed: () => editRouteDialog(),
+              onPressed: () => editSpotDialog(),
               icon: const Icon(Icons.edit),
             ),
             IconButton(
@@ -298,9 +336,20 @@ class _RouteDetailsState extends State<RouteDetails>{
           ],
         )
     );
+    // routes
+    if (widget.spot.multiPitchRouteIds.isNotEmpty || widget.spot.singlePitchRouteIds.isNotEmpty){
+      elements.add(
+          RouteList(
+            trip: widget.trip,
+            spot: widget.spot,
+            singlePitchRouteIds: widget.spot.singlePitchRouteIds,
+            multiPitchRouteIds: widget.spot.multiPitchRouteIds,
+          )
+      );
+    }
     return Stack(
         children: <Widget>[
-          Padding(
+          Container(
               padding: const EdgeInsets.all(20),
               child: ListView(
                   children: elements

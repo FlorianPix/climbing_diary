@@ -3,13 +3,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
+import '../../components/MyButtonStyles.dart';
+import '../../components/edit/edit_spot.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
-import '../MyButtonStyles.dart';
-import '../diary_page/timeline/route_timeline.dart';
-import '../edit/edit_spot.dart';
+import 'timeline/route_timeline.dart';
 
 class SpotDetails extends StatefulWidget {
   const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate });
