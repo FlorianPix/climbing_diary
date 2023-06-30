@@ -242,7 +242,11 @@ class RouteTimelineState extends State<RouteTimeline> {
                           );
                         }
                         return Column(
-                          children: elements,
+                          children: [ExpansionTile(
+                            leading: const Icon(Icons.route),
+                            title: const Text("routes"),
+                            children: elements,
+                          )],
                         );
                       } else {
                         return const CircularProgressIndicator();

@@ -72,7 +72,9 @@ class PitchTimelineState extends State<PitchTimeline> {
                     setState(() {});
                   }
 
-                  return Column(
+                  return Column(children: [ExpansionTile(
+                    leading: const Icon(Icons.commit),
+                    title: const Text("pitches"),
                     children: [
                       FixedTimeline.tileBuilder(
                         theme: TimelineThemeData(
@@ -137,7 +139,7 @@ class PitchTimelineState extends State<PitchTimeline> {
                           const SolidLineConnector(color: Color(0xff66c97f)),
                         ),
                       )
-                    ],
+                    ])],
                   );
                 } else {
                   return const CircularProgressIndicator();

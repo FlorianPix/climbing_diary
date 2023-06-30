@@ -6,7 +6,6 @@ import 'package:timelines/timelines.dart';
 import '../../../components/info/spot_info.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
-import '../../../interfaces/trip/update_trip.dart';
 import '../../../services/spot_service.dart';
 import '../../../services/trip_service.dart';
 import '../image_list_view.dart';
@@ -69,7 +68,9 @@ class SpotTimelineState extends State<SpotTimeline> {
                     setState(() {});
                   }
 
-                  return Column(
+                  return Column(children: [ExpansionTile(
+                    leading: const Icon(Icons.place),
+                    title: const Text("spots"),
                     children: [
                       FixedTimeline.tileBuilder(
                         theme: TimelineThemeData(
@@ -148,8 +149,8 @@ class SpotTimelineState extends State<SpotTimeline> {
                           connectorBuilder: (_, index, ___) =>
                           const SolidLineConnector(color: Color(0xff66c97f)),
                         ),
-                      )
-                    ],
+                      )]
+                  )],
                   );
                 } else {
                   return const CircularProgressIndicator();
