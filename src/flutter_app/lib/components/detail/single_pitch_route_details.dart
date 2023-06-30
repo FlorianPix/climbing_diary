@@ -1,5 +1,4 @@
 import 'package:climbing_diary/components/add/add_ascent_to_single_pitch_route.dart';
-import 'package:climbing_diary/components/select/select_ascent_of_single_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
@@ -7,17 +6,13 @@ import 'package:skeletons/skeletons.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
+import '../../pages/diary_page/timeline/ascent_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../MyButtonStyles.dart';
-import '../add/add_ascent.dart';
-import '../add/add_pitch.dart';
-import '../diary_page/timeline/ascent_timeline.dart';
 import '../edit/edit_single_pitch_route.dart';
 import '../info/single_pitch_route_info.dart';
-import '../select/select_ascent.dart';
-import '../select/select_pitch.dart';
 
 class SinglePitchRouteDetails extends StatefulWidget {
   const SinglePitchRouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
@@ -55,7 +50,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
       var mediaId = await mediaService.uploadMedia(img);
       SinglePitchRoute route = widget.route;
       route.mediaIds.add(mediaId);
-      routeService.editRoute(route.toUpdateSinglePitchRoute());
+      routeService.editSinglePitchRoute(route.toUpdateSinglePitchRoute());
     }
 
     setState(() {
@@ -131,7 +126,6 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
     // general info
     elements.addAll([
       SinglePitchRouteInfo(
-          spot: widget.spot,
           route: route
       ),
       Text(
@@ -286,21 +280,6 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
       ),
     );
     elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add existing ascent'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SelectAscentOfSinglePitchRoute(singlePitchRoute: widget.route),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -308,7 +287,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
-                routeService.deleteRoute(route, widget.spotId);
+                routeService.deleteSinglePitchRoute(route, widget.spotId);
                 widget.onDelete.call(route);
               },
               icon: const Icon(Icons.delete),

@@ -3,15 +3,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
-import '../../../interfaces/spot/spot.dart';
-import '../../../interfaces/trip/trip.dart';
-import '../../../services/media_service.dart';
-import '../../../services/spot_service.dart';
-import '../../MyButtonStyles.dart';
-import '../../add/add_route.dart';
-import '../../diary_page/timeline/route_timeline.dart';
-import '../../edit/edit_spot.dart';
-import '../../select/select_route.dart';
+import '../../components/MyButtonStyles.dart';
+import '../../components/add/add_route.dart';
+import '../../components/edit/edit_spot.dart';
+import '../../interfaces/spot/spot.dart';
+import '../../interfaces/trip/trip.dart';
+import '../../services/media_service.dart';
+import '../../services/spot_service.dart';
+import 'route_list.dart';
 
 class SpotDetails extends StatefulWidget {
   const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate });
@@ -296,9 +295,13 @@ class _SpotDetailsState extends State<SpotDetails>{
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddRoute(
-                    spots: [widget.spot],
-                    onAdd: (route) {
+                    spot: widget.spot,
+                    onAddMultiPitchRoute: (route) {
                       widget.spot.multiPitchRouteIds.add(route.id);
+                      setState(() {});
+                    },
+                    onAddSinglePitchRoute: (route) {
+                      widget.spot.singlePitchRouteIds.add(route.id);
                       setState(() {});
                     },
                   ),
@@ -334,16 +337,13 @@ class _SpotDetailsState extends State<SpotDetails>{
         )
     );
     // routes
-    // routes
     if (widget.spot.multiPitchRouteIds.isNotEmpty || widget.spot.singlePitchRouteIds.isNotEmpty){
       elements.add(
-          RouteTimeline(
+          RouteList(
             trip: widget.trip,
             spot: widget.spot,
             singlePitchRouteIds: widget.spot.singlePitchRouteIds,
             multiPitchRouteIds: widget.spot.multiPitchRouteIds,
-            startDate: DateTime(1923),
-            endDate: DateTime(2123),
           )
       );
     }

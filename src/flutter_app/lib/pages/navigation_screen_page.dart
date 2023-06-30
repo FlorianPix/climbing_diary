@@ -12,7 +12,7 @@ import '../services/trip_service.dart';
 class NavigationScreenPage extends StatefulWidget {
   const NavigationScreenPage({super.key, required this.onAdd});
 
-  final ValueSetter<Spot> onAdd;
+  final ValueSetter<List<String>> onAdd;
 
   @override
   State<NavigationScreenPage> createState() => _NavigationScreenPage();
@@ -47,19 +47,6 @@ class _NavigationScreenPage extends State<NavigationScreenPage> {
                 setState(() {
                   address = pickedData.address;
                 });
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) =>
-                    AddSpot(
-                      trips: trips,
-                      coordinates: LatLng(
-                        pickedData.latLong.latitude,
-                        pickedData.latLong.longitude
-                      ),
-                      address: address,
-                      onAdd: widget.onAdd,
-                    )
-                );
               }
             )
           );

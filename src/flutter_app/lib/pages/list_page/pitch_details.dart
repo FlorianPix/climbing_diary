@@ -1,41 +1,30 @@
+import 'package:climbing_diary/interfaces/route/route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
-import '../../interfaces/route/route.dart';
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
+import '../../components/info/pitch_info.dart';
+import '../../interfaces/pitch/pitch.dart';
+import '../../pages/diary_page/timeline/ascent_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
-import '../MyButtonStyles.dart';
-import '../add/add_pitch.dart';
-import '../diary_page/timeline/pitch_timeline.dart';
-import '../edit/edit_route.dart';
-import '../select/select_pitch.dart';
 
-class RouteDetails extends StatefulWidget {
-  const RouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
+class PitchDetails extends StatefulWidget {
+  const PitchDetails({super.key, required this.pitch});
 
-  final Trip? trip;
-  final Spot spot;
-  final ClimbingRoute route;
-  final ValueSetter<ClimbingRoute> onDelete;
-  final ValueSetter<ClimbingRoute> onUpdate;
-  final String spotId;
+  final Pitch pitch;
 
   @override
-  State<StatefulWidget> createState() => _RouteDetailsState();
+  State<StatefulWidget> createState() => _PitchDetailsState();
 }
 
-class _RouteDetailsState extends State<RouteDetails>{
+class _PitchDetailsState extends State<PitchDetails>{
   final MediaService mediaService = MediaService();
-  final RouteService routeService = RouteService();
   final PitchService pitchService = PitchService();
 
   Future<List<String>> fetchURLs() {
     List<Future<String>> futures = [];
-    for (var mediaId in widget.route.mediaIds) {
+    for (var mediaId in widget.pitch.mediaIds) {
       futures.add(mediaService.getMediumUrl(mediaId));
     }
     return Future.wait(futures);
@@ -48,9 +37,9 @@ class _RouteDetailsState extends State<RouteDetails>{
     var img = await picker.pickImage(source: media);
     if (img != null){
       var mediaId = await mediaService.uploadMedia(img);
-      ClimbingRoute route = widget.route;
-      route.mediaIds.add(mediaId);
-      routeService.editRoute(route.toUpdateClimbingRoute());
+      Pitch pitch = widget.pitch;
+      pitch.mediaIds.add(mediaId);
+      pitchService.editPitch(pitch.toUpdatePitch());
     }
 
     setState(() {
@@ -103,14 +92,6 @@ class _RouteDetailsState extends State<RouteDetails>{
       });
   }
 
-  void editRouteDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return EditRoute(route: widget.route, onUpdate: widget.onUpdate);
-      });
-  }
-
   @override
   void initState(){
     super.initState();
@@ -118,30 +99,16 @@ class _RouteDetailsState extends State<RouteDetails>{
 
   @override
   Widget build(BuildContext context) {
+    Pitch pitch = widget.pitch;
     List<Widget> elements = [];
-    ClimbingRoute route = widget.route;
 
     // general info
-    elements.addAll([
-      Text(
-        route.name,
-        style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600
-        ),
-      ),
-      Text(
-        route.location,
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400
-        ),
-      )]);
+    elements.add(PitchInfo(pitch: pitch));
     // rating
     List<Widget> ratingRowElements = [];
 
     for (var i = 0; i < 5; i++){
-      if (route.rating > i) {
+      if (pitch.rating > i) {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
       } else {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
@@ -149,14 +116,14 @@ class _RouteDetailsState extends State<RouteDetails>{
     }
 
     elements.add(Center(child: Padding(
-        padding: const EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.all(10),
         child:Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: ratingRowElements,
         )
     )));
 
-    if (route.comment.isNotEmpty) {
+    if (pitch.comment.isNotEmpty) {
       elements.add(Container(
           margin: const EdgeInsets.all(15.0),
           padding: const EdgeInsets.all(5.0),
@@ -165,12 +132,12 @@ class _RouteDetailsState extends State<RouteDetails>{
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            route.comment,
+            pitch.comment,
           )
       ));
     }
     // images
-    if (route.mediaIds.isNotEmpty) {
+    if (pitch.mediaIds.isNotEmpty) {
       List<Widget> imageWidgets = [];
       Future<List<String>> futureMediaUrls = fetchURLs();
 
@@ -219,7 +186,7 @@ class _RouteDetailsState extends State<RouteDetails>{
               );
             }
             List<Widget> skeletons = [];
-            for (var i = 0; i < route.mediaIds.length; i++){
+            for (var i = 0; i < pitch.mediaIds.length; i++){
               skeletons.add(skeleton);
             }
             return Container(
@@ -232,14 +199,6 @@ class _RouteDetailsState extends State<RouteDetails>{
           }
         )
       );
-      imageWidgets.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
       elements.add(
         SizedBox(
           height: 250,
@@ -249,80 +208,10 @@ class _RouteDetailsState extends State<RouteDetails>{
           )
         ),
       );
-    } else {
-      elements.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
     }
-    // add pitch
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add new pitch'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddPitch(routes: [widget.route],),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add existing pitch'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SelectPitch(route: widget.route),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // delete route button
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-                routeService.deleteRoute(route, widget.spotId);
-                widget.onDelete.call(route);
-              },
-              icon: const Icon(Icons.delete),
-            ),
-            IconButton(
-              onPressed: () => editRouteDialog(),
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        )
-    );
-    return Stack(
-        children: <Widget>[
-          Padding(
-              padding: const EdgeInsets.all(20),
-              child: ListView(
-                  children: elements
-              )
-          )
-        ]
+
+    return Column(
+        children: elements
     );
   }
 }

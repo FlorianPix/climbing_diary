@@ -9,11 +9,13 @@ import '../../interfaces/pitch/pitch.dart';
 import '../../services/ascent_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
+import '../MyTextStyles.dart';
+
 class AddAscent extends StatefulWidget {
-  const AddAscent({super.key, required this.pitches, this.onAdd});
+  const AddAscent({super.key, required this.pitch, this.onAdd});
 
   final ValueSetter<Ascent>? onAdd;
-  final List<Pitch> pitches;
+  final Pitch pitch;
 
   @override
   State<StatefulWidget> createState() => _AddAscentState();
@@ -26,13 +28,11 @@ class _AddAscentState extends State<AddAscent>{
   final TextEditingController controllerComment = TextEditingController();
   final TextEditingController controllerDate = TextEditingController();
 
-  Pitch? pitchValue;
   AscentStyle? ascentStyleValue;
   AscentType? ascentTypeValue;
 
   @override
   void initState(){
-    pitchValue = widget.pitches[0];
     ascentStyleValue = AscentStyle.lead;
     ascentTypeValue = AscentType.redPoint;
     controllerDate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -52,19 +52,9 @@ class _AddAscentState extends State<AddAscent>{
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              DropdownButton<Pitch>(
-                  value: pitchValue,
-                  items: widget.pitches.map<DropdownMenuItem<Pitch>>((Pitch pitch) {
-                    return DropdownMenuItem<Pitch>(
-                      value: pitch,
-                      child: Text(pitch.name),
-                    );
-                  }).toList(),
-                  onChanged: (Pitch? pitch) {
-                    setState(() {
-                      pitchValue = pitch!;
-                    });
-                  }
+              Text(
+                widget.pitch.name,
+                style: MyTextStyles.title,
               ),
               TextFormField(
                 controller: controllerComment,
@@ -141,11 +131,8 @@ class _AddAscentState extends State<AddAscent>{
                     type: ascentTypeIndex,
                   );
                   Navigator.popUntil(context, ModalRoute.withName('/'));
-                  final pitchValue = this.pitchValue;
-                  if (pitchValue != null) {
-                    Ascent? createdAscent = await ascentService.createAscent(pitchValue.id, ascent, result);
-                    widget.onAdd?.call(createdAscent!);
-                  }
+                  Ascent? createdAscent = await ascentService.createAscent(widget.pitch.id, ascent, result);
+                  widget.onAdd?.call(createdAscent!);
                 }
               }
             },

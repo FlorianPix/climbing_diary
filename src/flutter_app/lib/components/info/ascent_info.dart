@@ -18,7 +18,7 @@ class AscentInfo extends StatelessWidget {
 
     // date, style and type
     listInfo.add(Text(
-      "${ascent.date} ${AscentStyle.values[ascent.style].toEmoji()} ${AscentType.values[ascent.type].toEmoji()}",
+      "${ascent.date} ${AscentStyle.values[ascent.style].toEmoji()}${AscentType.values[ascent.type].toEmoji()}",
       style: MyTextStyles.title,
     ));
 

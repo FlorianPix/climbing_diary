@@ -37,7 +37,7 @@ class _RouteInfoState extends State<RouteInfo>{
             List<Widget> listInfo = [];
             String title = widget.route.name;
             if (ascent != null) {
-              title += " ${AscentStyle.values[ascent.style].toEmoji()} ${AscentType.values[ascent.type].toEmoji()}";
+              title += " ${AscentStyle.values[ascent.style].toEmoji()}${AscentType.values[ascent.type].toEmoji()}";
             }
 
             listInfo.add(Text(
@@ -49,8 +49,17 @@ class _RouteInfoState extends State<RouteInfo>{
               crossAxisAlignment: CrossAxisAlignment.start,
               children: listInfo,
             );
+          } else {
+            List<Widget> listInfo = [];
+            listInfo.add(Text(
+              widget.route.name,
+              style: MyTextStyles.title,
+            ));
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: listInfo,
+            );
           }
-          return const CircularProgressIndicator();
         }
     );
   }

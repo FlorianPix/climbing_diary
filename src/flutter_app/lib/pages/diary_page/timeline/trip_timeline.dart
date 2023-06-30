@@ -1,35 +1,25 @@
-import 'package:climbing_diary/components/diary_page/image_list_view.dart';
-import 'package:climbing_diary/interfaces/route/route.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/spot_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
-import '../../../interfaces/ascent/ascent.dart';
-import '../../../interfaces/pitch/pitch.dart';
+import '../../../components/add/add_trip.dart';
+import '../../../components/detail/trip_details.dart';
+import '../../../components/info/trip_info.dart';
 import '../../../interfaces/trip/trip.dart';
-import '../../../interfaces/spot/spot.dart';
-import '../../../services/ascent_service.dart';
-import '../../detail/ascent_details.dart';
-import '../../info/ascent_info.dart';
+import '../../../services/trip_service.dart';
+import '../image_list_view.dart';
+import '../rating_row.dart';
 
-class AscentTimeline extends StatefulWidget {
-  const AscentTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchId, required this.ascentIds, required this.onDelete, required this.onUpdate, required this.startDate, required this.endDate, required this.ofMultiPitch});
-
-  final Trip? trip;
-  final Spot spot;
-  final ClimbingRoute route;
-  final String pitchId;
-  final List<String> ascentIds;
-  final ValueSetter<Ascent> onDelete, onUpdate;
-  final DateTime startDate, endDate;
-  final bool ofMultiPitch;
+class TripTimeline extends StatefulWidget {
+  const TripTimeline({super.key});
 
   @override
-  State<StatefulWidget> createState() => AscentTimelineState();
+  State<StatefulWidget> createState() => TripTimelineState();
 }
 
-class AscentTimelineState extends State<AscentTimeline> {
-  final AscentService ascentService = AscentService();
+class TripTimelineState extends State<TripTimeline> {
+  final TripService tripService = TripService();
 
   @override
   void initState(){
@@ -39,49 +29,56 @@ class AscentTimelineState extends State<AscentTimeline> {
 
   @override
   Widget build(BuildContext context) {
-    List<String> ascentIds = widget.ascentIds;
     return FutureBuilder<bool>(
       future: checkConnection(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            return FutureBuilder<List<Ascent>>(
-              future: Future.wait(ascentIds.map((ascentId) => ascentService.getAscent(ascentId))),
+            return FutureBuilder<List<Trip>>(
+              future: tripService.getTrips(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  List<Ascent> ascents = snapshot.data!;
-                  ascents.retainWhere((ascent) {
-                    DateTime dateOfAscent = DateTime.parse(ascent.date);
-                    if ((dateOfAscent.isAfter(widget.startDate) && dateOfAscent.isBefore(widget.endDate)) || dateOfAscent.isAtSameMomentAs(widget.startDate) || dateOfAscent.isAtSameMomentAs(widget.endDate)){
-                      return true;
-                    }
-                    return false;
-                  });
-                  ascents.sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
+                  List<Trip> trips = snapshot.data!;
+                  trips.sort((a, b) => DateTime.parse(b.startDate).compareTo(DateTime.parse(a.startDate)));
 
-                  updateAscentCallback(Ascent ascent) {
+                  updateTripCallback(Trip trip) {
                     var index = -1;
-                    for (int i = 0; i < ascents.length; i++) {
-                      if (ascents[i].id == ascent.id) {
+                    for (int i = 0; i < trips.length; i++) {
+                      if (trips[i].id == trip.id) {
                         index = i;
                       }
                     }
-                    ascents.removeAt(index);
-                    ascents.add(ascent);
-                    widget.onUpdate.call(ascent);
+                    trips.removeAt(index);
+                    trips.add(trip);
                     setState(() {});
                   }
 
-                  deleteAscentCallback(Ascent ascent) {
-                    ascents.remove(ascent);
-                    ascentIds.remove(ascent.id);
-                    widget.onDelete.call(ascent);
+                  deleteTripCallback(Trip spot) {
+                    trips.remove(spot);
                     setState(() {});
                   }
 
-                  return Column(
+                  return ListView(
+                    padding: const EdgeInsets.all(20.0),
                     children: [
+                      TextButton.icon(
+                        icon: const Icon(Icons.explore, size: 30.0),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddTrip(
+                                  onAdd: (trip) {
+                                    trips.add(trip);
+                                    setState(() {});
+                                  }
+                                ),
+                              )
+                          );
+                        },
+                        label: const Text("add a new trip"),
+                      ),
                       FixedTimeline.tileBuilder(
                         theme: TimelineThemeData(
                           nodePosition: 0,
@@ -96,15 +93,28 @@ class AscentTimelineState extends State<AscentTimeline> {
                         ),
                         builder: TimelineTileBuilder.connected(
                           connectionDirection: ConnectionDirection.before,
-                          itemCount: ascents.length,
+                          itemCount: trips.length,
                           contentsBuilder: (_, index) {
                             List<Widget> elements = [];
-                            // ascent info
-                            elements.add(AscentInfo(ascent: ascents[index]));
+                            // spot info
+                            elements.add(TripInfo(trip: trips[index]));
+                            // rating as hearts in a row
+                            elements.add(RatingRow(rating: trips[index].rating));
                             // images list view
-                            if (ascents[index].mediaIds.isNotEmpty) {
+                            if (trips[index].mediaIds.isNotEmpty) {
                               elements.add(
-                                  ImageListView(mediaIds: ascents[index].mediaIds)
+                                  ImageListView(mediaIds: trips[index].mediaIds)
+                              );
+                            }
+                            // spots
+                            if (trips[index].spotIds.isNotEmpty){
+                              elements.add(
+                                SpotTimeline(
+                                    trip: trips[index],
+                                    spotIds: trips[index].spotIds,
+                                    startDate: DateTime.parse(trips[index].startDate),
+                                    endDate: DateTime.parse(trips[index].endDate),
+                                )
                               );
                             }
                             return InkWell(
@@ -116,13 +126,14 @@ class AscentTimelineState extends State<AscentTimeline> {
                                             shape: RoundedRectangleBorder(
                                               borderRadius: BorderRadius.circular(20),
                                             ),
-                                            child: AscentDetails(
-                                                pitchId: widget.pitchId,
-                                                ascent: ascents[index],
-                                                onDelete: deleteAscentCallback,
-                                                onUpdate: updateAscentCallback,
-                                                ofMultiPitch: widget.ofMultiPitch,
-                                            ),
+                                            child: TripDetails(trip: trips[index],
+                                                onTripDelete: deleteTripCallback,
+                                                onTripUpdate: updateTripCallback,
+                                                onSpotAdd: (spot) {
+                                                  trips[index].spotIds.add(spot.id);
+                                                  setState(() {});
+                                                },
+                                            )
                                         ),
                                   ),
                               child: Ink(

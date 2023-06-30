@@ -1,8 +1,8 @@
+import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../../interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import '../../interfaces/route/route.dart';
 import '../../interfaces/route/update_route.dart';
 import '../../services/route_service.dart';
@@ -110,8 +110,7 @@ class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
                 name: controllerName.text,
                 rating: currentSliderValue.toInt(),
               );
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              Navigator.popUntil(context, ModalRoute.withName('/'));
               MultiPitchRoute? updatedRoute = await routeService.editMultiPitchRoute(route);
               if (updatedRoute != null) {
                 widget.onUpdate.call(updatedRoute);

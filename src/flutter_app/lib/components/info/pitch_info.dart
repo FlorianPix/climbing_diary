@@ -51,7 +51,7 @@ class _PitchInfoState extends State<PitchInfo>{
             List<Widget> listInfo = [];
             String title = widget.pitch.name;
             if (displayedAscent != null) {
-              title += " ${AscentStyle.values[displayedAscent.style].toEmoji()} ${AscentType.values[displayedAscent.type].toEmoji()}";
+              title += " ${AscentStyle.values[displayedAscent.style].toEmoji()}${AscentType.values[displayedAscent.type].toEmoji()}";
             }
 
             // name

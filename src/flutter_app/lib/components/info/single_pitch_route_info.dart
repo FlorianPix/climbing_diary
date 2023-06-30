@@ -1,4 +1,3 @@
-import 'package:climbing_diary/components/detail/pitch_details.dart';
 import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:climbing_diary/services/ascent_service.dart';
 import 'package:flutter/material.dart';
@@ -7,16 +6,14 @@ import '../../interfaces/ascent/ascent.dart';
 import '../../interfaces/ascent/ascent_style.dart';
 import '../../interfaces/ascent/ascent_type.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
-import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
 import '../MyTextStyles.dart';
 
 class SinglePitchRouteInfo extends StatefulWidget {
   const SinglePitchRouteInfo(
-      {super.key, this.trip, required this.spot, required this.route});
+      {super.key, this.trip, required this.route});
 
   final Trip? trip;
-  final Spot spot;
   final SinglePitchRoute route;
 
   @override
@@ -57,7 +54,7 @@ class _SinglePitchRouteInfoState extends State<SinglePitchRouteInfo>{
             List<Widget> listInfo = [];
             String title = widget.route.name;
             if (displayedAscent != null) {
-              title += " ${AscentStyle.values[displayedAscent.style].toEmoji()} ${AscentType.values[displayedAscent.type].toEmoji()}";
+              title += " ${AscentStyle.values[displayedAscent.style].toEmoji()}${AscentType.values[displayedAscent.type].toEmoji()}";
             }
 
             listInfo.add(Text(
