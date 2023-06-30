@@ -25,10 +25,12 @@ class TripInfo extends StatelessWidget {
       style: MyTextStyles.description,
     ));
 
-    listInfo.add(Text(
-      trip.comment,
-      style: MyTextStyles.description,
-    ));
+    if (trip.comment != ""){
+      listInfo.add(Text(
+        trip.comment,
+        style: MyTextStyles.description,
+      ));
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
