@@ -10,7 +10,7 @@ import '../../services/spot_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../../services/trip_service.dart';
-import '../navigation_screen_page.dart';
+import 'navigation_screen_page.dart';
 
 class AddSpot extends StatefulWidget {
   const AddSpot({super.key, this.trip, required this.onAdd});

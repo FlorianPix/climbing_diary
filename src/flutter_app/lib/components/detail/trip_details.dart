@@ -295,7 +295,10 @@ class _TripDetailsState extends State<TripDetails>{
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SelectSpot(trip: widget.trip),
+                  builder: (context) => SelectSpot(
+                      trip: widget.trip,
+                      onAdd: widget.onSpotAdd
+                  ),
                 )
             );
           },
