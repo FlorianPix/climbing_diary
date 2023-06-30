@@ -37,7 +37,7 @@ class _RouteInfoState extends State<RouteInfo>{
             List<Widget> listInfo = [];
             String title = widget.route.name;
             if (ascent != null) {
-              title += " ${AscentStyle.values[ascent.style].toEmoji()} ${AscentType.values[ascent.type].toEmoji()}";
+              title += " ${AscentStyle.values[ascent.style].toEmoji()}${AscentType.values[ascent.type].toEmoji()}";
             }
 
             listInfo.add(Text(

@@ -254,7 +254,7 @@ class _PitchDetailsState extends State<PitchDetails>{
                 context,
                 MaterialPageRoute(
                   builder: (context) => AddAscent(
-                    pitches: [widget.pitch],
+                    pitch: widget.pitch,
                     onAdd: (ascent) {
                       widget.pitch.ascentIds.add(ascent.id);
                       setState(() {});

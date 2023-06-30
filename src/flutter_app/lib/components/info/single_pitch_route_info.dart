@@ -54,7 +54,7 @@ class _SinglePitchRouteInfoState extends State<SinglePitchRouteInfo>{
             List<Widget> listInfo = [];
             String title = widget.route.name;
             if (displayedAscent != null) {
-              title += " ${AscentStyle.values[displayedAscent.style].toEmoji()} ${AscentType.values[displayedAscent.type].toEmoji()}";
+              title += " ${AscentStyle.values[displayedAscent.style].toEmoji()}${AscentType.values[displayedAscent.type].toEmoji()}";
             }
 
             listInfo.add(Text(
