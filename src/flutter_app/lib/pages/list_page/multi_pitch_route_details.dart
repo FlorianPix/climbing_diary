@@ -1,34 +1,23 @@
-import 'package:climbing_diary/components/add/add_ascent_to_single_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
-import '../../interfaces/single_pitch_route/single_pitch_route.dart';
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
-import '../../pages/diary_page/timeline/ascent_timeline.dart';
+import '../../components/info/multi_pitch_route_info.dart';
+import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
-import '../MyButtonStyles.dart';
-import '../edit/edit_single_pitch_route.dart';
-import '../info/single_pitch_route_info.dart';
 
-class SinglePitchRouteDetails extends StatefulWidget {
-  const SinglePitchRouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
+class MultiPitchRouteDetails extends StatefulWidget {
+  const MultiPitchRouteDetails({super.key, required this.route});
 
-  final Trip? trip;
-  final Spot spot;
-  final SinglePitchRoute route;
-  final ValueSetter<SinglePitchRoute> onDelete;
-  final ValueSetter<SinglePitchRoute> onUpdate;
-  final String spotId;
+  final MultiPitchRoute route;
 
   @override
-  State<StatefulWidget> createState() => _SinglePitchRouteDetailsState();
+  State<StatefulWidget> createState() => _MultiPitchRouteDetailsState();
 }
 
-class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
+class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
   final MediaService mediaService = MediaService();
   final RouteService routeService = RouteService();
   final PitchService pitchService = PitchService();
@@ -48,9 +37,9 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
     var img = await picker.pickImage(source: media);
     if (img != null){
       var mediaId = await mediaService.uploadMedia(img);
-      SinglePitchRoute route = widget.route;
+      MultiPitchRoute route = widget.route;
       route.mediaIds.add(mediaId);
-      routeService.editSinglePitchRoute(route.toUpdateSinglePitchRoute());
+      routeService.editMultiPitchRoute(route.toUpdateMultiPitchRoute());
     }
 
     setState(() {
@@ -103,16 +92,6 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
       });
   }
 
-  void editRouteDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return EditSinglePitchRoute(
-            route: widget.route,
-            onUpdate: widget.onUpdate);
-      });
-  }
-
   @override
   void initState(){
     super.initState();
@@ -121,12 +100,19 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
   @override
   Widget build(BuildContext context) {
     List<Widget> elements = [];
-    SinglePitchRoute route = widget.route;
+    MultiPitchRoute route = widget.route;
 
     // general info
     elements.addAll([
-      SinglePitchRouteInfo(
-          route: route
+      Text(
+        route.name,
+        style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600
+        ),
+      ),
+      MultiPitchInfo(
+          pitchIds: route.pitchIds
       ),
       Text(
         route.location,
@@ -230,14 +216,6 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
           }
         )
       );
-      imageWidgets.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
       elements.add(
         SizedBox(
           height: 250,
@@ -247,89 +225,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
           )
         ),
       );
-    } else {
-      elements.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
     }
-    // add ascent
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add new ascent'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddAscentToSinglePitchRoute(
-                    singlePitchRoutes: [widget.route],
-                    onAdd: (ascent) {
-                      widget.route.ascentIds.add(ascent.id);
-                      setState(() {});
-                    },
-                  ),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // delete route button
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-                routeService.deleteSinglePitchRoute(route, widget.spotId);
-                widget.onDelete.call(route);
-              },
-              icon: const Icon(Icons.delete),
-            ),
-            IconButton(
-              onPressed: () => editRouteDialog(),
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        )
-    );
-    // ascents
-    if (route.ascentIds.isNotEmpty){
-      DateTime startDate = DateTime(1923);
-      DateTime endDate = DateTime(2123);
-      if (widget.trip != null) {
-        DateTime.parse(widget.trip!.startDate);
-        DateTime.parse(widget.trip!.endDate);
-      }
-      elements.add(
-          AscentTimeline(
-            trip: widget.trip,
-            spot: widget.spot,
-            route: widget.route,
-            pitchId: route.id,
-            ascentIds: route.ascentIds,
-            onUpdate: (ascent) {},
-            onDelete: (ascent) {
-              route.ascentIds.remove(ascent.id);
-              setState(() {});
-            },
-            startDate: startDate,
-            endDate: endDate,
-            ofMultiPitch: false,
-          )
-      );
-    }
-
     return Stack(
         children: <Widget>[
           Padding(

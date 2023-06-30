@@ -70,6 +70,25 @@ class RouteService {
     }
   }
 
+  Future<List<MultiPitchRoute>> getMultiPitchRoutesByName(String name) async {
+    if (name == ""){
+      return [];
+    }
+    final Response response = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route');
+    if (response.statusCode == 200) {
+      List<MultiPitchRoute> routes = [];
+      response.data.forEach((r) {
+        MultiPitchRoute route = MultiPitchRoute.fromJson(r);
+        if (route.name.contains(name)) {
+          routes.add(route);
+        }
+      });
+      return routes;
+    } else {
+      throw Exception('Failed to load route');
+    }
+  }
+
   Future<MultiPitchRoute?> getMultiPitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate) async {
     final Response response = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route/$routeId');
     if (response.statusCode == 200) {
@@ -286,6 +305,25 @@ class RouteService {
     await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$routeId');
     if (response.statusCode == 200) {
       return SinglePitchRoute.fromJson(response.data);
+    } else {
+      throw Exception('Failed to load route');
+    }
+  }
+
+  Future<List<SinglePitchRoute>> getSinglePitchRoutesByName(String name) async {
+    if (name == ""){
+      return [];
+    }
+    final Response response = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route');
+    if (response.statusCode == 200) {
+      List<SinglePitchRoute> routes = [];
+      response.data.forEach((r) {
+        SinglePitchRoute route = SinglePitchRoute.fromJson(r);
+        if (route.name.contains(name)) {
+          routes.add(route);
+        }
+      });
+      return routes;
     } else {
       throw Exception('Failed to load route');
     }

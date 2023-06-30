@@ -47,7 +47,7 @@ class _EditSpotState extends State<EditSpot>{
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      title: const Text('Edit this spot'),
+      title: const Text('edit this spot'),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -58,30 +58,30 @@ class _EditSpotState extends State<EditSpot>{
                 validator: (value) {
                   return value!.isNotEmpty
                     ? null
-                    : "Please add a title";
+                    : "please add a title";
                 },
                 controller: controllerTitle,
                 decoration: const InputDecoration(
-                    hintText: "Name of the spot", labelText: "Title"),
+                    hintText: "name of the spot", labelText: "name"),
               ),
               TextFormField(
                 controller: controllerAddress,
-                decoration: const InputDecoration(labelText: "Address"),
+                decoration: const InputDecoration(labelText: "address"),
               ),
               TextFormField(
                 controller: controllerLat,
-                decoration: const InputDecoration(labelText: "Latitude"),
+                decoration: const InputDecoration(labelText: "latitude"),
               ),
               TextFormField(
                 controller: controllerLong,
-                decoration: const InputDecoration(labelText: "Longitude"),
+                decoration: const InputDecoration(labelText: "longitude"),
               ),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                    "Rating",
+                    "rating",
                     style: TextStyle(
                       color: Colors.black.withOpacity(0.6),
                       fontSize: 16
@@ -103,14 +103,14 @@ class _EditSpotState extends State<EditSpot>{
               TextFormField(
                 controller: controllerDescription,
                 decoration: const InputDecoration(
-                  hintText: "Description", labelText: "Description"),
+                  hintText: "comment", labelText: "comment"),
               ),
               TextFormField(
                 validator: (value) {
                   if (value != null && value != ""){
                     var i = int.tryParse(value);
                     if (i == null) {
-                      return "Must be a number";
+                      return "must be a number";
                     }
                   }
                   return null;
@@ -118,14 +118,14 @@ class _EditSpotState extends State<EditSpot>{
                 controller: controllerBus,
                 decoration: const InputDecoration(
                   hintText: "in minutes",
-                  labelText: "Distance to public transport station"),
+                  labelText: "distance to public transport station"),
               ),
               TextFormField(
                 validator: (value) {
                   if (value != null && value != ""){
                     var i = int.tryParse(value);
                     if (i == null) {
-                      return "Must be a number";
+                      return "must be a number";
                     }
                   }
                   return null;
@@ -133,7 +133,7 @@ class _EditSpotState extends State<EditSpot>{
                 controller: controllerCar,
                 decoration: const InputDecoration(
                   hintText: "in minutes",
-                  labelText: "Distance to parking"),
+                  labelText: "distance to parking"),
               )
             ],
           ),

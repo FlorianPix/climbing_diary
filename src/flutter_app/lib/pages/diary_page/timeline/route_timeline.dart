@@ -190,7 +190,6 @@ class RouteTimelineState extends State<RouteTimeline> {
                                   // route info
                                   SinglePitchRoute singlePitchRoute = singlePitchRoutes[index];
                                   elements.add(SinglePitchRouteInfo(
-                                      spot: widget.spot,
                                       route: singlePitchRoute
                                   ));
                                   // rating as hearts in a row

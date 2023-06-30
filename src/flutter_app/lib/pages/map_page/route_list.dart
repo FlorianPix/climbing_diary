@@ -189,7 +189,6 @@ class RouteListState extends State<RouteList> {
                                       // route info
                                       SinglePitchRoute singlePitchRoute = singlePitchRoutes[index];
                                       elements.add(SinglePitchRouteInfo(
-                                          spot: widget.spot,
                                           route: singlePitchRoute
                                       ));
                                       // rating as hearts in a row

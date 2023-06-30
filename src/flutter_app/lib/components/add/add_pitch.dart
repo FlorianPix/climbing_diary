@@ -8,10 +8,12 @@ import '../../interfaces/route/route.dart';
 import '../../services/pitch_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-class AddPitch extends StatefulWidget {
-  const AddPitch({super.key, required this.routes});
+import '../MyTextStyles.dart';
 
-  final List<ClimbingRoute> routes;
+class AddPitch extends StatefulWidget {
+  const AddPitch({super.key, required this.route});
+
+  final ClimbingRoute route;
 
   @override
   State<StatefulWidget> createState() => _AddPitchState();
@@ -28,7 +30,6 @@ class _AddPitchState extends State<AddPitch>{
   final TextEditingController controllerRating = TextEditingController();
 
   double currentSliderValue = 0;
-  ClimbingRoute? dropdownValue;
   GradingSystem? gradingSystem;
 
   @override
@@ -49,19 +50,9 @@ class _AddPitchState extends State<AddPitch>{
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              DropdownButton<ClimbingRoute>(
-                  value: dropdownValue,
-                  items: widget.routes.map<DropdownMenuItem<ClimbingRoute>>((ClimbingRoute route) {
-                    return DropdownMenuItem<ClimbingRoute>(
-                      value: route,
-                      child: Text(route.name),
-                    );
-                  }).toList(),
-                  onChanged: (ClimbingRoute? route) {
-                    setState(() {
-                      dropdownValue = route!;
-                    });
-                  }
+              Text(
+                widget.route.name,
+                style: MyTextStyles.title,
               ),
               TextFormField(
                 validator: (value) {
@@ -148,10 +139,7 @@ class _AddPitchState extends State<AddPitch>{
                   num: int.parse(controllerNum.text),
                   rating: currentSliderValue.toInt(),
                 );
-                final dropdownValue = this.dropdownValue;
-                if (dropdownValue != null) {
-                  Pitch? createdPitch = await pitchService.createPitch(pitch, dropdownValue.id, result);
-                }
+                Pitch? createdPitch = await pitchService.createPitch(pitch, widget.route.id, result);
                 Navigator.popUntil(context, ModalRoute.withName('/'));
               }
             },

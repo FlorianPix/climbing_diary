@@ -1,41 +1,31 @@
-import 'package:climbing_diary/components/add/add_ascent_to_single_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
-import '../../interfaces/single_pitch_route/single_pitch_route.dart';
+import '../../components/MyButtonStyles.dart';
+import '../../components/edit/edit_spot.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
-import '../../pages/diary_page/timeline/ascent_timeline.dart';
 import '../../services/media_service.dart';
-import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
-import '../MyButtonStyles.dart';
-import '../edit/edit_single_pitch_route.dart';
-import '../info/single_pitch_route_info.dart';
+import '../../services/spot_service.dart';
 
-class SinglePitchRouteDetails extends StatefulWidget {
-  const SinglePitchRouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
+class SpotDetails extends StatefulWidget {
+  const SpotDetails({super.key, required this.spot});
 
-  final Trip? trip;
   final Spot spot;
-  final SinglePitchRoute route;
-  final ValueSetter<SinglePitchRoute> onDelete;
-  final ValueSetter<SinglePitchRoute> onUpdate;
-  final String spotId;
 
   @override
-  State<StatefulWidget> createState() => _SinglePitchRouteDetailsState();
+  State<StatefulWidget> createState() => _SpotDetailsState();
 }
 
-class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
+class _SpotDetailsState extends State<SpotDetails>{
   final MediaService mediaService = MediaService();
-  final RouteService routeService = RouteService();
-  final PitchService pitchService = PitchService();
+  final SpotService spotService = SpotService();
 
   Future<List<String>> fetchURLs() {
     List<Future<String>> futures = [];
-    for (var mediaId in widget.route.mediaIds) {
+    for (var mediaId in widget.spot.mediaIds) {
       futures.add(mediaService.getMediumUrl(mediaId));
     }
     return Future.wait(futures);
@@ -48,9 +38,9 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
     var img = await picker.pickImage(source: media);
     if (img != null){
       var mediaId = await mediaService.uploadMedia(img);
-      SinglePitchRoute route = widget.route;
-      route.mediaIds.add(mediaId);
-      routeService.editSinglePitchRoute(route.toUpdateSinglePitchRoute());
+      Spot spot = widget.spot;
+      spot.mediaIds.add(mediaId);
+      spotService.editSpot(spot.toUpdateSpot());
     }
 
     setState(() {
@@ -103,16 +93,6 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
       });
   }
 
-  void editRouteDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return EditSinglePitchRoute(
-            route: widget.route,
-            onUpdate: widget.onUpdate);
-      });
-  }
-
   @override
   void initState(){
     super.initState();
@@ -121,15 +101,25 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
   @override
   Widget build(BuildContext context) {
     List<Widget> elements = [];
-    SinglePitchRoute route = widget.route;
 
     // general info
     elements.addAll([
-      SinglePitchRouteInfo(
-          route: route
+      Text(
+        widget.spot.name,
+        style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600
+        ),
       ),
       Text(
-        route.location,
+        '${round(widget.spot.coordinates[0], decimals: 8)}, ${round(widget.spot.coordinates[1], decimals: 8)}',
+        style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400
+        ),
+      ),
+      Text(
+        widget.spot.location,
         style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400
@@ -139,7 +129,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
     List<Widget> ratingRowElements = [];
 
     for (var i = 0; i < 5; i++){
-      if (route.rating > i) {
+      if (widget.spot.rating > i) {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
       } else {
         ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
@@ -147,14 +137,40 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
     }
 
     elements.add(Center(child: Padding(
-        padding: const EdgeInsets.only(top: 10),
+        padding: const EdgeInsets.all(10),
         child:Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: ratingRowElements,
         )
     )));
 
-    if (route.comment.isNotEmpty) {
+    // time to walk transport
+    elements.add(Center(child: Padding(
+        padding: const EdgeInsets.all(5),
+        child:Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            const Icon(Icons.train, size: 30.0, color: Colors.green),
+            Text(
+              '${widget.spot.distancePublicTransport} min',
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400
+              ),
+            ),
+            const Icon(Icons.directions_car, size: 30.0, color: Colors.red),
+            Text(
+              '${widget.spot.distanceParking} min',
+              style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400
+              ),
+            )
+          ],
+        )
+    )));
+
+    if (widget.spot.comment.isNotEmpty) {
       elements.add(Container(
           margin: const EdgeInsets.all(15.0),
           padding: const EdgeInsets.all(5.0),
@@ -163,12 +179,12 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(
-            route.comment,
+            widget.spot.comment,
           )
       ));
     }
     // images
-    if (route.mediaIds.isNotEmpty) {
+    if (widget.spot.mediaIds.isNotEmpty) {
       List<Widget> imageWidgets = [];
       Future<List<String>> futureMediaUrls = fetchURLs();
 
@@ -217,7 +233,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
               );
             }
             List<Widget> skeletons = [];
-            for (var i = 0; i < route.mediaIds.length; i++){
+            for (var i = 0; i < widget.spot.mediaIds.length; i++){
               skeletons.add(skeleton);
             }
             return Container(
@@ -230,14 +246,6 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
           }
         )
       );
-      imageWidgets.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
       elements.add(
         SizedBox(
           height: 250,
@@ -247,98 +255,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
           )
         ),
       );
-    } else {
-      elements.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
     }
-    // add ascent
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add new ascent'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddAscentToSinglePitchRoute(
-                    singlePitchRoutes: [widget.route],
-                    onAdd: (ascent) {
-                      widget.route.ascentIds.add(ascent.id);
-                      setState(() {});
-                    },
-                  ),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // delete route button
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-                routeService.deleteSinglePitchRoute(route, widget.spotId);
-                widget.onDelete.call(route);
-              },
-              icon: const Icon(Icons.delete),
-            ),
-            IconButton(
-              onPressed: () => editRouteDialog(),
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        )
-    );
-    // ascents
-    if (route.ascentIds.isNotEmpty){
-      DateTime startDate = DateTime(1923);
-      DateTime endDate = DateTime(2123);
-      if (widget.trip != null) {
-        DateTime.parse(widget.trip!.startDate);
-        DateTime.parse(widget.trip!.endDate);
-      }
-      elements.add(
-          AscentTimeline(
-            trip: widget.trip,
-            spot: widget.spot,
-            route: widget.route,
-            pitchId: route.id,
-            ascentIds: route.ascentIds,
-            onUpdate: (ascent) {},
-            onDelete: (ascent) {
-              route.ascentIds.remove(ascent.id);
-              setState(() {});
-            },
-            startDate: startDate,
-            endDate: endDate,
-            ofMultiPitch: false,
-          )
-      );
-    }
-
-    return Stack(
-        children: <Widget>[
-          Padding(
-              padding: const EdgeInsets.all(20),
-              child: ListView(
-                  children: elements
-              )
-          )
-        ]
-    );
+    return Column(children: elements);
   }
 }

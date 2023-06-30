@@ -273,7 +273,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AddPitch(routes: [widget.route],),
+                  builder: (context) => AddPitch(route: widget.route,),
                 )
             );
           },
