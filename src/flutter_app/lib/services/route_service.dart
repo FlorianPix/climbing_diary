@@ -8,17 +8,13 @@ import '../interfaces/ascent/ascent.dart';
 import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import '../interfaces/pitch/pitch.dart';
-import '../interfaces/route/create_route.dart';
 import 'package:dio/dio.dart';
 
 import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
-import '../interfaces/route/route.dart';
-import '../interfaces/route/update_route.dart';
 import '../interfaces/single_pitch_route/create_single_pitch_route.dart';
 import '../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../interfaces/single_pitch_route/update_single_pitch_route.dart';
-import 'cache.dart';
 import 'locator.dart';
 
 class RouteService {
@@ -372,8 +368,7 @@ class RouteService {
 
   Future<SinglePitchRoute?> editSinglePitchRoute(UpdateSinglePitchRoute route) async {
     try {
-      final Response response = await netWorkLocator.dio
-          .put('$climbingApiHost/single_pitch_route/${route.id}', data: route.toJson());
+      final Response response = await netWorkLocator.dio.put('$climbingApiHost/single_pitch_route/${route.id}', data: route.toJson());
       if (response.statusCode == 200) {
         // TODO deleteRouteFromEditQueue(route.hashCode);
         return SinglePitchRoute.fromJson(response.data);

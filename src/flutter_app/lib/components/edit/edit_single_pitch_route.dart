@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
+import '../../interfaces/grade.dart';
 import '../../interfaces/grading_system.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/single_pitch_route/update_single_pitch_route.dart';
@@ -136,13 +136,15 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
         IconButton(
           onPressed: () async {
             bool result = await InternetConnectionChecker().hasConnection;
-            if (_formKey.currentState!.validate()) {
+            if (_formKey.currentState!.validate() && gradingSystem != null) {
               UpdateSinglePitchRoute route = UpdateSinglePitchRoute(
                 id: widget.route.id,
                 comment: controllerComment.text,
                 location: controllerLocation.text,
                 name: controllerName.text,
                 rating: currentSliderValue.toInt(),
+                grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
+                length: int.parse(controllerLength.text)
               );
               Navigator.popUntil(context, ModalRoute.withName('/'));
               SinglePitchRoute? updatedRoute = await routeService.editSinglePitchRoute(route);
