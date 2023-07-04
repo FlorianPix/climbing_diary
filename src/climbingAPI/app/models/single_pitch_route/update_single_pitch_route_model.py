@@ -7,6 +7,8 @@ from app.models.route.update_route_model import UpdateRouteModel
 
 from app.models.grade import Grade
 
+from app.models.grading_system import GradingSystem
+
 
 class UpdateSinglePitchRouteModel(UpdateRouteModel):
     ascent_ids: Optional[tuple]
@@ -25,7 +27,7 @@ class UpdateSinglePitchRouteModel(UpdateRouteModel):
                 "location": "Sektor Falkensteiner Riss",
                 "name": "Falkenstein Riss",
                 "rating": 5,
-                "grade": "5",
+                "grade": {"grade": "IV", "system": GradingSystem.SAXONY},
                 "length": 40,
             }
         }

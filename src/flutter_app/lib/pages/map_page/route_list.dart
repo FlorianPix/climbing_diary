@@ -167,6 +167,24 @@ class RouteListState extends State<RouteList> {
                           List<SinglePitchRoute> singlePitchRoutes = snapshot.data!.whereType<SinglePitchRoute>().toList();
                           singlePitchRoutes.sort((a, b) => a.name.compareTo(b.name));
 
+                          updateSinglePitchRouteCallback(SinglePitchRoute route) {
+                            var index = -1;
+                            for (int i = 0; i < singlePitchRoutes.length; i++) {
+                              if (singlePitchRoutes[i].id == route.id) {
+                                index = i;
+                              }
+                            }
+                            singlePitchRoutes.removeAt(index);
+                            singlePitchRoutes.add(route);
+                            setState(() {});
+                          }
+
+                          deleteSinglePitchRouteCallback(SinglePitchRoute route) {
+                            singlePitchRoutes.remove(route);
+                            singlePitchRouteIds.remove(route.id);
+                            setState(() {});
+                          }
+
                           if (singlePitchRoutes.isNotEmpty){
                             elements.add(
                                 FixedTimeline.tileBuilder(
@@ -211,8 +229,8 @@ class RouteListState extends State<RouteList> {
                                                     child: SinglePitchRouteDetails(
                                                         spot: widget.spot,
                                                         route: singlePitchRoute,
-                                                        onDelete: (SinglePitchRoute sPR) => {},
-                                                        onUpdate: (SinglePitchRoute sPR) => {},
+                                                        onDelete: (SinglePitchRoute sPR) => deleteSinglePitchRouteCallback(sPR),
+                                                        onUpdate: (SinglePitchRoute sPR) => updateSinglePitchRouteCallback(sPR),
                                                         spotId: widget.spot.id)
                                                 )
                                         ),

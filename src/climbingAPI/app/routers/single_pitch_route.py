@@ -14,6 +14,8 @@ from app.models.single_pitch_route.update_single_pitch_route_model import Update
 from app.models.spot.spot_model import SpotModel
 from app.models.single_pitch_route.create_single_pitch_route_model import CreateSinglePitchRouteModel
 
+from app.models.grading_system import GradingSystem
+
 router = APIRouter()
 
 
@@ -69,6 +71,7 @@ async def retrieve_route(route_id: str, user: Auth0User = Security(auth.get_user
 async def update_route(route_id: str, route: UpdateSinglePitchRouteModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     route = {k: v for k, v in route.dict().items() if v is not None}
+    route['grade']['system'] = route['grade']['system'].value
 
     if len(route) >= 1:
         update_result = await db["single_pitch_route"].update_one({"_id": ObjectId(route_id)}, {"$set": route})
@@ -99,7 +102,7 @@ async def delete_route(spot_id: str, route_id: str, user: Auth0User = Security(a
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Route {route_id} not found")
     # route was found
-    if await db["spot"].find_one({"_id": ObjectId(spot_id), "route_ids": ObjectId(route_id)}) is None:
+    if await db["spot"].find_one({"_id": ObjectId(spot_id), "single_pitch_route_ids": ObjectId(route_id)}) is None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail=f"Route {route_id} does not belong to spot {spot_id}")
     # route belongs to spot
