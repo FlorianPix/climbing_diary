@@ -54,11 +54,8 @@ def test_retrieve_spot(headers, a_create_spot):
     # creating a spot is already tested in test_create_spot
     url = 'http://localhost:8000/spot'
     response = requests.post(url, json=a_create_spot, headers=headers)
-    assert response.status_code == 201
     data = json.loads(response.text)
     spot_id = data['_id']
-    for key in a_create_spot.keys():
-        assert data[key] == a_create_spot[key]
     # Given authentication and a db with one spot
     # When a get request is sent to /spot/{spot_id}
     response = requests.get(url+f"/{spot_id}", headers=headers)
@@ -77,7 +74,6 @@ def test_retrieve_spot_non_existent_id(headers, a_create_spot):
     url = 'http://localhost:8000/spot'
     response = requests.get(url+f"/649ec039e7d91048f28d5eb8", headers=headers)
     # Then the response status code is '404 Not found'
-    print(response.json())
     assert response.status_code == 404
 
 
@@ -118,7 +114,7 @@ def test_update_spot(headers, a_create_spot, a_update_spot):
     # Then the response is the updated_spot
     data = json.loads(response.text)
     assert data['_id'] == spot_id
-    for key in a_create_spot.keys():
+    for key in a_update_spot.keys():
         assert data[key] == a_update_spot[key]
 
 
@@ -176,11 +172,51 @@ def test_delete_spot_and_id_from_trip(headers, a_create_trip, a_update_trip, a_c
 
 
 def test_delete_spot_and_all_its_multi_pitch_routes_pitches_ascents(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch_1, a_create_pitch_2, a_create_ascent):
-    # TODO
     # Given authentication and a db with one spot that has one multi pitch route with two pitches and one ascent each
+    # create a spot
+    # creating a spot is already tested in test_create_spot
+    spot_url = 'http://localhost:8000/spot'
+    response = requests.post(spot_url, json=a_create_spot, headers=headers)
+    data = json.loads(response.text)
+    spot_id = data['_id']
+    # create a spot
+    # creating a spot is already tested in test_create_spot
+    multi_pitch_route_url = 'http://localhost:8000/multi_pitch_route'
+    response = requests.post(multi_pitch_route_url + f'/spot/{spot_id}', json=a_create_multi_pitch_route, headers=headers)
+    data = json.loads(response.text)
+    multi_pitch_route_id = data['_id']
+    # create two pitches
+    pitch_url = 'http://localhost:8000/pitch'
+    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch_1, headers=headers)
+    data = json.loads(response.text)
+    pitch_1_id = data['_id']
+    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch_2, headers=headers)
+    data = json.loads(response.text)
+    pitch_2_id = data['_id']
+    # create one ascent for each pitch
+    ascent_url = 'http://localhost:8000/ascent'
+    response = requests.post(ascent_url + f"/pitch/{pitch_1_id}", json=a_create_ascent, headers=headers)
+    data = json.loads(response.text)
+    ascent_1_id = data['_id']
+    response = requests.post(ascent_url + f"/pitch/{pitch_2_id}", json=a_create_ascent, headers=headers)
+    data = json.loads(response.text)
+    ascent_2_id = data['_id']
     # When a delete request is sent to /spot/{spot_id}
+    response = requests.delete(spot_url + f'/{spot_id}', headers=headers)
     # Then the spot is deleted
+    assert response.status_code == 204
+    response = requests.get(spot_url + f"/{spot_id}", headers=headers)
+    assert response.status_code == 404
     # Then the spots multi pitch routes are deleted
+    response = requests.get(multi_pitch_route_url + f"/{multi_pitch_route_id}", headers=headers)
+    assert response.status_code == 404
     # Then the multi pitch routes pitches are deleted
+    response = requests.get(pitch_url + f"/{pitch_1_id}", headers=headers)
+    assert response.status_code == 404
+    response = requests.get(pitch_url + f"/{pitch_2_id}", headers=headers)
+    assert response.status_code == 404
     # Then the pitches ascents are deleted
-    assert False
+    response = requests.get(ascent_url + f"/{ascent_1_id}", headers=headers)
+    assert response.status_code == 404
+    response = requests.get(ascent_url + f"/{ascent_2_id}", headers=headers)
+    assert response.status_code == 404

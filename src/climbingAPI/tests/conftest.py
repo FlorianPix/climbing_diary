@@ -30,13 +30,19 @@ def getUserTokenHeaders(user_name='test@test.de'):
     return {'authorization': "Bearer " + getUserToken(user_name)}
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def headers():
     # setup
-    url = 'http://localhost:8000/admin'
     headers = getUserTokenHeaders()
-    requests.delete(url, headers=headers)
     yield headers
+    #  teardown
+
+
+@pytest.fixture(autouse=True)
+def empty_db(headers):
+    # setup
+    url = 'http://localhost:8000/admin'
+    requests.delete(url, headers=headers)
     #  teardown
 
 
@@ -107,7 +113,7 @@ def a_create_single_pitch_route():
       "location": "a location",
       "name": "a name",
       "rating": 5,
-      "grade": {"grade": "5a", "system": GradingSystem.FRENCH},
+      "grade": {"grade": "5a", "system": 3},
       "length": 40
     }
 
@@ -116,7 +122,7 @@ def a_create_single_pitch_route():
 def a_create_pitch_1():
     yield {
       "comment": "Top Pitch",
-      "grade": {"grade": "6a", "system": GradingSystem.FRENCH},
+      "grade": {"grade": "6a", "system": 3},
       "length": 35,
       "name": "Pitch 1",
       "num": 1,
@@ -128,7 +134,7 @@ def a_create_pitch_1():
 def a_create_pitch_2():
     yield {
       "comment": "Great Pitch",
-      "grade": {"grade": "5a", "system": GradingSystem.FRENCH},
+      "grade": {"grade": "5a", "system": 3},
       "length": 21,
       "name": "Pitch 2",
       "num": 2,
@@ -139,8 +145,19 @@ def a_create_pitch_2():
 @pytest.fixture()
 def a_create_ascent():
     yield {
-      "comment": "Great ascent",
+      "comment": "a comment",
       "date": "2022-10-06",
       "style": 0,
       "type": 3
+    }
+
+
+@pytest.fixture()
+def a_update_ascent():
+    yield {
+      "media_ids": [],
+      "comment": "updated comment",
+      "date": "2021-02-14",
+      "style": 1,
+      "type": 2
     }
