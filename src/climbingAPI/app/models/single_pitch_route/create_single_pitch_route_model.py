@@ -8,6 +8,8 @@ from app.models.route.create_route_model import CreateRouteModel
 
 from app.models.grade import Grade
 
+from app.models.grading_system import GradingSystem
+
 
 class CreateSinglePitchRouteModel(CreateRouteModel):
     grade: Grade = Field(...)
@@ -23,7 +25,7 @@ class CreateSinglePitchRouteModel(CreateRouteModel):
                 "location": "Sektor Falkensteiner Riss",
                 "name": "Falkenstein Riss",
                 "rating": 5,
-                "grade": "5",
+                "grade": {"grade": "5a", "system": GradingSystem.FRENCH},
                 "length": 40,
             }
         }

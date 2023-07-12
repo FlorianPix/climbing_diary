@@ -2,6 +2,7 @@ import pytest
 import json
 import requests
 
+from app.models.grading_system import GradingSystem
 
 # testing user password database:
 testingUsers = {
@@ -37,3 +38,109 @@ def headers():
     requests.delete(url, headers=headers)
     yield headers
     #  teardown
+
+
+@pytest.fixture()
+def a_create_trip():
+    yield {
+      "comment": "a comment",
+      "end_date": "2022-10-08",
+      "name": "a name",
+      "start_date": "2022-10-06",
+      "rating": 5
+    }
+
+
+@pytest.fixture()
+def a_update_trip():
+    yield {
+      "media_ids": [],
+      "spot_ids": [],
+      "comment": "a comment",
+      "end_date": "2022-10-08",
+      "name": "a name",
+      "start_date": "2022-10-06",
+      "rating": 5
+    }
+
+
+@pytest.fixture()
+def a_create_spot():
+    yield {
+      "comment": "a comment",
+      "coordinates": [50.746036, 10.642666],
+      "distance_parking": 120,
+      "distance_public_transport": 120,
+      "location": "a location",
+      "name": "a name",
+      "rating": 5
+    }
+
+
+@pytest.fixture()
+def a_update_spot():
+    yield {
+      "comment": "Updated comment",
+      "coordinates": [1.1, 2.2],
+      "distance_parking": 1,
+      "distance_public_transport": 2,
+      "location": "Updated location",
+      "name": "Updated name",
+      "rating": 1
+    }
+
+
+@pytest.fixture()
+def a_create_multi_pitch_route():
+    yield {
+      "comment": "a comment",
+      "location": "a location",
+      "name": "a name",
+      "rating": 5
+    }
+
+
+@pytest.fixture()
+def a_create_single_pitch_route():
+    yield {
+      "comment": "a comment",
+      "location": "a location",
+      "name": "a name",
+      "rating": 5,
+      "grade": {"grade": "5a", "system": GradingSystem.FRENCH},
+      "length": 40
+    }
+
+
+@pytest.fixture()
+def a_create_pitch_1():
+    yield {
+      "comment": "Top Pitch",
+      "grade": {"grade": "6a", "system": GradingSystem.FRENCH},
+      "length": 35,
+      "name": "Pitch 1",
+      "num": 1,
+      "rating": 5
+    }
+
+
+@pytest.fixture()
+def a_create_pitch_2():
+    yield {
+      "comment": "Great Pitch",
+      "grade": {"grade": "5a", "system": GradingSystem.FRENCH},
+      "length": 21,
+      "name": "Pitch 2",
+      "num": 2,
+      "rating": 4
+    }
+
+
+@pytest.fixture()
+def a_create_ascent():
+    yield {
+      "comment": "Great ascent",
+      "date": "2022-10-06",
+      "style": 0,
+      "type": 3
+    }
