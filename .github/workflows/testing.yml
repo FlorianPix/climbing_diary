@@ -24,12 +24,12 @@ jobs:
         name: Test
         run: |
           cd ./src/climbingAPI
-          docker exec climbingapi-app-1 coverage run -m pytest .
+          docker compose exec app coverage run -m pytest .
       -
         name: Coverage
         run: |
           cd ./src/climbingAPI
-          docker exec climbingapi-app-1 coverage report
+          docker compose exec app coverage report
       -
         name: End docker conatiner
         run: |
