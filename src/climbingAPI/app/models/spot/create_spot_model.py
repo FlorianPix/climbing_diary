@@ -24,7 +24,7 @@ class CreateSpotModel(BaseModel):
                 "comment": "Great spot close to a lake with solid holds but kinda hard to reach.",
                 "coordinates": [50.746036, 10.642666],
                 "distance_parking": 120,
-                "distance_public_transport": 120,
+                "distance_public": 120,
                 "location": "Deutschland, Thüringen, Thüringer Wald",
                 "name": "Falkenstein",
                 "rating": 5,

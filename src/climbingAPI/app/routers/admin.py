@@ -15,6 +15,17 @@ from app.core.auth import auth
 router = APIRouter()
 
 
+@router.delete('/', description="Delete everything from this user", dependencies=[Depends(auth.implicit_scheme)])
+async def delete_trips(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    db = await get_db()
+    await db["trip"].delete_many({"user_id": user.id})
+    await db["spot"].delete_many({"user_id": user.id})
+    await db["single_pitch_route"].delete_many({"user_id": user.id})
+    await db["multi_pitch_route"].delete_many({"user_id": user.id})
+    await db["pitch"].delete_many({"user_id": user.id})
+    await db["ascent"].delete_many({"user_id": user.id})
+
+
 @router.get('/spots', description="Retrieve all spots from all users", response_model=List[SpotModel], dependencies=[Depends(auth.implicit_scheme)])
 async def get_all_spots(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
