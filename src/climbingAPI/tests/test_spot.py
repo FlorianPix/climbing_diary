@@ -173,3 +173,14 @@ def test_delete_spot_and_id_from_trip(headers, a_create_trip, a_update_trip, a_c
     assert response.status_code == 200
     data = json.loads(response.text)
     assert data['spot_ids'] == []
+
+
+def test_delete_spot_and_all_its_multi_pitch_routes_pitches_ascents(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch_1, a_create_pitch_2, a_create_ascent):
+    # TODO
+    # Given authentication and a db with one spot that has one multi pitch route with two pitches and one ascent each
+    # When a delete request is sent to /spot/{spot_id}
+    # Then the spot is deleted
+    # Then the spots multi pitch routes are deleted
+    # Then the multi pitch routes pitches are deleted
+    # Then the pitches ascents are deleted
+    assert False
