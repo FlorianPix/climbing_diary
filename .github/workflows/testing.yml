@@ -25,11 +25,11 @@ jobs:
         run: |
           cd ./src/climbingAPI
           docker exec climbingapi-app-1 coverage run -m pytest .
-      -
-        name: Coverage
-        run: |
-          cd ./src/climbingAPI
-          docker exec climbingapi-app-1 coverage report
+      #-
+      #  name: Coverage
+      #  run: |
+      #    cd ./src/climbingAPI
+      #    docker exec climbingapi-app-1 coverage report
       -
         name: End docker conatiner
         run: |
@@ -54,10 +54,10 @@ jobs:
         run: |
           cd ./src/mediaAPI
           docker exec mediaapi-app-1 coverage run -m pytest .
-      - name: Coverage
-        run: |
-          cd ./src/mediaAPI
-          docker exec mediaapi-app-1 coverage report
+      #- name: Coverage
+      #  run: |
+      #    cd ./src/mediaAPI
+      #    docker exec mediaapi-app-1 coverage report
       - name: End docker container
         run: |
           cd ./src/mediaAPI
