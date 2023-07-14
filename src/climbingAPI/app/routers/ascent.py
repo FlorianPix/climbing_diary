@@ -98,7 +98,7 @@ async def update_ascent(ascent_id: str, ascent: UpdateAscentModel = Body(...), u
                         detail=f"Ascent {ascent_id} not found")
 
 
-@router.delete('/{ascent_id}/pitch/{pitch_id}', description="Delete an ascent", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/{ascent_id}/pitch/{pitch_id}', description="Delete an ascent", response_model=AscentModel, dependencies=[Depends(auth.implicit_scheme)])
 async def delete_ascent(pitch_id: str, ascent_id: str, user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     pitch = await db["pitch"].find_one({"_id": ObjectId(pitch_id), "user_id": user.id})
@@ -126,13 +126,13 @@ async def delete_ascent(pitch_id: str, ascent_id: str, user: Auth0User = Securit
                             detail=f"Removing ascent_id {ascent_id} from pitch {pitch_id} failed")
     # ascent_id was removed
     if (updated_pitch := await db["pitch"].find_one({"_id": ObjectId(pitch_id)})) is not None:
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
+        return ascent
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Pitch {pitch_id} not found")
 
 
-@router.delete('/{ascent_id}/route/{route_id}', description="Delete an ascent", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/{ascent_id}/route/{route_id}', description="Delete an ascent", response_model=AscentModel, dependencies=[Depends(auth.implicit_scheme)])
 async def delete_ascent_from_single_pitch_route(route_id: str, ascent_id: str, user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     pitch = await db["single_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})
@@ -160,7 +160,7 @@ async def delete_ascent_from_single_pitch_route(route_id: str, ascent_id: str, u
                             detail=f"Removing ascent_id {ascent_id} from pitch {route_id} failed")
     # ascent_id was removed
     if (updated_pitch := await db["single_pitch_route"].find_one({"_id": ObjectId(route_id)})) is not None:
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
+        return ascent
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Single pitch route {route_id} not found")

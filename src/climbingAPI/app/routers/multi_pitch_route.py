@@ -30,7 +30,6 @@ async def create_route(spot_id: str, route: CreateMultiPitchRouteModel = Body(..
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Spot {spot_id} not found")
     # spot was found
-    print(spot.keys())
     if await db["multi_pitch_route"].find({"user_id": user.id, "name": route["name"], "route_id": {"$in": spot["multi_pitch_route_ids"]}}).to_list(None):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Route already exists")
@@ -101,7 +100,7 @@ async def delete_route(spot_id: str, route_id: str, user: Auth0User = Security(a
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Route {route_id} not found")
     # route was found
-    if await db["spot"].find_one({"_id": ObjectId(spot_id), "route_ids": ObjectId(route_id)}) is None:
+    if await db["spot"].find_one({"_id": ObjectId(spot_id), "multi_pitch_route_ids": ObjectId(route_id)}) is None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail=f"Route {route_id} does not belong to spot {spot_id}")
     # route belongs to spot

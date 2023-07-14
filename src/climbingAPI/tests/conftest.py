@@ -107,6 +107,16 @@ def a_create_multi_pitch_route():
 
 
 @pytest.fixture()
+def a_update_multi_pitch_route():
+    yield {
+      "comment": "updated comment",
+      "location": "updated location",
+      "name": "updated name",
+      "rating": 1
+    }
+
+
+@pytest.fixture()
 def a_create_single_pitch_route():
     yield {
       "comment": "a comment",
@@ -115,6 +125,18 @@ def a_create_single_pitch_route():
       "rating": 5,
       "grade": {"grade": "5a", "system": 3},
       "length": 40
+    }
+
+
+@pytest.fixture()
+def a_update_single_pitch_route():
+    yield {
+      "comment": "updated comment",
+      "location": "updated location",
+      "name": "updated name",
+      "rating": 1,
+      "grade": {"grade": "IV", "system": 6},
+      "length": 32
     }
 
 
@@ -139,6 +161,18 @@ def a_create_pitch_2():
       "name": "Pitch 2",
       "num": 2,
       "rating": 4
+    }
+
+
+@pytest.fixture()
+def a_update_pitch():
+    yield {
+      "comment": "updated comment",
+      "grade": {"grade": "IV", "system": 6},
+      "length": 12,
+      "name": "updated name",
+      "num": 2,
+      "rating": 1
     }
 
 

@@ -174,13 +174,11 @@ def test_delete_spot_and_id_from_trip(headers, a_create_trip, a_update_trip, a_c
 def test_delete_spot_and_all_its_multi_pitch_routes_pitches_ascents(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch_1, a_create_pitch_2, a_create_ascent):
     # Given authentication and a db with one spot that has one multi pitch route with two pitches and one ascent each
     # create a spot
-    # creating a spot is already tested in test_create_spot
     spot_url = 'http://localhost:8000/spot'
     response = requests.post(spot_url, json=a_create_spot, headers=headers)
     data = json.loads(response.text)
     spot_id = data['_id']
-    # create a spot
-    # creating a spot is already tested in test_create_spot
+    # create a multi pitch route
     multi_pitch_route_url = 'http://localhost:8000/multi_pitch_route'
     response = requests.post(multi_pitch_route_url + f'/spot/{spot_id}', json=a_create_multi_pitch_route, headers=headers)
     data = json.loads(response.text)

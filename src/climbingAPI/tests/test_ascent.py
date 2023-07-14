@@ -24,7 +24,7 @@ def test_create_ascent_of_pitch(headers, a_create_spot, a_create_multi_pitch_rou
     response = requests.post(ascent_url + f'/pitch/{pitch_id}', json=a_create_ascent, headers=headers)
     # Then the response status code is '201 Created'
     assert response.status_code == 201
-    # Then the response contains the created spot
+    # Then the response contains the created ascent
     data = json.loads(response.text)
     for key in a_create_ascent.keys():
         assert data[key] == a_create_ascent[key]
@@ -177,8 +177,8 @@ def test_delete_ascent(headers, a_create_spot, a_create_multi_pitch_route, a_cre
     # Given a db with a spot and its multi_pitch_route + pitch + ascent and authentication
     # When a delete request is sent to /ascent/{ascent_id}
     response = requests.delete(ascent_url + f"/{ascent_id}/pitch/{pitch_id}", headers=headers)
-    # Then the response status code is '204 No Content'
-    assert response.status_code == 204
+    # Then the response status code is '200 OK'
+    assert response.status_code == 200
     # Then the ascent is removed from the db
     response = requests.get(ascent_url + f"/{ascent_id}", headers=headers)
     assert response.status_code == 404
@@ -209,8 +209,8 @@ def test_delete_ascent_and_id_from_pitch(headers, a_create_spot, a_create_multi_
     # Given a db with a spot and its multi_pitch_route + pitch + ascent and authentication
     # When a delete request is sent to /ascent/{ascent_id}
     response = requests.delete(ascent_url + f"/{ascent_id}/pitch/{pitch_id}", headers=headers)
-    # Then the response status code is '204 No Content'
-    assert response.status_code == 204
+    # Then the response status code is '200 OK'
+    assert response.status_code == 200
     # Then the ascent is removed from the db
     response = requests.get(ascent_url + f"/{ascent_id}", headers=headers)
     assert response.status_code == 404
@@ -240,8 +240,8 @@ def test_delete_ascent_and_id_from_single_pitch_route(headers, a_create_spot, a_
     # Given a db with a spot and its single_pitch_route + ascent and authentication
     # When a delete request is sent to /ascent/{ascent_id}
     response = requests.delete(ascent_url + f"/{ascent_id}/route/{single_pitch_route_id}", headers=headers)
-    # Then the response status code is '204 No Content'
-    assert response.status_code == 204
+    # Then the response status code is '200 OK'
+    assert response.status_code == 200
     # Then the ascent is removed from the db
     response = requests.get(ascent_url + f"/{ascent_id}", headers=headers)
     assert response.status_code == 404
