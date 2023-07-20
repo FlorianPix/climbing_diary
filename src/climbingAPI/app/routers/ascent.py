@@ -23,6 +23,13 @@ async def create_ascent_for_pitch(pitch_id: str, ascent: CreateAscentModel = Bod
     ascent["user_id"] = user.id
     ascent["media_ids"] = []
     db = await get_db()
+    pitch = await db["pitch"].find_one({"_id": ObjectId(pitch_id), "user_id": user.id})
+    if pitch is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Pitch {pitch_id} not found")
+    # pitch exists
+    if await db["ascent"].find({"user_id": user.id, "comment": ascent["comment"], "date": ascent["date"]}).to_list(None):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ascent already exists")
+    # ascent does not already exist
     new_ascent = await db["ascent"].insert_one(ascent)
     # created ascent
     created_ascent = await db["ascent"].find_one({"_id": new_ascent.inserted_id})
@@ -45,6 +52,13 @@ async def create_ascent_for_single_pitch_route(route_id: str, ascent: CreateAsce
     ascent["user_id"] = user.id
     ascent["media_ids"] = []
     db = await get_db()
+    route = await db["single_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})
+    if route is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Single pitch route {route_id} not found")
+    # pitch exists
+    if await db["ascent"].find({"user_id": user.id, "comment": ascent["comment"], "date": ascent["date"], "type": ascent["type"], "style": ascent["style"]}).to_list(None):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ascent already exists")
+    # ascent does not already exist
     new_ascent = await db["ascent"].insert_one(ascent)
     # created ascent
     created_ascent = await db["ascent"].find_one({"_id": new_ascent.inserted_id})
