@@ -231,7 +231,8 @@ class RouteListState extends State<RouteList> {
                                                         route: singlePitchRoute,
                                                         onDelete: (SinglePitchRoute sPR) => deleteSinglePitchRouteCallback(sPR),
                                                         onUpdate: (SinglePitchRoute sPR) => updateSinglePitchRouteCallback(sPR),
-                                                        spotId: widget.spot.id)
+                                                        spotId: widget.spot.id
+                                                    )
                                                 )
                                         ),
                                         child: Ink(

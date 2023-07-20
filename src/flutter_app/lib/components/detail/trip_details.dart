@@ -6,11 +6,13 @@ import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
+import '../../interfaces/trip/update_trip.dart';
 import '../../pages/diary_page/timeline/spot_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/trip_service.dart';
 import '../add/add_spot.dart';
 import '../edit/edit_trip.dart';
+import 'media_details.dart';
 
 class TripDetails extends StatefulWidget {
   const TripDetails({super.key, required this.trip, required this.onTripDelete, required this.onTripUpdate, required this.onSpotAdd });
@@ -195,26 +197,54 @@ class _TripDetailsState extends State<TripDetails>{
 
             if (snapshot.data != null){
               List<String> urls = snapshot.data!;
+
+              deleteMediaCallback(String mediumId) {
+                widget.trip.mediaIds.remove(mediumId);
+                tripService.editTrip(
+                    UpdateTrip(
+                        id: widget.trip.id,
+                        mediaIds: widget.trip.mediaIds
+                    )
+                );
+                setState(() {});
+              }
+
               List<Widget> images = [];
               for (var url in urls){
-                images.add(
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: Image.network(
-                        url,
-                        fit: BoxFit.fitHeight,
-                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          }
-                          return skeleton;
-                        },
+                images.add(InkWell(
+                  onTap: () =>
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) =>
+                            Dialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: MediaDetails(
+                                  url: url,
+                                  onDelete: deleteMediaCallback,
+                                )
+                            ),
+                      ),
+                  child: Ink(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.network(
+                              url,
+                              fit: BoxFit.fitHeight,
+                              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                if (loadingProgress == null) {
+                                  return child;
+                                }
+                                return skeleton;
+                              },
+                            )
+                        ),
                       )
-                    ),
-                  )
-                );
+                  ),
+                ));
               }
               return Container(
                   padding: const EdgeInsets.all(10),

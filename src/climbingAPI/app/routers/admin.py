@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.delete('/', description="Delete everything from this user", dependencies=[Depends(auth.implicit_scheme)])
-async def delete_trips(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+async def delete_all(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     await db["trip"].delete_many({"user_id": user.id})
     await db["spot"].delete_many({"user_id": user.id})

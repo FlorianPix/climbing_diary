@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/pitch/pitch.dart';
+import '../../interfaces/pitch/update_pitch.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
 import '../../pages/diary_page/timeline/ascent_timeline.dart';
@@ -13,6 +14,7 @@ import '../MyButtonStyles.dart';
 import '../add/add_ascent.dart';
 import '../edit/edit_pitch.dart';
 import '../info/pitch_info.dart';
+import 'media_details.dart';
 
 class PitchDetails extends StatefulWidget {
   const PitchDetails({super.key, this.trip, required this.spot, required this.route, required this.pitch, required this.onDelete, required this.onUpdate });
@@ -174,26 +176,54 @@ class _PitchDetailsState extends State<PitchDetails>{
 
             if (snapshot.data != null){
               List<String> urls = snapshot.data!;
+
+              deleteMediaCallback(String mediumId) {
+                widget.pitch.mediaIds.remove(mediumId);
+                pitchService.editPitch(
+                    UpdatePitch(
+                        id: widget.pitch.id,
+                        mediaIds: widget.pitch.mediaIds
+                    )
+                );
+                setState(() {});
+              }
+
               List<Widget> images = [];
               for (var url in urls){
-                images.add(
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: Image.network(
-                        url,
-                        fit: BoxFit.fitHeight,
-                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          }
-                          return skeleton;
-                        },
+                images.add(InkWell(
+                  onTap: () =>
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) =>
+                            Dialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: MediaDetails(
+                                  url: url,
+                                  onDelete: deleteMediaCallback,
+                                )
+                            ),
+                      ),
+                  child: Ink(
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.network(
+                              url,
+                              fit: BoxFit.fitHeight,
+                              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                                if (loadingProgress == null) {
+                                  return child;
+                                }
+                                return skeleton;
+                              },
+                            )
+                        ),
                       )
-                    ),
-                  )
-                );
+                  ),
+                ));
               }
               return Container(
                   padding: const EdgeInsets.all(10),
