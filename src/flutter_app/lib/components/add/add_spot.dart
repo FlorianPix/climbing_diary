@@ -2,7 +2,6 @@ import 'package:climbing_diary/components/MyTextStyles.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/spot/create_spot.dart';
 import '../../interfaces/spot/spot.dart';
@@ -60,9 +59,7 @@ class _AddSpotState extends State<AddSpot>{
     elements.add(
         TextFormField(
           validator: (value) {
-            return value!.isNotEmpty
-                ? null
-                : "Please add a name";
+            return value!.isNotEmpty ? null : "Please add a name";
           },
           controller: controllerTitle,
           decoration: const InputDecoration(
@@ -89,14 +86,23 @@ class _AddSpotState extends State<AddSpot>{
       label: const Text("select location"),
     ));
     elements.add(TextFormField(
+      validator: (value) {
+        return value!.isNotEmpty ? null : "Please add an address";
+      },
       controller: controllerAddress,
       decoration: const InputDecoration(labelText: "address"),
     ));
     elements.add(TextFormField(
+      validator: (value) {
+        return value!.isNotEmpty ? null : "Please add a latitude value";
+      },
       controller: controllerLat,
       decoration: const InputDecoration(labelText: "latitude"),
     ));
     elements.add(TextFormField(
+      validator: (value) {
+        return value!.isNotEmpty ? null : "Please add a longitude value";
+      },
       controller: controllerLong,
       decoration: const InputDecoration(labelText: "longitude"),
     ));
