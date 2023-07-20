@@ -36,7 +36,7 @@ class _AddRouteState extends State<AddRoute>{
   final TextEditingController controllerLength = TextEditingController();
 
   double currentSliderValue = 0;
-  GradingSystem? gradingSystem;
+  GradingSystem gradingSystem = GradingSystem.french;
   bool isMultiPitch = false;
 
   @override
@@ -64,9 +64,7 @@ class _AddRouteState extends State<AddRoute>{
               ),
               TextFormField(
                 validator: (value) {
-                  return value!.isNotEmpty
-                      ? null
-                      : "please add a name";
+                  return value!.isNotEmpty ? null : "please add a name";
                 },
                 controller: controllerName,
                 decoration: const InputDecoration(
@@ -86,6 +84,9 @@ class _AddRouteState extends State<AddRoute>{
               Visibility(
                 visible: !isMultiPitch,
                 child: TextFormField(
+                  validator: (value) {
+                    return value!.isNotEmpty ? null : "please add a grade";
+                  },
                   controller: controllerGrade,
                   decoration: const InputDecoration(
                       hintText: "grade of the route", labelText: "grade"),
@@ -111,6 +112,9 @@ class _AddRouteState extends State<AddRoute>{
               Visibility(
                 visible: !isMultiPitch,
                 child:TextFormField(
+                  validator: (value) {
+                    return value!.isNotEmpty ? null : "please add the length";
+                  },
                   controller: controllerLength,
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
