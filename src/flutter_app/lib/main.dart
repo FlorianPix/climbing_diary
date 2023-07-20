@@ -1,6 +1,7 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:climbing_diary/pages/list_page/list_page.dart';
 import 'package:climbing_diary/pages/map_page/map_page.dart';
+import 'package:climbing_diary/services/zip_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'config/environment.dart';
@@ -92,6 +93,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Credentials? _credentials;
   UserProfile? _user;
 
+  final ZipService zipService = ZipService();
+
   final _prefsLocator = getIt.get<SharedPreferenceHelper>();
 
   late Auth0 auth0;
@@ -153,6 +156,24 @@ class _MyHomePageState extends State<MyHomePage> {
                 appBar: AppBar(
                   title: Text(widget.title),
                   actions: <Widget>[
+                    IconButton(
+                      onPressed: () {zipService.readBackup();},
+                      icon: const Icon(
+                        Icons.upload,
+                        color: Colors.black,
+                        size: 30.0,
+                        semanticLabel: 'read',
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {zipService.writeBackup();},
+                      icon: const Icon(
+                        Icons.download,
+                        color: Colors.black,
+                        size: 30.0,
+                        semanticLabel: 'download',
+                      ),
+                    ),
                     IconButton(
                       onPressed: logout,
                       icon: const Icon(

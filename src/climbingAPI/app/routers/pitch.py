@@ -24,6 +24,13 @@ async def create_pitch(route_id: str, pitch: CreatePitchModel = Body(...), user:
     pitch["ascent_ids"] = []
     pitch["media_ids"] = []
     db = await get_db()
+    route = await db["multi_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})
+    if route is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")
+    # route exists
+    if await db["pitch"].find({"user_id": user.id, "name": pitch["name"]}).to_list(None):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Pitch already exists")
+    # pitch does not already exist
     new_pitch = await db["pitch"].insert_one(pitch)
     # created pitch
     created_pitch = await db["pitch"].find_one({"_id": new_pitch.inserted_id})

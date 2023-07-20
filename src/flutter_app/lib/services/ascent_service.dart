@@ -237,7 +237,6 @@ class AscentService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/ascent/route/$routeId', data: data);
       if (response.statusCode == 201) {
-        print(response.data);
         showSimpleNotification(
           Text('Created new ascent: ${response.data['comment']}'),
           background: Colors.green,

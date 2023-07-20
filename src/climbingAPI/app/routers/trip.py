@@ -23,6 +23,12 @@ async def create_trip(trip: CreateTripModel = Body(...), user: Auth0User = Secur
     trip["spot_ids"] = []
     trip["media_ids"] = []
     db = await get_db()
+    # check if trip already exists
+    if (trips := await db["trip"].find({
+        "name": trip["name"],
+        "user_id": user.id
+    }).to_list(None)):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Trip already exists")
     new_trip = await db["trip"].insert_one(trip)
     created_trip = await db["trip"].find_one({"_id": new_trip.inserted_id})
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=jsonable_encoder(TripModel(**created_trip)))
