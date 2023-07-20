@@ -81,7 +81,7 @@ async def update_spot(spot_id: str, spot: UpdateSpotModel = Body(...), user: Aut
                         detail=f"Spot {spot_id} not found")
 
 
-@router.delete('/{spot_id}', description="Delete a spot", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/{spot_id}', description="Delete a spot", response_model=SpotModel, dependencies=[Depends(auth.implicit_scheme)])
 async def delete_spot(spot_id: str, user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     spot = await db["spot"].find_one({"_id": ObjectId(spot_id), "user_id": user.id})
@@ -151,4 +151,4 @@ async def delete_spot(spot_id: str, user: Auth0User = Security(auth.get_user, sc
         for trip in trips:
             update_result = await db["trip"].update_one({"_id": ObjectId(trip['_id']), "user_id": user.id}, {"$pull": {"spot_ids": spot_id}})
     # spot_id was removed from trips
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return spot

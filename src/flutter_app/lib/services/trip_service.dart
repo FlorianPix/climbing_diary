@@ -117,9 +117,13 @@ class TripService {
 
       final Response tripResponse =
       await netWorkLocator.dio.delete('$climbingApiHost/trip/${trip.id}');
-      if (tripResponse.statusCode != 204) {
+      if (tripResponse.statusCode != 200) {
         throw Exception('Failed to delete trip');
       }
+      showSimpleNotification(
+        Text('Trip was deleted: ${tripResponse.data['name']}'),
+        background: Colors.green,
+      );
       // TODO deleteTripFromDeleteQueue(trip.toJson().hashCode);
       return tripResponse.data;
     } catch (e) {
@@ -141,6 +145,10 @@ class TripService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/trip', data: data);
       if (response.statusCode == 201) {
+        showSimpleNotification(
+          Text('Created new trip: ${response.data['name']}'),
+          background: Colors.green,
+        );
         return Trip.fromJson(response.data);
       } else {
         throw Exception('Failed to create trip');

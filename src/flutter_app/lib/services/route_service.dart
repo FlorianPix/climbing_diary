@@ -166,6 +166,10 @@ class RouteService {
       if (routeResponse.statusCode != 204) {
         throw Exception('Failed to delete route');
       }
+      showSimpleNotification(
+        Text('Multi pitch route was deleted: ${routeResponse.data['name']}'),
+        background: Colors.green,
+      );
       // TODO deleteRouteFromDeleteQueue(route.toJson().hashCode);
       return routeResponse.data;
     } catch (e) {
@@ -187,6 +191,10 @@ class RouteService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/multi_pitch_route/spot/$spotId', data: data);
       if (response.statusCode == 201) {
+        showSimpleNotification(
+          Text('Created new multi pitch route: ${response.data['name']}'),
+          background: Colors.green,
+        );
         return MultiPitchRoute.fromJson(response.data);
       } else {
         throw Exception('Failed to create route');
@@ -405,6 +413,10 @@ class RouteService {
       if (routeResponse.statusCode != 204) {
         throw Exception('Failed to delete route');
       }
+      showSimpleNotification(
+        Text('Single pitch route was deleted: ${routeResponse.data['name']}'),
+        background: Colors.green,
+      );
       // TODO deleteRouteFromDeleteQueue(route.toJson().hashCode);
       return routeResponse.data;
     } catch (e) {
@@ -426,6 +438,10 @@ class RouteService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/single_pitch_route/spot/$spotId', data: data);
       if (response.statusCode == 201) {
+        showSimpleNotification(
+          Text('Created new single pitch route: ${response.data['name']}'),
+          background: Colors.green,
+        );
         return SinglePitchRoute.fromJson(response.data);
       } else {
         throw Exception('Failed to create route');

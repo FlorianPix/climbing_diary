@@ -149,9 +149,16 @@ class PitchService {
 
       final Response pitchResponse =
       await netWorkLocator.dio.delete('$climbingApiHost/pitch/${pitch.id}/route/$routeId');
-      if (pitchResponse.statusCode != 204) {
-        throw Exception('Failed to delete pitch');
+      if (pitchResponse.statusCode != 200) {
+        showSimpleNotification(
+          Text('Failed to delete pitch: ${pitch.name}'),
+          background: Colors.red,
+        );
       }
+      showSimpleNotification(
+        Text('Pitch was deleted: ${pitchResponse.data['name']}'),
+        background: Colors.green,
+      );
       // TODO deletePitchFromDeleteQueue(pitch.toJson().hashCode);
       return pitchResponse.data;
     } catch (e) {
@@ -173,6 +180,10 @@ class PitchService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/pitch/route/$routeId', data: data);
       if (response.statusCode == 201) {
+        showSimpleNotification(
+          Text('Created new pitch: ${response.data['name']}'),
+          background: Colors.green,
+        );
         return Pitch.fromJson(response.data);
       } else {
         throw Exception('Failed to create pitch $response');

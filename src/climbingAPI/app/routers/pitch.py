@@ -78,7 +78,7 @@ async def update_pitch(pitch_id: str, pitch: UpdatePitchModel = Body(...), user:
                         detail=f"Pitch {pitch_id} not found")
 
 
-@router.delete('/{pitch_id}/route/{route_id}', description="Delete a pitch", response_model=RouteModel, dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/{pitch_id}/route/{route_id}', description="Delete a pitch", response_model=PitchModel, dependencies=[Depends(auth.implicit_scheme)])
 async def delete_pitch(route_id: str, pitch_id: str, user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     route = await db["multi_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})
@@ -111,7 +111,7 @@ async def delete_pitch(route_id: str, pitch_id: str, user: Auth0User = Security(
                             detail=f"Removing pitch_id {pitch_id} from route {route_id} failed")
     # pitch_id was removed
     if (updated_route := await db["multi_pitch_route"].find_one({"_id": ObjectId(route_id)})) is not None:
-        return updated_route
+        return pitch
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Route {route_id} not found")

@@ -63,17 +63,17 @@ async def update_trip(trip_id: str, trip: UpdateTripModel = Body(...), user: Aut
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Trip {trip_id} not found")
 
 
-@router.delete('/{trip_id}', description="Delete a trip", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/{trip_id}', description="Delete a trip", response_model=TripModel, dependencies=[Depends(auth.implicit_scheme)])
 async def delete_trip(trip_id: str, user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
-    existing_trip = await db["trip"].find_one({"_id": ObjectId(trip_id), "user_id": user.id})
+    trip = await db["trip"].find_one({"_id": ObjectId(trip_id), "user_id": user.id})
 
-    if existing_trip is None:
+    if trip is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Trip {trip_id} not found")
 
     delete_result = await db["trip"].delete_one({"_id": ObjectId(trip_id)})
 
     if delete_result.deleted_count == 1:
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
+        return trip
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Trip {trip_id} not found")

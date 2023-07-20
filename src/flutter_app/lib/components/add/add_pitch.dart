@@ -30,7 +30,11 @@ class _AddPitchState extends State<AddPitch>{
   final TextEditingController controllerRating = TextEditingController();
 
   double currentSliderValue = 0;
-  GradingSystem? gradingSystem;
+  GradingSystem gradingSystem = GradingSystem.french;
+
+  bool isNumeric(String s) {
+    return double.tryParse(s) != null;
+  }
 
   @override
   void initState(){
@@ -56,15 +60,22 @@ class _AddPitchState extends State<AddPitch>{
               ),
               TextFormField(
                 validator: (value) {
-                  return value!.isNotEmpty
-                      ? null
-                      : "please add a name";
+                  return value!.isNotEmpty ? null : "please add a name";
                 },
                 controller: controllerName,
                 decoration: const InputDecoration(
                     hintText: "name of the pitch", labelText: "name"),
               ),
               TextFormField(
+                validator: (value) {
+                  if (value!.isEmpty){
+                    return "please add a pitch number";
+                  }
+                  if (!isNumeric(value)){
+                    return "pitch number must be a number";
+                  }
+                  return null;
+                },
                 controller: controllerNum,
                 decoration: const InputDecoration(
                     hintText: "pitch number", labelText: "pitch number"),
@@ -133,7 +144,7 @@ class _AddPitchState extends State<AddPitch>{
               if (_formKey.currentState!.validate()) {
                 CreatePitch pitch = CreatePitch(
                   comment: controllerComment.text,
-                  grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
+                  grade: Grade(grade: controllerGrade.text, system: gradingSystem),
                   length: int.parse(controllerLength.text),
                   name: controllerName.text,
                   num: int.parse(controllerNum.text),
