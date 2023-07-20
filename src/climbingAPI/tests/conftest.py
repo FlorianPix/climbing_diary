@@ -11,7 +11,7 @@ testingUsers = {
 
 
 def getUserToken(user_name):
-    #  client id and secret come from LogIn (Test Client)! which has password enabled under "Client > Advanced > Grant Types > Tick Password"
+    # client id and secret come from LogIn (Test Client)! which has password enabled under "Client > Advanced > Grant Types > Tick Password"
     url = 'https://climbing-diary.eu.auth0.com/oauth/token'
     headers = {'content-type': 'application/json'}
     password = testingUsers[user_name]
@@ -21,7 +21,7 @@ def getUserToken(user_name):
                  "grant_type": "password",
                  "username": user_name,
                  "password": password, "scope": "openid"}
-    #  do the equivalent of a CURL request from https://auth0.com/docs/quickstart/backend/python/02-using#obtaining-an-access-token-for-testing
+    # do the equivalent of a CURL request from https://auth0.com/docs/quickstart/backend/python/02-using#obtaining-an-access-token-for-testing
     responseDICT = json.loads(requests.post(url, json=parameter, headers=headers).text)
     return responseDICT['access_token']
 

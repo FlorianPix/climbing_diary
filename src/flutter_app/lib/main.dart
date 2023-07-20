@@ -16,7 +16,7 @@ import 'data/sharedprefs/shared_preference_helper.dart';
 Future<void> main() async {
   const String environment = String.fromEnvironment(
     'ENVIRONMENT',
-    defaultValue: Environment.DEV,
+    defaultValue: Environment.PROD,
   );
 
   Environment().initConfig(environment);
@@ -73,7 +73,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const MyHomePage(title: 'Climbing Diary'),
+        '/': (context) => const MyHomePage(title: 'Climbing diary'),
       },
     );
   }
