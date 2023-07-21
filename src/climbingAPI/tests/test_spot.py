@@ -130,8 +130,13 @@ def test_delete_spot(headers, a_create_spot):
     # Given authentication and a db with one spot
     # When a delete request is sent to /spot/{spot_id}
     response = requests.delete(url+f'/{spot_id}', headers=headers)
-    # Then the response status code is '204 No Content'
-    assert response.status_code == 204
+    # Then the response status code is '200 Ok'
+    assert response.status_code == 200
+    # Then the response is the deleted spot
+    data = json.loads(response.text)
+    assert data['_id'] == spot_id
+    for key in a_create_spot.keys():
+        assert data[key] == a_create_spot[key]
 
 
 def test_delete_spot_and_id_from_trip(headers, a_create_trip, a_update_trip, a_create_spot):
@@ -159,8 +164,13 @@ def test_delete_spot_and_id_from_trip(headers, a_create_trip, a_update_trip, a_c
     # Given authentication and a db with one trip with a spot
     # When a delete request is sent to /spot/{spot_id}
     response = requests.delete(spot_url + f'/{spot_id}', headers=headers)
-    # Then the response status code is '204 No Content'
-    assert response.status_code == 204
+    # Then the response status code is '200 Ok'
+    assert response.status_code == 200
+    # Then the response is the deleted spot
+    data = json.loads(response.text)
+    assert data['_id'] == spot_id
+    for key in a_create_spot.keys():
+        assert data[key] == a_create_spot[key]
     # Then spot is not in the db anymore
     response = requests.get(spot_url + f"/{spot_id}", headers=headers)
     assert response.status_code == 404
@@ -201,8 +211,13 @@ def test_delete_spot_and_all_its_multi_pitch_routes_pitches_ascents(headers, a_c
     ascent_2_id = data['_id']
     # When a delete request is sent to /spot/{spot_id}
     response = requests.delete(spot_url + f'/{spot_id}', headers=headers)
-    # Then the spot is deleted
-    assert response.status_code == 204
+    # Then the response status code is '200 Ok'
+    assert response.status_code == 200
+    # Then the response is the deleted spot
+    data = json.loads(response.text)
+    assert data['_id'] == spot_id
+    for key in a_create_spot.keys():
+        assert data[key] == a_create_spot[key]
     response = requests.get(spot_url + f"/{spot_id}", headers=headers)
     assert response.status_code == 404
     # Then the spots multi pitch routes are deleted
