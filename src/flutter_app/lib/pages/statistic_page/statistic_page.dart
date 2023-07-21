@@ -32,7 +32,7 @@ class StatisticPageState extends State<StatisticPage> {
                   datasets[date] = 1;
                 }
               }
-              return HeatMapCalendar(
+              Widget heatMap = HeatMapCalendar(
                 defaultColor: Colors.white,
                 flexible: true,
                 colorMode: ColorMode.opacity,
@@ -49,6 +49,11 @@ class StatisticPageState extends State<StatisticPage> {
                 onClick: (value) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(value.toString())));
                 },
+              );
+              return ListView(
+                children: [
+                  heatMap
+                ],
               );
             } else {
               return const CircularProgressIndicator();
