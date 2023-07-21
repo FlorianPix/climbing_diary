@@ -1,4 +1,4 @@
-import 'package:climbing_diary/components/MyTextStyles.dart';
+import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -56,18 +56,13 @@ class _AddSpotState extends State<AddSpot>{
         style: MyTextStyles.title,
       ));
     }
-    elements.add(
-        TextFormField(
-          validator: (value) {
-            return value!.isNotEmpty
-                ? null
-                : "Please add a name";
-          },
-          controller: controllerTitle,
-          decoration: const InputDecoration(
-              hintText: "name", labelText: "name"),
-        )
-    );
+    elements.add(TextFormField(
+        validator: (value) {
+          return value!.isNotEmpty ? null : "Please add a name";
+        },
+        controller: controllerTitle,
+        decoration: const InputDecoration(hintText: "name", labelText: "name"),
+    ));
     elements.add(TextButton.icon(
       icon: const Icon(Icons.place, size: 30.0),
       onPressed: () {
@@ -88,14 +83,23 @@ class _AddSpotState extends State<AddSpot>{
       label: const Text("select location"),
     ));
     elements.add(TextFormField(
+      validator: (value) {
+        return value!.isNotEmpty ? null : "Please add a address value";
+      },
       controller: controllerAddress,
       decoration: const InputDecoration(labelText: "address"),
     ));
     elements.add(TextFormField(
+      validator: (value) {
+        return value!.isNotEmpty ? null : "Please add a latitude value";
+      },
       controller: controllerLat,
       decoration: const InputDecoration(labelText: "latitude"),
     ));
     elements.add(TextFormField(
+      validator: (value) {
+        return value!.isNotEmpty ? null : "Please add a longitude value";
+      },
       controller: controllerLong,
       decoration: const InputDecoration(labelText: "longitude"),
     ));

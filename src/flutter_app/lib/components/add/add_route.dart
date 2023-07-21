@@ -5,14 +5,13 @@ import '../../interfaces/grade.dart';
 import '../../interfaces/grading_system.dart';
 import '../../interfaces/multi_pitch_route/create_multi_pitch_route.dart';
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../../interfaces/route/route.dart';
 import '../../interfaces/single_pitch_route/create_single_pitch_route.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../services/route_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../MyTextStyles.dart';
+import '../my_text_styles.dart';
 
 class AddRoute extends StatefulWidget {
   const AddRoute({super.key, required this.spot, this.onAddMultiPitchRoute, this.onAddSinglePitchRoute});
@@ -36,7 +35,7 @@ class _AddRouteState extends State<AddRoute>{
   final TextEditingController controllerLength = TextEditingController();
 
   double currentSliderValue = 0;
-  GradingSystem? gradingSystem;
+  GradingSystem gradingSystem = GradingSystem.french;
   bool isMultiPitch = false;
 
   @override
@@ -64,9 +63,7 @@ class _AddRouteState extends State<AddRoute>{
               ),
               TextFormField(
                 validator: (value) {
-                  return value!.isNotEmpty
-                      ? null
-                      : "please add a name";
+                  return value!.isNotEmpty ? null : "please add a name";
                 },
                 controller: controllerName,
                 decoration: const InputDecoration(
@@ -86,6 +83,9 @@ class _AddRouteState extends State<AddRoute>{
               Visibility(
                 visible: !isMultiPitch,
                 child: TextFormField(
+                  validator: (value) {
+                    return value!.isNotEmpty ? null : "please add a grade";
+                  },
                   controller: controllerGrade,
                   decoration: const InputDecoration(
                       hintText: "grade of the route", labelText: "grade"),
@@ -111,6 +111,9 @@ class _AddRouteState extends State<AddRoute>{
               Visibility(
                 visible: !isMultiPitch,
                 child:TextFormField(
+                  validator: (value) {
+                    return value!.isNotEmpty ? null : "please add the length";
+                  },
                   controller: controllerLength,
                   keyboardType: TextInputType.number,
                   inputFormatters: <TextInputFormatter>[
@@ -179,7 +182,7 @@ class _AddRouteState extends State<AddRoute>{
                     location: controllerLocation.text,
                     rating: currentSliderValue.toInt(),
                     comment: controllerComment.text,
-                    grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
+                    grade: Grade(grade: controllerGrade.text, system: gradingSystem),
                     length: int.parse(controllerLength.text)
                   );
                   SinglePitchRoute? createdRoute = await routeService.createSinglePitchRoute(route, spot.id, result);

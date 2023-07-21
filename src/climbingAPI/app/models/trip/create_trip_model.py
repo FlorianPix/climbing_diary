@@ -19,8 +19,6 @@ class CreateTripModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "media_ids": [],
-                "spot_ids": [],
                 "comment": "Great trip",
                 "end_date": "2022-10-08",
                 "name": "Ausflug zum Falkenstein",

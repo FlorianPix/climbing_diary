@@ -5,7 +5,6 @@ import '../../interfaces/ascent/ascent.dart';
 import '../../interfaces/ascent/ascent_style.dart';
 import '../../interfaces/ascent/ascent_type.dart';
 import '../../interfaces/ascent/update_ascent.dart';
-import '../../interfaces/pitch/pitch.dart';
 import '../../services/ascent_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 

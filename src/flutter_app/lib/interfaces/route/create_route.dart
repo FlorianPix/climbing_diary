@@ -1,12 +1,12 @@
 class CreateClimbingRoute {
   final String? comment;
-  final String location;
+  final String? location;
   final String name;
   final int rating;
 
   const CreateClimbingRoute({
     this.comment,
-    required this.location,
+    this.location,
     required this.name,
     required this.rating,
   });

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../interfaces/grade.dart';
 import '../../interfaces/pitch/pitch.dart';
-import '../MyTextStyles.dart';
+import '../my_text_styles.dart';
 
 class MultiPitchInfo extends StatelessWidget {
   MultiPitchInfo({super.key, required this.pitchIds});
@@ -21,13 +21,13 @@ class MultiPitchInfo extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<Pitch> pitches = snapshot.data!;
-          Grade grade = Grade(grade: "1", system: GradingSystem.french);
+          Grade grade = const Grade(grade: "1", system: GradingSystem.french);
           int length = 0;
-          pitches.forEach((pitch) {
+          for (var pitch in pitches) {
             Grade otherGrade = pitch.grade;
             grade += otherGrade;
             length += pitch.length;
-          });
+          }
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

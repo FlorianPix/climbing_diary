@@ -12,14 +12,17 @@ from app.core.auth import auth
 
 router = APIRouter()
 
+
 @router.get("", tags=["media"], response_model=list[ExternalStorageMedia], dependencies=[Depends(auth.implicit_scheme)])
 def get_all_media(db: Session = Depends(get_db), user: Auth0User = Security(auth.get_user, scopes=["read:media"])):
     return media_service.get_all_user_media(db, user.id)
+
 
 @router.get("/{id}/access-url", tags=["media"], response_model=ExternalStorageMediaUrl, dependencies=[Depends(auth.implicit_scheme)])
 def get_media_link(id: UUID, db: Session = Depends(get_db), user: Auth0User = Security(auth.get_user, scopes=["read:media"])):
     url = media_service.get_media(db, id, user.id)
     return { "url": url, "id": id }
+
 
 @router.post("", tags=["media"], response_model=ExternalStorageMedia, dependencies=[Depends(auth.implicit_scheme)])
 def upload_media_file(file: UploadFile = File(...), db: Session = Depends(get_db), user: Auth0User = Security(auth.get_user, scopes=["write:media"])):
@@ -34,6 +37,7 @@ def upload_media_file(file: UploadFile = File(...), db: Session = Depends(get_db
         file.file.close()
     
     return media_service.create_media(db, temp.name, file.filename, user.id)
+
 
 @router.delete("/{id}", tags=["media"], status_code=204, response_class=Response, dependencies=[Depends(auth.implicit_scheme)])
 def delete_media(id: UUID, db: Session = Depends(get_db), user: Auth0User = Security(auth.get_user, scopes=["write:media"])):

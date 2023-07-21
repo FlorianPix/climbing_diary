@@ -6,9 +6,14 @@ services:
   app:
     image: cd-diary
     container_name: climbingapi-app-1
+    volumes:
+      - ./app:/code/app
+      - ./tests:/code/tests
+      - ./main.py:/code/main.py
+      - ./requirements.txt:/code/requirements.txt
     build: .
     ports:
-      - 8000:8000
+      - "8000:8000"
     depends_on:
       - db
     environment:

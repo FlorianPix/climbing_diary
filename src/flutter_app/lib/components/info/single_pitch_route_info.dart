@@ -7,7 +7,7 @@ import '../../interfaces/ascent/ascent_style.dart';
 import '../../interfaces/ascent/ascent_type.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/trip/trip.dart';
-import '../MyTextStyles.dart';
+import '../my_text_styles.dart';
 
 class SinglePitchRouteInfo extends StatefulWidget {
   const SinglePitchRouteInfo(

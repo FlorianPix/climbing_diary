@@ -1,10 +1,8 @@
-import 'package:climbing_diary/components/add/add_ascent_to_single_pitch_route.dart';
 import 'package:climbing_diary/components/info/single_pitch_route_info.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
-import '../../components/MyButtonStyles.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';

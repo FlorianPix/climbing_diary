@@ -16,7 +16,7 @@ class Grade(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "grade": "",
+                "grade": "5a",
                 "system": GradingSystem.FRENCH,
             }
         }

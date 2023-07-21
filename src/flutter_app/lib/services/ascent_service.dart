@@ -10,7 +10,6 @@ import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/ascent/ascent.dart';
 import '../interfaces/ascent/update_ascent.dart';
-import 'cache.dart';
 import 'locator.dart';
 
 class AscentService {
@@ -133,12 +132,18 @@ class AscentService {
             throw Exception('Failed to delete medium');
           }
         }
-
         final Response ascentResponse =
         await netWorkLocator.dio.delete('$climbingApiHost/ascent/${ascent.id}/pitch/$pitchId');
-        if (ascentResponse.statusCode != 204) {
-          throw Exception('Failed to delete ascent');
+        if (ascentResponse.statusCode != 200) {
+          showSimpleNotification(
+            Text('Failed to delete ascent: ${ascent.comment}'),
+            background: Colors.red,
+          );
         }
+        showSimpleNotification(
+          Text('Ascent was deleted: ${ascentResponse.data['comment']}'),
+          background: Colors.green,
+        );
         // TODO deleteAscentFromDeleteQueue(ascent.toJson().hashCode);
         return ascentResponse.data;
       } catch (e) {
@@ -164,9 +169,16 @@ class AscentService {
         }
 
         final Response ascentResponse = await netWorkLocator.dio.delete('$climbingApiHost/ascent/${ascent.id}/route/$pitchId');
-        if (ascentResponse.statusCode != 204) {
-          throw Exception('Failed to delete ascent');
+        if (ascentResponse.statusCode != 200) {
+          showSimpleNotification(
+            Text('Failed to delete ascent: ${ascent.comment}'),
+            background: Colors.red,
+          );
         }
+        showSimpleNotification(
+          Text('Ascent was deleted: ${ascentResponse.data['comment']}'),
+          background: Colors.green,
+        );
         // TODO deleteAscentFromDeleteQueue(ascent.toJson().hashCode);
         return ascentResponse.data;
       } catch (e) {
@@ -189,6 +201,10 @@ class AscentService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/ascent/pitch/$pitchId', data: data);
       if (response.statusCode == 201) {
+        showSimpleNotification(
+          Text('Created new ascent: ${response.data['comment']}'),
+          background: Colors.green,
+        );
         return Ascent.fromJson(response.data);
       } else {
         throw Exception('Failed to create ascent');
@@ -220,6 +236,10 @@ class AscentService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/ascent/route/$routeId', data: data);
       if (response.statusCode == 201) {
+        showSimpleNotification(
+          Text('Created new ascent: ${response.data['comment']}'),
+          background: Colors.green,
+        );
         return Ascent.fromJson(response.data);
       } else {
         throw Exception('Failed to create ascent');

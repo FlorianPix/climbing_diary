@@ -38,10 +38,8 @@ def get_application():
     _app.include_router(multi_pitch_route.router, prefix="/multi_pitch_route", tags=["multi_pitch_route"])
     _app.include_router(spot.router, prefix="/spot", tags=["spot"])
     _app.include_router(trip.router, prefix="/trip", tags=["trip"])
-
     _app.add_event_handler("startup", connect_db)
     _app.add_event_handler("shutdown", close_db)
-
     return _app
 
 

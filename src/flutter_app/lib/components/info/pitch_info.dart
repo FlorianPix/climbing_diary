@@ -6,7 +6,7 @@ import '../../interfaces/ascent/ascent_style.dart';
 import '../../interfaces/ascent/ascent_type.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../services/ascent_service.dart';
-import '../MyTextStyles.dart';
+import '../my_text_styles.dart';
 
 class PitchInfo extends StatefulWidget {
   const PitchInfo({super.key, required this.pitch});

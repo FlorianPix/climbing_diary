@@ -8,7 +8,7 @@ class CreateSinglePitchRoute extends CreateClimbingRoute {
 
   const CreateSinglePitchRoute({
     super.comment,
-    required super.location,
+    super.location,
     required super.name,
     required super.rating,
     required this.grade,

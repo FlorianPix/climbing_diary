@@ -1,11 +1,9 @@
-import 'package:climbing_diary/interfaces/route/route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';
 
 import '../../components/info/pitch_info.dart';
 import '../../interfaces/pitch/pitch.dart';
-import '../../pages/diary_page/timeline/ascent_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 

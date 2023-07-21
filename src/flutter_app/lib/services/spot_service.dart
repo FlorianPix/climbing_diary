@@ -199,9 +199,13 @@ class SpotService {
 
       final Response spotResponse =
       await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
-      if (spotResponse.statusCode != 204) {
+      if (spotResponse.statusCode != 200) {
         throw Exception('Failed to delete spot');
       }
+      showSimpleNotification(
+        Text('Spot was deleted: ${spotResponse.data['name']}'),
+        background: Colors.green,
+      );
       deleteSpotFromDeleteQueue(spot.toJson().hashCode);
       return spotResponse.data;
     } catch (e) {
@@ -223,6 +227,10 @@ class SpotService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/spot', data: data);
       if (response.statusCode == 201) {
+        showSimpleNotification(
+          Text('Created new spot: ${response.data['name']}'),
+          background: Colors.green,
+        );
         return Spot.fromJson(response.data);
       } else {
         throw Exception('Failed to create spot');

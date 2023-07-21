@@ -10,10 +10,10 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @as_declarative()
 class Base:
-
     @declared_attr
     def __tablename__(cls) -> str:
         return cls.__name__.lower()
+
 
 # Dependency
 def get_db():

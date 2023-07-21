@@ -125,9 +125,11 @@ class _EditTripState extends State<EditTrip>{
             if (_formKey.currentState!.validate()) {
               UpdateTrip trip = UpdateTrip(
                 id: widget.trip.id,
+                comment: controllerComment.text,
+                endDate: controllerEndDate.text,
                 name: controllerName.text,
                 rating: currentSliderValue.toInt(),
-                comment: controllerComment.text,
+                startDate: controllerStartDate.text
               );
               Navigator.popUntil(context, ModalRoute.withName('/'));
               Trip? updatedTrip = await tripService.editTrip(trip);

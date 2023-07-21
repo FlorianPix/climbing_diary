@@ -24,6 +24,13 @@ async def create_pitch(route_id: str, pitch: CreatePitchModel = Body(...), user:
     pitch["ascent_ids"] = []
     pitch["media_ids"] = []
     db = await get_db()
+    route = await db["multi_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})
+    if route is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")
+    # route exists
+    if await db["pitch"].find({"user_id": user.id, "name": pitch["name"]}).to_list(None):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Pitch already exists")
+    # pitch does not already exist
     new_pitch = await db["pitch"].insert_one(pitch)
     # created pitch
     created_pitch = await db["pitch"].find_one({"_id": new_pitch.inserted_id})
@@ -60,7 +67,9 @@ async def retrieve_pitch(pitch_id: str, user: Auth0User = Security(auth.get_user
 async def update_pitch(pitch_id: str, pitch: UpdatePitchModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     pitch = {k: v for k, v in pitch.dict().items() if v is not None}
-    pitch['grade']['system'] = pitch['grade']['system'].value
+    if 'grade' in pitch.keys():
+        if 'system' in pitch['grade'].keys():
+            pitch['grade']['system'] = pitch['grade']['system'].value
 
     if len(pitch) >= 1:
         update_result = await db["pitch"].update_one({"_id": ObjectId(pitch_id)}, {"$set": pitch})
@@ -78,7 +87,7 @@ async def update_pitch(pitch_id: str, pitch: UpdatePitchModel = Body(...), user:
                         detail=f"Pitch {pitch_id} not found")
 
 
-@router.delete('/{pitch_id}/route/{route_id}', description="Delete a pitch", response_model=RouteModel, dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/{pitch_id}/route/{route_id}', description="Delete a pitch", response_model=PitchModel, dependencies=[Depends(auth.implicit_scheme)])
 async def delete_pitch(route_id: str, pitch_id: str, user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     route = await db["multi_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})
@@ -111,7 +120,7 @@ async def delete_pitch(route_id: str, pitch_id: str, user: Auth0User = Security(
                             detail=f"Removing pitch_id {pitch_id} from route {route_id} failed")
     # pitch_id was removed
     if (updated_route := await db["multi_pitch_route"].find_one({"_id": ObjectId(route_id)})) is not None:
-        return updated_route
+        return pitch
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Route {route_id} not found")

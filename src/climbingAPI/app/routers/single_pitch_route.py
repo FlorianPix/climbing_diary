@@ -31,7 +31,7 @@ async def create_route(spot_id: str, route: CreateSinglePitchRouteModel = Body(.
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Spot {spot_id} not found")
     # spot was found
-    if await db["single_pitch_route"].find({"user_id": user.id, "name": route["name"], "route_id": {"$in": spot["single_pitch_route_ids"]}}).to_list(None):
+    if await db["single_pitch_route"].find({"user_id": user.id, "name": route["name"], "_id": {"$in": spot["single_pitch_route_ids"]}}).to_list(None):
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="Route already exists")
     # route does not already exist
@@ -71,7 +71,9 @@ async def retrieve_route(route_id: str, user: Auth0User = Security(auth.get_user
 async def update_route(route_id: str, route: UpdateSinglePitchRouteModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     route = {k: v for k, v in route.dict().items() if v is not None}
-    route['grade']['system'] = route['grade']['system'].value
+    if 'grade' in route.keys():
+        if 'system' in route['grade'].keys():
+            route['grade']['system'] = route['grade']['system'].value
 
     if len(route) >= 1:
         update_result = await db["single_pitch_route"].update_one({"_id": ObjectId(route_id)}, {"$set": route})
