@@ -10,7 +10,7 @@ import '../../interfaces/trip/trip.dart';
 import '../../pages/diary_page/timeline/ascent_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
-import '../MyButtonStyles.dart';
+import '../my_button_styles.dart';
 import '../add/add_ascent.dart';
 import '../edit/edit_pitch.dart';
 import '../info/pitch_info.dart';

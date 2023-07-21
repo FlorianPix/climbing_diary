@@ -1,4 +1,4 @@
-import 'package:climbing_diary/components/MyTextStyles.dart';
+import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

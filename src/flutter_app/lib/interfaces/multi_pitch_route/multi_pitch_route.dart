@@ -41,6 +41,7 @@ class MultiPitchRoute extends ClimbingRoute{
     );
   }
 
+  @override
   Map toJson() => {
     "media_ids": mediaIds,
     "pitch_ids": pitchIds,

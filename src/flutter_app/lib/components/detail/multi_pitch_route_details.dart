@@ -10,7 +10,7 @@ import '../../pages/diary_page/timeline/pitch_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
-import '../MyButtonStyles.dart';
+import '../my_button_styles.dart';
 import '../add/add_pitch.dart';
 import '../edit/edit_multi_pitch_route.dart';
 import '../info/multi_pitch_route_info.dart';

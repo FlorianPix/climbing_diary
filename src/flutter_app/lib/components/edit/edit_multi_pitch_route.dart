@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../../interfaces/route/route.dart';
-import '../../interfaces/route/update_route.dart';
 import '../../services/route_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 

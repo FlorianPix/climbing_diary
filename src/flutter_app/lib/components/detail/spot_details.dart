@@ -9,7 +9,7 @@ import '../../interfaces/trip/trip.dart';
 import '../../pages/diary_page/timeline/route_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
-import '../MyButtonStyles.dart';
+import '../my_button_styles.dart';
 import '../add/add_route.dart';
 import '../edit/edit_spot.dart';
 import 'media_details.dart';

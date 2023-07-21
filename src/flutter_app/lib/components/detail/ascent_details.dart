@@ -7,7 +7,7 @@ import '../../interfaces/ascent/ascent.dart';
 import '../../interfaces/ascent/update_ascent.dart';
 import '../../services/media_service.dart';
 import '../../services/ascent_service.dart';
-import '../MyButtonStyles.dart';
+import '../my_button_styles.dart';
 import '../edit/edit_ascent.dart';
 import 'media_details.dart';
 

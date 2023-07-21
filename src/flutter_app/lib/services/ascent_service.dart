@@ -10,7 +10,6 @@ import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/ascent/ascent.dart';
 import '../interfaces/ascent/update_ascent.dart';
-import 'cache.dart';
 import 'locator.dart';
 
 class AscentService {

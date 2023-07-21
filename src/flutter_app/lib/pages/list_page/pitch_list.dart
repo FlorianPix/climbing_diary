@@ -1,5 +1,3 @@
-import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
-import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
 import 'package:flutter/material.dart';
 import '../../../services/pitch_service.dart';
 import '../../../services/route_service.dart';

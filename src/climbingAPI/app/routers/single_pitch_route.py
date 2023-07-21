@@ -70,7 +70,6 @@ async def retrieve_route(route_id: str, user: Auth0User = Security(auth.get_user
 @router.put('/{route_id}', description="Update a single pitch route", response_model=SinglePitchRouteModel, dependencies=[Depends(auth.implicit_scheme)])
 async def update_route(route_id: str, route: UpdateSinglePitchRouteModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
-    print(route)
     route = {k: v for k, v in route.dict().items() if v is not None}
     if 'grade' in route.keys():
         if 'system' in route['grade'].keys():

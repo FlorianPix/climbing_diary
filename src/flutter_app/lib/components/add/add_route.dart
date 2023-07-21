@@ -5,14 +5,13 @@ import '../../interfaces/grade.dart';
 import '../../interfaces/grading_system.dart';
 import '../../interfaces/multi_pitch_route/create_multi_pitch_route.dart';
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../../interfaces/route/route.dart';
 import '../../interfaces/single_pitch_route/create_single_pitch_route.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../services/route_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../MyTextStyles.dart';
+import '../my_text_styles.dart';
 
 class AddRoute extends StatefulWidget {
   const AddRoute({super.key, required this.spot, this.onAddMultiPitchRoute, this.onAddSinglePitchRoute});
@@ -183,7 +182,7 @@ class _AddRouteState extends State<AddRoute>{
                     location: controllerLocation.text,
                     rating: currentSliderValue.toInt(),
                     comment: controllerComment.text,
-                    grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
+                    grade: Grade(grade: controllerGrade.text, system: gradingSystem),
                     length: int.parse(controllerLength.text)
                   );
                   SinglePitchRoute? createdRoute = await routeService.createSinglePitchRoute(route, spot.id, result);

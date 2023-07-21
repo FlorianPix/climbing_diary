@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
-import '../../components/MyButtonStyles.dart';
+import '../../components/my_button_styles.dart';
 import '../../components/add/add_route.dart';
 import '../../components/detail/media_details.dart';
 import '../../components/edit/edit_spot.dart';

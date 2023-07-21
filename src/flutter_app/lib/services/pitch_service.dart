@@ -10,7 +10,6 @@ import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/pitch/pitch.dart';
 import '../interfaces/pitch/update_pitch.dart';
-import 'cache.dart';
 import 'locator.dart';
 
 class PitchService {

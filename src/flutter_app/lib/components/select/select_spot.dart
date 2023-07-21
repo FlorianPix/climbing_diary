@@ -5,7 +5,7 @@ import '../../interfaces/trip/trip.dart';
 import '../../services/spot_service.dart';
 
 import '../../services/trip_service.dart';
-import '../MyButtonStyles.dart';
+import '../my_button_styles.dart';
 
 class SelectSpot extends StatefulWidget {
   const SelectSpot({super.key, required this.trip, required this.onAdd});

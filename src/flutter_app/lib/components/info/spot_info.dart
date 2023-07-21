@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/spot/spot.dart';
-import '../MyTextStyles.dart';
+import '../my_text_styles.dart';
 
 class SpotInfo extends StatelessWidget {
   const SpotInfo({super.key,

@@ -10,7 +10,6 @@ import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/trip/trip.dart';
 import '../interfaces/trip/update_trip.dart';
-import 'cache.dart';
 import 'locator.dart';
 
 class TripService {
