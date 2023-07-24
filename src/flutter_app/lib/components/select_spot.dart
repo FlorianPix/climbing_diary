@@ -1,14 +1,12 @@
 import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:flutter/material.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
-import '../../pages/list_page/spot_list.dart';
-import '../../services/spot_service.dart';
+import '../interfaces/spot/spot.dart';
+import '../interfaces/trip/trip.dart';
+import '../services/spot_service.dart';
 
-import '../../services/trip_service.dart';
-import '../my_button_styles.dart';
+import '../services/trip_service.dart';
+import 'my_button_styles.dart';
 
 class SelectSpot extends StatefulWidget {
   const SelectSpot({super.key, required this.trip, required this.onAdd});
@@ -71,7 +69,7 @@ class _SelectSpotState extends State<SelectSpot>{
                       Trip? updatedTrip = await tripService.editTrip(widget.trip.toUpdateTrip());
                       widget.onAdd.call(spot);
                     }
-                    Navigator.popUntil(context, ModalRoute.withName('/'));
+                    setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
                   },
                   style: MyButtonStyles.rounded,
                   child: Column(children: [

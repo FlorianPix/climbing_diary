@@ -1,5 +1,5 @@
 import 'package:climbing_diary/components/my_button_styles.dart';
-import 'package:climbing_diary/components/select/select_spot.dart';
+import 'package:climbing_diary/components/select_spot.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skeletons/skeletons.dart';

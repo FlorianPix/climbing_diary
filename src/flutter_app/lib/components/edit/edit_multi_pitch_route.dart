@@ -108,11 +108,11 @@ class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
                 name: controllerName.text,
                 rating: currentSliderValue.toInt(),
               );
-              Navigator.popUntil(context, ModalRoute.withName('/'));
               MultiPitchRoute? updatedRoute = await routeService.editMultiPitchRoute(route);
               if (updatedRoute != null) {
                 widget.onUpdate.call(updatedRoute);
               }
+              setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },
           icon: const Icon(Icons.save)

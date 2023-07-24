@@ -198,7 +198,6 @@ class _AddSpotState extends State<AddSpot>{
                   name: controllerTitle.text,
                   rating: currentSliderValue.toInt(),
                 );
-                Navigator.popUntil(context, ModalRoute.withName('/'));
                 Spot? createdSpot = await spotService.createSpot(spot, result);
                 if (createdSpot != null) {
                   if (widget.trip != null) {
@@ -209,6 +208,7 @@ class _AddSpotState extends State<AddSpot>{
                   }
                   widget.onAdd.call(createdSpot);
                 }
+                setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
               }
             },
             child: const Icon(Icons.save))

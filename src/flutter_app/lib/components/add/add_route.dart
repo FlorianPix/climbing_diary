@@ -166,7 +166,6 @@ class _AddRouteState extends State<AddRoute>{
             onPressed: () async {
               bool result = await InternetConnectionChecker().hasConnection;
               if (_formKey.currentState!.validate()) {
-                Navigator.popUntil(context, ModalRoute.withName('/'));
                 if (isMultiPitch){
                   CreateMultiPitchRoute route = CreateMultiPitchRoute(
                     name: controllerName.text,
@@ -188,7 +187,7 @@ class _AddRouteState extends State<AddRoute>{
                   SinglePitchRoute? createdRoute = await routeService.createSinglePitchRoute(route, spot.id, result);
                   widget.onAddSinglePitchRoute?.call(createdRoute!);
                 }
-                setState(() {});
+                setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
               }
             },
             child: const Text("Save"))

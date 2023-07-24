@@ -156,11 +156,11 @@ class _EditSpotState extends State<EditSpot>{
                 distancePublicTransport: (valDistancePublicTransport != null) ? valDistancePublicTransport : 0,
                 comment: controllerDescription.text,
               );
-              Navigator.popUntil(context, ModalRoute.withName('/'));
               Spot? updatedSpot = await spotService.editSpot(spot);
               if (updatedSpot != null) {
                 widget.onUpdate.call(updatedSpot);
               }
+              setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },
           icon: const Icon(Icons.save)

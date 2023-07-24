@@ -128,28 +128,28 @@ class _AddAscentToSinglePitchRouteState extends State<AddAscentToSinglePitchRout
       ),
       actions: <Widget>[
         TextButton(
-            onPressed: () async {
-              bool result = await InternetConnectionChecker().hasConnection;
-              if (_formKey.currentState!.validate()) {
-                final int? ascentStyleIndex = ascentStyleValue?.index;
-                final int? ascentTypeIndex = ascentTypeValue?.index;
-                if (ascentStyleIndex != null && ascentTypeIndex != null) {
-                  CreateAscent ascent = CreateAscent(
-                    comment: controllerComment.text,
-                    date: controllerDate.text,
-                    style: ascentStyleIndex,
-                    type: ascentTypeIndex,
-                  );
-                  Navigator.popUntil(context, ModalRoute.withName('/'));
-                  final singlePitchRouteValue = this.singlePitchRouteValue;
-                  if (singlePitchRouteValue != null) {
-                    Ascent? createdAscent = await ascentService.createAscentForSinglePitchRoute(singlePitchRouteValue.id, ascent, result);
-                    widget.onAdd?.call(createdAscent!);
-                  }
+          onPressed: () async {
+            bool result = await InternetConnectionChecker().hasConnection;
+            if (_formKey.currentState!.validate()) {
+              final int? ascentStyleIndex = ascentStyleValue?.index;
+              final int? ascentTypeIndex = ascentTypeValue?.index;
+              if (ascentStyleIndex != null && ascentTypeIndex != null) {
+                CreateAscent ascent = CreateAscent(
+                  comment: controllerComment.text,
+                  date: controllerDate.text,
+                  style: ascentStyleIndex,
+                  type: ascentTypeIndex,
+                );
+                final singlePitchRouteValue = this.singlePitchRouteValue;
+                if (singlePitchRouteValue != null) {
+                  Ascent? createdAscent = await ascentService.createAscentForSinglePitchRoute(singlePitchRouteValue.id, ascent, result);
+                  widget.onAdd?.call(createdAscent!);
                 }
+                setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
               }
-            },
-            child: const Text("Save"))
+            }
+          },
+          child: const Text("Save"))
       ],
     );
   }
