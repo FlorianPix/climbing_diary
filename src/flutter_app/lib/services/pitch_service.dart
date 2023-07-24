@@ -60,9 +60,6 @@ class PitchService {
   }
 
   Future<List<Pitch>> getPitchesByName(String name) async {
-    if (name == ""){
-      return [];
-    }
     try {
       final Response response = await netWorkLocator.dio.get('$climbingApiHost/pitch');
 

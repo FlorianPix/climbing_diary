@@ -129,10 +129,12 @@ class _SpotDetailsState extends State<SpotDetails>{
     ));
     elements.add(Text(widget.spot.location, style: MyTextStyles.description));
     elements.add(Rating(rating: widget.spot.rating));
-    elements.add(GradeDistribution(
-        singlePitchRouteIds: widget.spot.singlePitchRouteIds,
-        multiPitchRouteIds: widget.spot.multiPitchRouteIds)
-    );
+    if (widget.spot.singlePitchRouteIds.isNotEmpty || widget.spot.multiPitchRouteIds.isNotEmpty) {
+      elements.add(GradeDistribution(
+          singlePitchRouteIds: widget.spot.singlePitchRouteIds,
+          multiPitchRouteIds: widget.spot.multiPitchRouteIds)
+      );
+    }
     if (widget.spot.distancePublicTransport != 0 || widget.spot.distanceParking != 0){
       elements.add(Transport(
         distancePublicTransport: widget.spot.distancePublicTransport,

@@ -73,10 +73,35 @@ class _MapPageState extends State<MapPage> {
                     setState(() {});
                   }
 
+                  Widget search = Form(
+                    key: _formKey,
+                    child:
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: TextFormField(
+                        controller: controllerSearch,
+                        decoration: const InputDecoration(
+                            icon: Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                              borderSide: BorderSide(color: Colors.blue),
+                            ),
+                            filled: true,
+                            fillColor: Color.fromRGBO(255,127,90, .3),
+                            hintText: "name",
+                            labelText: "name"
+                        ),
+                        onChanged: (String s) {
+                          setState(() {});
+                        },
+                      ),
+                    ),
+                  );
+
                   if (spots.isEmpty) {
                     return Scaffold(
-                      body: Center(
-                        child: FlutterMap(
+                      body: Center(child: Stack(children: [
+                        FlutterMap(
                           options: MapOptions(
                             center: LatLng(50.746036, 10.642666),
                             zoom: 5,
@@ -94,8 +119,9 @@ class _MapPageState extends State<MapPage> {
                               userAgentPackageName: 'com.example.app',
                             ),
                           ],
-                        )
-                      ),
+                        ),
+                        search
+                      ])),
                       floatingActionButton: FloatingActionButton(
                         onPressed: () {
                           Navigator.push(
@@ -106,35 +132,10 @@ class _MapPageState extends State<MapPage> {
                         },
                         backgroundColor: Colors.green,
                         elevation: 5,
-                        child: const Icon(Icons.add, size: 50.0),
+                        child: const Icon(Icons.add, size: 50.0, color: Colors.white),
                       )
                     );
                   }
-
-                  Widget search = Form(
-                    key: _formKey,
-                    child:
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: TextFormField(
-                          controller: controllerSearch,
-                          decoration: const InputDecoration(
-                              icon: Icon(Icons.search),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                                borderSide: BorderSide(color: Colors.blue),
-                              ),
-                              filled: true,
-                              fillColor: Color.fromRGBO(255,127,90, .3),
-                              hintText: "name",
-                              labelText: "name"
-                          ),
-                          onChanged: (String s) {
-                            setState(() {});
-                          },
-                      ),
-                    ),
-                  );
 
                   return Scaffold(
                     body: Center(
@@ -175,7 +176,7 @@ class _MapPageState extends State<MapPage> {
                       },
                       backgroundColor: Colors.green,
                       elevation: 5,
-                      child: const Icon(Icons.add, size: 50.0, color: Colors.white,),
+                      child: const Icon(Icons.add, size: 50.0, color: Colors.white),
                     )
                   );
                 } else if (snapshot.hasError) {

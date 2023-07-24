@@ -1,9 +1,11 @@
 import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../interfaces/ascent/ascent.dart';
 import '../../interfaces/ascent/ascent_style.dart';
 import '../../interfaces/ascent/ascent_type.dart';
+import '../../interfaces/grade.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../services/ascent_service.dart';
 import '../my_text_styles.dart';
@@ -19,10 +21,22 @@ class PitchInfo extends StatefulWidget {
 
 class _PitchInfoState extends State<PitchInfo>{
   AscentService ascentService = AscentService();
+  GradingSystem gradingSystem = GradingSystem.french;
+  late SharedPreferences prefs;
+
+  fetchGradingSystemPreference() async {
+    prefs = await SharedPreferences.getInstance();
+    int? fetchedGradingSystem = prefs.getInt('gradingSystem');
+    if (fetchedGradingSystem != null) {
+      gradingSystem = GradingSystem.values[fetchedGradingSystem];
+    }
+    setState(() {});
+  }
 
   @override
   void initState(){
     super.initState();
+    fetchGradingSystemPreference();
   }
 
   @override
@@ -60,9 +74,17 @@ class _PitchInfoState extends State<PitchInfo>{
               style: MyTextStyles.title,
             ));
 
+            String gradeString = widget.pitch.grade.grade;
+            int gradingSystemIndex = widget.pitch.grade.system.index;
+            int gradeIndex = Grade.translationTable[gradingSystemIndex].indexOf(gradeString);
+            if(0 > gradeIndex || gradeIndex > 40){
+              gradeIndex = 0;
+            }
+            String translatedGrade = Grade.translationTable[gradingSystem.index][gradeIndex];
+
             // grade and length
             listInfo.add(Text(
-              "#️ ${widget.pitch.num} 📖 ${widget.pitch.grade.grade} ${widget.pitch.grade.system.toShortString()} 📏 ${widget.pitch.length}m",
+              "#️ ${widget.pitch.num} 📖 $translatedGrade ${gradingSystem.toShortString()} 📏 ${widget.pitch.length}m",
               style: MyTextStyles.description,
             ));
 

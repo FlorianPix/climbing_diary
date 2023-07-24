@@ -1,10 +1,12 @@
 import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:climbing_diary/services/ascent_service.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../interfaces/ascent/ascent.dart';
 import '../../interfaces/ascent/ascent_style.dart';
 import '../../interfaces/ascent/ascent_type.dart';
+import '../../interfaces/grade.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/trip/trip.dart';
 import '../my_text_styles.dart';
@@ -23,9 +25,22 @@ class SinglePitchRouteInfo extends StatefulWidget {
 class _SinglePitchRouteInfoState extends State<SinglePitchRouteInfo>{
   AscentService ascentService = AscentService();
 
+  GradingSystem gradingSystem = GradingSystem.french;
+  late SharedPreferences prefs;
+
+  fetchGradingSystemPreference() async {
+    prefs = await SharedPreferences.getInstance();
+    int? fetchedGradingSystem = prefs.getInt('gradingSystem');
+    if (fetchedGradingSystem != null) {
+      gradingSystem = GradingSystem.values[fetchedGradingSystem];
+    }
+    setState(() {});
+  }
+
   @override
   void initState(){
     super.initState();
+    fetchGradingSystemPreference();
   }
 
   @override
@@ -62,12 +77,14 @@ class _SinglePitchRouteInfoState extends State<SinglePitchRouteInfo>{
               style: MyTextStyles.title,
             ));
 
+            String gradeString = widget.route.grade.grade;
+            int gradingSystemIndex = widget.route.grade.system.index;
+            int gradeIndex = Grade.translationTable[gradingSystemIndex].indexOf(gradeString);
+            String translatedGrade = Grade.translationTable[gradingSystem.index][gradeIndex];
             listInfo.add(Text(
-              "📖 ${widget.route.grade.grade} ${widget.route.grade.system.toShortString()} 📏 ${widget.route.length}m",
+              "📖 $translatedGrade ${gradingSystem.toShortString()} 📏 ${widget.route.length}m",
               style: MyTextStyles.description,
             ));
-
-
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,

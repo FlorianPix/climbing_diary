@@ -67,9 +67,6 @@ class RouteService {
   }
 
   Future<List<MultiPitchRoute>> getMultiPitchRoutesByName(String name) async {
-    if (name == ""){
-      return [];
-    }
     final Response response = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route');
     if (response.statusCode == 200) {
       List<MultiPitchRoute> routes = [];
@@ -315,9 +312,6 @@ class RouteService {
   }
 
   Future<List<SinglePitchRoute>> getSinglePitchRoutesByName(String name) async {
-    if (name == ""){
-      return [];
-    }
     final Response response = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route');
     if (response.statusCode == 200) {
       List<SinglePitchRoute> routes = [];

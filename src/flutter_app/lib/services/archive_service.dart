@@ -23,7 +23,7 @@ import '../interfaces/trip/trip.dart';
 import 'ascent_service.dart';
 import 'media_service.dart';
 
-class ZipService {
+class ArchiveService {
   final TripService tripService = TripService();
   final SpotService spotService = SpotService();
   final RouteService routeService = RouteService();
