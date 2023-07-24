@@ -26,13 +26,6 @@ async def delete_all(user: Auth0User = Security(auth.get_user, scopes=["write:di
     await db["ascent"].delete_many({"user_id": user.id})
 
 
-@router.get('/spots', description="Retrieve all spots from all users", response_model=List[SpotModel], dependencies=[Depends(auth.implicit_scheme)])
-async def get_all_spots(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    spots = await db["spot"].find({}).to_list(None)
-    return spots
-
-
 @router.delete('/trips', description="Delete all trips from all users", dependencies=[Depends(auth.implicit_scheme)])
 async def delete_trips(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()

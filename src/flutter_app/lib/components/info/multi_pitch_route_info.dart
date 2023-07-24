@@ -1,23 +1,46 @@
 import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:climbing_diary/services/pitch_service.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../interfaces/grade.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../my_text_styles.dart';
 
-class MultiPitchInfo extends StatelessWidget {
-  MultiPitchInfo({super.key, required this.pitchIds});
-
+class MultiPitchInfo extends StatefulWidget {
+  const MultiPitchInfo({super.key, required this.pitchIds});
   final List<String> pitchIds;
+
+  @override
+  State<StatefulWidget> createState() => _MultiPitchInfoState();
+}
+
+class _MultiPitchInfoState extends State<MultiPitchInfo>{
   final PitchService pitchService = PitchService();
+  GradingSystem gradingSystem = GradingSystem.french;
+  late SharedPreferences prefs;
+
+  fetchGradingSystemPreference() async {
+    prefs = await SharedPreferences.getInstance();
+    int? fetchedGradingSystem = prefs.getInt('gradingSystem');
+    if (fetchedGradingSystem != null) {
+      gradingSystem = GradingSystem.values[fetchedGradingSystem];
+    }
+    setState(() {});
+  }
+
+  @override
+  void initState(){
+    super.initState();
+    fetchGradingSystemPreference();
+  }
 
   @override
   Widget build(BuildContext context) {
     List<Widget> listInfo = [];
 
     return FutureBuilder<List<Pitch>>(
-      future: Future.wait(pitchIds.map((pitchId) => pitchService.getPitch(pitchId))),
+      future: Future.wait(widget.pitchIds.map((pitchId) => pitchService.getPitch(pitchId))),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<Pitch> pitches = snapshot.data!;
@@ -28,13 +51,17 @@ class MultiPitchInfo extends StatelessWidget {
             grade += otherGrade;
             length += pitch.length;
           }
+          String gradeString = grade.grade;
+          int gradingSystemIndex = grade.system.index;
+          int gradeIndex = Grade.translationTable[gradingSystemIndex].indexOf(gradeString);
+          String translatedGrade = Grade.translationTable[gradingSystem.index][gradeIndex];
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-              "📖 ${grade.grade} ${grade.system.toShortString()} 📏 ${length}m",
+                "📖 $translatedGrade ${gradingSystem.toShortString()} 📏 ${length}m",
                 style: MyTextStyles.description,
-              ),
+              )
             ],
           );
 

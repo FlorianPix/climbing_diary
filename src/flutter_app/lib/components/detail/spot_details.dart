@@ -9,6 +9,7 @@ import '../../interfaces/trip/trip.dart';
 import '../../pages/diary_page/timeline/route_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
+import '../grade_distribution.dart';
 import '../my_button_styles.dart';
 import '../add/add_route.dart';
 import '../edit/edit_spot.dart';
@@ -157,6 +158,13 @@ class _SpotDetailsState extends State<SpotDetails>{
           children: ratingRowElements,
         )
     )));
+
+    if (widget.spot.singlePitchRouteIds.isNotEmpty || widget.spot.multiPitchRouteIds.isNotEmpty){
+      elements.add(GradeDistribution(
+          singlePitchRouteIds: widget.spot.singlePitchRouteIds,
+          multiPitchRouteIds: widget.spot.multiPitchRouteIds)
+      );
+    }
 
     // time to walk transport
     elements.add(Center(child: Padding(

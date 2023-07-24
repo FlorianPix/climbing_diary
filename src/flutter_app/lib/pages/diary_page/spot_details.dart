@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:skeletons/skeletons.dart';
 
+import '../../components/grade_distribution.dart';
 import '../../components/my_button_styles.dart';
 import '../../components/detail/media_details.dart';
 import '../../components/edit/edit_spot.dart';
@@ -156,6 +157,13 @@ class _SpotDetailsState extends State<SpotDetails>{
           children: ratingRowElements,
         )
     )));
+
+    if (widget.spot.singlePitchRouteIds.isNotEmpty || widget.spot.multiPitchRouteIds.isNotEmpty) {
+      elements.add(GradeDistribution(
+          singlePitchRouteIds: widget.spot.singlePitchRouteIds,
+          multiPitchRouteIds: widget.spot.multiPitchRouteIds)
+      );
+    }
 
     // time to walk transport
     elements.add(Center(child: Padding(
