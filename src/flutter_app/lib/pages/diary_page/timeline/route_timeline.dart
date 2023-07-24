@@ -10,12 +10,12 @@ import '../../../components/detail/single_pitch_route_details.dart';
 import '../../../components/info/multi_pitch_route_info.dart';
 import '../../../components/info/route_info.dart';
 import '../../../components/info/single_pitch_route_info.dart';
+import '../../../components/rating.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/pitch_service.dart';
 import '../../../services/route_service.dart';
 import '../image_list_view.dart';
-import '../rating_row.dart';
 
 class RouteTimeline extends StatefulWidget {
   const RouteTimeline({super.key, this.trip, required this.spot, required this.singlePitchRouteIds, required this.multiPitchRouteIds, required this.startDate, required this.endDate});
@@ -102,7 +102,7 @@ class RouteTimelineState extends State<RouteTimeline> {
                                   MultiPitchRoute multiPitchRoute = multiPitchRoutes[index];
                                   elements.add(RouteInfo(route: multiPitchRoute));
                                   // rating as hearts in a row
-                                  elements.add(RatingRow(rating: multiPitchRoute.rating));
+                                  elements.add(Rating(rating: multiPitchRoute.rating));
                                   // images list view
                                   if (multiPitchRoute.mediaIds.isNotEmpty) {
                                     elements.add(
@@ -193,12 +193,14 @@ class RouteTimelineState extends State<RouteTimeline> {
                                       route: singlePitchRoute
                                   ));
                                   // rating as hearts in a row
-                                  elements.add(RatingRow(rating: singlePitchRoute.rating));
+                                  elements.add(Rating(rating: singlePitchRoute.rating));
                                   // images list view
                                   if (singlePitchRoute.mediaIds.isNotEmpty) {
-                                    elements.add(
-                                        ImageListView(mediaIds: singlePitchRoute.mediaIds)
-                                    );
+                                    elements.add(ExpansionTile(
+                                        leading: const Icon(Icons.image),
+                                        title: const Text("images"),
+                                        children: [ImageListView(mediaIds: singlePitchRoute.mediaIds)]
+                                    ));
                                   }
 
                                   return InkWell(

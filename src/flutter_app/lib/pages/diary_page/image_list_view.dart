@@ -1,12 +1,10 @@
-import 'package:flutter/cupertino.dart';
-import 'package:skeletons/skeletons.dart';
+import 'package:climbing_diary/components/my_skeleton.dart';
+import 'package:flutter/material.dart';
 
 import '../../services/media_service.dart';
 
 class ImageListView extends StatelessWidget {
-  ImageListView({super.key,
-    required this.mediaIds
-  });
+  ImageListView({super.key, required this.mediaIds});
 
   final List<String> mediaIds;
   final MediaService mediaService = MediaService();
@@ -28,15 +26,6 @@ class ImageListView extends StatelessWidget {
         FutureBuilder<List<String>>(
             future: futureMediaUrls,
             builder: (context, snapshot) {
-              Widget skeleton = const Padding(
-                  padding: EdgeInsets.all(5),
-                  child: SkeletonAvatar(
-                    style: SkeletonAvatarStyle(
-                        shape: BoxShape.rectangle, width: 150, height: 250
-                    ),
-                  )
-              );
-
               if (snapshot.data != null) {
                 List<String> urls = snapshot.data!;
                 List<Widget> images = [];
@@ -54,7 +43,7 @@ class ImageListView extends StatelessWidget {
                                 if (loadingProgress == null) {
                                   return child;
                                 }
-                                return skeleton;
+                                return const MySkeleton();
                               },
                             )
                         ),
@@ -71,7 +60,7 @@ class ImageListView extends StatelessWidget {
               }
               List<Widget> skeletons = [];
               for (var i = 0; i < mediaIds.length; i++) {
-                skeletons.add(skeleton);
+                skeletons.add(const MySkeleton());
               }
               return Container(
                   padding: const EdgeInsets.all(20),

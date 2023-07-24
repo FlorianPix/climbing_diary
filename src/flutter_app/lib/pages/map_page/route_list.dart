@@ -13,8 +13,8 @@ import '../../components/detail/single_pitch_route_details.dart';
 import '../../components/info/multi_pitch_route_info.dart';
 import '../../components/info/route_info.dart';
 import '../../components/info/single_pitch_route_info.dart';
+import '../../components/rating.dart';
 import '../diary_page/image_list_view.dart';
-import '../diary_page/rating_row.dart';
 import '../diary_page/timeline/pitch_timeline.dart';
 
 class RouteList extends StatefulWidget {
@@ -95,7 +95,7 @@ class RouteListState extends State<RouteList> {
                             MultiPitchRoute multiPitchRoute = multiPitchRoutes[index];
                             timeLineElements.add(RouteInfo(route: multiPitchRoute));
                             // rating as hearts in a row
-                            timeLineElements.add(RatingRow(rating: multiPitchRoute.rating));
+                            timeLineElements.add(Rating(rating: multiPitchRoute.rating));
                             // images list view
                             if (multiPitchRoute.mediaIds.isNotEmpty) {
                               timeLineElements.add(
@@ -210,7 +210,7 @@ class RouteListState extends State<RouteList> {
                                           route: singlePitchRoute
                                       ));
                                       // rating as hearts in a row
-                                      elements.add(RatingRow(rating: singlePitchRoute.rating));
+                                      elements.add(Rating(rating: singlePitchRoute.rating));
                                       // images list view
                                       if (singlePitchRoute.mediaIds.isNotEmpty) {
                                         elements.add(

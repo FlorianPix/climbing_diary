@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../save_location_no_connection.dart';
+import 'save_location_no_connection.dart';
 import '../../interfaces/spot/spot.dart';
 
 class MapPageOffline extends StatefulWidget {
