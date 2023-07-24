@@ -243,6 +243,9 @@ class RouteTimelineState extends State<RouteTimeline> {
                             )
                           );
                         }
+                        if (multiPitchRoutes.isEmpty && singlePitchRoutes.isEmpty){
+                          return const SizedBox.shrink();
+                        }
                         return Column(
                           children: [ExpansionTile(
                             leading: const Icon(Icons.route),

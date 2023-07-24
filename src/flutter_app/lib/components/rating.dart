@@ -10,9 +10,9 @@ class Rating extends StatelessWidget{
     List<Widget> ratingRowElements = [];
     for (var i = 0; i < 5; i++){
       if (rating > i) {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 20.0, color: Colors.pink));
+        ratingRowElements.add(const Icon(Icons.favorite, size: 14.0, color: Colors.pink));
       } else {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 20.0, color: Colors.grey));
+        ratingRowElements.add(const Icon(Icons.favorite, size: 14.0, color: Colors.grey));
       }
     }
 

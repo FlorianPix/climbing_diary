@@ -83,7 +83,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> login() async {
-    print("login");
     var credentials = await auth0.webAuthentication(scheme: 'demo').login(
         audience: 'climbing-diary-API',
         scopes: {'profile', 'email', 'read:diary', 'write:diary', 'read:media', 'write:media'}

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:skeletons/skeletons.dart';
 
 import '../../components/info/multi_pitch_route_info.dart';
+import '../../components/my_skeleton.dart';
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
@@ -162,15 +162,6 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         FutureBuilder<List<String>>(
           future: futureMediaUrls,
           builder: (context, snapshot) {
-            Widget skeleton = const Padding(
-                padding: EdgeInsets.all(5),
-                child: SkeletonAvatar(
-                  style: SkeletonAvatarStyle(
-                      shape: BoxShape.rectangle, width: 150, height: 250
-                  ),
-                )
-            );
-
             if (snapshot.data != null){
               List<String> urls = snapshot.data!;
               List<Widget> images = [];
@@ -187,7 +178,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
                           if (loadingProgress == null) {
                             return child;
                           }
-                          return skeleton;
+                          return const MySkeleton();
                         },
                       )
                     ),
@@ -204,7 +195,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
             }
             List<Widget> skeletons = [];
             for (var i = 0; i < route.mediaIds.length; i++){
-              skeletons.add(skeleton);
+              skeletons.add(const MySkeleton());
             }
             return Container(
                 padding: const EdgeInsets.all(10),

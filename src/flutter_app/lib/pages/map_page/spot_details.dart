@@ -113,10 +113,10 @@ class _SpotDetailsState extends State<SpotDetails>{
             label: const Text('Add image'),
             onPressed: () {
               Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AddImage(onAddImage: getImage)
-                  )
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AddImage(onAddImage: getImage)
+                )
               );
             },
             style: MyButtonStyles.rounded

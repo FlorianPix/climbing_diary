@@ -1,8 +1,8 @@
 import 'package:climbing_diary/components/add/add_ascent_to_single_pitch_route.dart';
+import 'package:climbing_diary/components/image_list_view.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/spot/spot.dart';
@@ -14,7 +14,7 @@ import '../../services/route_service.dart';
 import '../my_button_styles.dart';
 import '../edit/edit_single_pitch_route.dart';
 import '../info/single_pitch_route_info.dart';
-import 'media_details.dart';
+import '../rating.dart';
 
 class SinglePitchRouteDetails extends StatefulWidget {
   const SinglePitchRouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
@@ -125,36 +125,18 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
     List<Widget> elements = [];
     SinglePitchRoute route = widget.route;
 
-    // general info
-    elements.addAll([
-      SinglePitchRouteInfo(
-          route: route
-      ),
-      Text(
-        route.location,
+
+    elements.add(SinglePitchRouteInfo(route: route));
+    if (route.location.isNotEmpty){
+      elements.add(Text(route.location,
         style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400
         ),
-      )]);
-    // rating
-    List<Widget> ratingRowElements = [];
-
-    for (var i = 0; i < 5; i++){
-      if (route.rating > i) {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
-      } else {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
-      }
+      ));
     }
 
-    elements.add(Center(child: Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: ratingRowElements,
-        )
-    )));
+    elements.add(Rating(rating: route.rating));
 
     if (route.comment.isNotEmpty) {
       elements.add(Container(
@@ -169,114 +151,22 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
           )
       ));
     }
-    // images
+
+    void deleteImageCallback(String mediumId) {
+      widget.route.mediaIds.remove(mediumId);
+      routeService.editSinglePitchRoute(UpdateSinglePitchRoute(
+          id: widget.route.id,
+          mediaIds: widget.route.mediaIds
+      ));
+      setState(() {});
+    }
+
     if (route.mediaIds.isNotEmpty) {
-      List<Widget> imageWidgets = [];
-      Future<List<String>> futureMediaUrls = fetchURLs();
-
-      imageWidgets.add(
-        FutureBuilder<List<String>>(
-          future: futureMediaUrls,
-          builder: (context, snapshot) {
-            Widget skeleton = const Padding(
-                padding: EdgeInsets.all(5),
-                child: SkeletonAvatar(
-                  style: SkeletonAvatarStyle(
-                      shape: BoxShape.rectangle, width: 150, height: 250
-                  ),
-                )
-            );
-
-            if (snapshot.data != null){
-              List<String> urls = snapshot.data!;
-
-              deleteMediaCallback(String mediumId) {
-                route.mediaIds.remove(mediumId);
-                routeService.editSinglePitchRoute(
-                    UpdateSinglePitchRoute(
-                        id: route.id,
-                        mediaIds: route.mediaIds
-                    )
-                );
-                setState(() {});
-              }
-
-              List<Widget> images = [];
-              for (var url in urls){
-                images.add(InkWell(
-                  onTap: () =>
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) =>
-                            Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: MediaDetails(
-                                  url: url,
-                                  onDelete: deleteMediaCallback,
-                                )
-                            ),
-                      ),
-                  child: Ink(
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Image.network(
-                              url,
-                              fit: BoxFit.fitHeight,
-                              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                if (loadingProgress == null) {
-                                  return child;
-                                }
-                                return skeleton;
-                              },
-                            )
-                        ),
-                      )
-                  ),
-                ));
-              }
-              return Container(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: images
-                  )
-              );
-            }
-            List<Widget> skeletons = [];
-            for (var i = 0; i < route.mediaIds.length; i++){
-              skeletons.add(skeleton);
-            }
-            return Container(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: skeletons
-                )
-            );
-          }
-        )
-      );
-      imageWidgets.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
-      elements.add(
-        SizedBox(
-          height: 250,
-          child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: imageWidgets
-          )
-        ),
-      );
+      elements.add(ImageListView(
+        onDelete: deleteImageCallback,
+        mediaIds: widget.spot.mediaIds,
+        getImage: getImage,
+      ));
     } else {
       elements.add(
         ElevatedButton.icon(
@@ -342,33 +232,33 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
         DateTime.parse(widget.trip!.endDate);
       }
       elements.add(
-          AscentTimeline(
-            trip: widget.trip,
-            spot: widget.spot,
-            route: widget.route,
-            pitchId: route.id,
-            ascentIds: route.ascentIds,
-            onUpdate: (ascent) {},
-            onDelete: (ascent) {
-              route.ascentIds.remove(ascent.id);
-              setState(() {});
-            },
-            startDate: startDate,
-            endDate: endDate,
-            ofMultiPitch: false,
-          )
+        AscentTimeline(
+          trip: widget.trip,
+          spot: widget.spot,
+          route: widget.route,
+          pitchId: route.id,
+          ascentIds: route.ascentIds,
+          onUpdate: (ascent) {},
+          onDelete: (ascent) {
+            route.ascentIds.remove(ascent.id);
+            setState(() {});
+          },
+          startDate: startDate,
+          endDate: endDate,
+          ofMultiPitch: false,
+        )
       );
     }
 
     return Stack(
-        children: <Widget>[
-          Padding(
-              padding: const EdgeInsets.all(20),
-              child: ListView(
-                  children: elements
-              )
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: ListView(
+            children: elements
           )
-        ]
+        )
+      ]
     );
   }
 }

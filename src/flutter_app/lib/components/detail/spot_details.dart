@@ -1,7 +1,7 @@
+import 'package:climbing_diary/components/image_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/spot/update_spot.dart';
@@ -17,7 +17,6 @@ import '../edit/edit_spot.dart';
 import '../my_text_styles.dart';
 import '../rating.dart';
 import '../transport.dart';
-import 'media_details.dart';
 
 class SpotDetails extends StatefulWidget {
   const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate });
@@ -144,113 +143,21 @@ class _SpotDetailsState extends State<SpotDetails>{
       elements.add(Comment(comment: widget.spot.comment));
     }
 
-    // images
+    void deleteImageCallback(String mediumId) {
+      widget.spot.mediaIds.remove(mediumId);
+      spotService.editSpot(UpdateSpot(
+          id: widget.spot.id,
+          mediaIds: widget.spot.mediaIds
+      ));
+      setState(() {});
+    }
+
     if (widget.spot.mediaIds.isNotEmpty) {
-      List<Widget> imageWidgets = [];
-      Future<List<String>> futureMediaUrls = fetchURLs();
-
-      imageWidgets.add(
-        FutureBuilder<List<String>>(
-          future: futureMediaUrls,
-          builder: (context, snapshot) {
-            Widget skeleton = const Padding(
-                padding: EdgeInsets.all(5),
-                child: SkeletonAvatar(
-                  style: SkeletonAvatarStyle(
-                      shape: BoxShape.rectangle, width: 150, height: 250
-                  ),
-                )
-            );
-
-            if (snapshot.data != null){
-              List<String> urls = snapshot.data!;
-              deleteMediaCallback(String mediumId) {
-                widget.spot.mediaIds.remove(mediumId);
-                spotService.editSpot(
-                  UpdateSpot(
-                      id: widget.spot.id,
-                      mediaIds: widget.spot.mediaIds
-                  )
-                );
-                setState(() {});
-              }
-
-              List<Widget> images = [];
-              for (var url in urls){
-                images.add(InkWell(
-                  onTap: () =>
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) =>
-                          Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: MediaDetails(
-                              url: url,
-                              onDelete: deleteMediaCallback,
-                            )
-                          ),
-                      ),
-                  child: Ink(
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
-                          url,
-                          fit: BoxFit.fitHeight,
-                          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                            if (loadingProgress == null) {
-                              return child;
-                            }
-                            return skeleton;
-                          },
-                        )
-                      ),
-                    )
-                  ),
-                ));
-              }
-              return Container(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: images
-                  )
-              );
-            }
-            List<Widget> skeletons = [];
-            for (var i = 0; i < widget.spot.mediaIds.length; i++){
-              skeletons.add(skeleton);
-            }
-            return Container(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: skeletons
-                )
-            );
-          }
-        )
-      );
-      imageWidgets.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
-      elements.add(
-        SizedBox(
-          height: 250,
-          child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: imageWidgets
-          )
-        ),
-      );
+      elements.add(ImageListView(
+        onDelete: deleteImageCallback,
+        mediaIds: widget.spot.mediaIds,
+        getImage: getImage,
+      ));
     } else {
       elements.add(
         ElevatedButton.icon(
