@@ -2,25 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:open_street_map_search_and_pick/open_street_map_search_and_pick.dart';
 
-import '../../interfaces/trip/trip.dart';
 import '../../services/location_service.dart';
-import '../../services/trip_service.dart';
 
-class NavigationScreenPage extends StatefulWidget {
-  const NavigationScreenPage({super.key, required this.onAdd});
+class LocationPicker extends StatefulWidget {
+  const LocationPicker({super.key, required this.onAdd});
 
   final ValueSetter<List<String>> onAdd;
 
   @override
-  State<NavigationScreenPage> createState() => _NavigationScreenPage();
+  State<LocationPicker> createState() => _NavigationScreenPage();
 }
 
-class _NavigationScreenPage extends State<NavigationScreenPage> {
-  final TripService tripService = TripService();
+class _NavigationScreenPage extends State<LocationPicker> {
   final LocationService locationService = LocationService();
   String address = "";
-  List values = [1, 2, 3, 4, 5];
-  double currentSliderValue = 1;
 
   @override
   initState(){
@@ -29,12 +24,11 @@ class _NavigationScreenPage extends State<NavigationScreenPage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<dynamic>>(
-        future: Future.wait([locationService.getPosition(), tripService.getTrips()]),
+    return FutureBuilder<Position>(
+        future: locationService.getPosition(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            Position position = snapshot.data![0];
-            List<Trip> trips = snapshot.data![1];
+            Position position = snapshot.data!;
             return Scaffold(
                 body: OpenStreetMapSearchAndPick(
                     center: LatLong(position.latitude, position.longitude),

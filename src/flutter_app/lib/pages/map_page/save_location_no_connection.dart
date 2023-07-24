@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../../components/add/add_spot.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../services/location_service.dart';
-import 'add_spot.dart';
 
 
 class SaveLocationNoConnectionPage extends StatefulWidget {

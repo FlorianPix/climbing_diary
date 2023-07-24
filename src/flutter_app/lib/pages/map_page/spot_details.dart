@@ -1,17 +1,16 @@
 import 'package:climbing_diary/components/grade_distribution.dart';
+import 'package:climbing_diary/components/image_list_view.dart';
 import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:climbing_diary/components/transport.dart';
 import 'package:climbing_diary/interfaces/spot/update_spot.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:skeletons/skeletons.dart';
 
-
+import '../../components/add/add_image.dart';
 import '../../components/comment.dart';
 import '../../components/my_button_styles.dart';
 import '../../components/add/add_route.dart';
-import '../../components/detail/media_details.dart';
 import '../../components/edit/edit_spot.dart';
 import '../../components/rating.dart';
 import '../../interfaces/spot/spot.dart';
@@ -35,18 +34,10 @@ class _SpotDetailsState extends State<SpotDetails>{
   final MediaService mediaService = MediaService();
   final SpotService spotService = SpotService();
 
-  Future<List<String>> fetchURLs() {
-    List<Future<String>> futures = [];
-    for (var mediaId in widget.spot.mediaIds) {
-      futures.add(mediaService.getMediumUrl(mediaId));
-    }
-    return Future.wait(futures);
-  }
-
   XFile? image;
   final ImagePicker picker = ImagePicker();
 
-  Future getImage(ImageSource media) async {
+  Future<void> getImage(ImageSource media) async {
     var img = await picker.pickImage(source: media);
     if (img != null){
       var mediaId = await mediaService.uploadMedia(img);
@@ -58,51 +49,6 @@ class _SpotDetailsState extends State<SpotDetails>{
     setState(() {
       image = img;
     });
-  }
-
-  void addImageDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          title: const Text('Please choose media to select'),
-          content: SizedBox(
-            height: MediaQuery.of(context).size.height / 6,
-            child: Column(
-              children: [
-                ElevatedButton(
-                  //if user click this button, user can upload image from gallery
-                  onPressed: () {
-                    Navigator.pop(context);
-                    getImage(ImageSource.gallery);
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(Icons.image),
-                      Text('From Gallery'),
-                    ],
-                  ),
-                ),
-                ElevatedButton(
-                  //if user click this button. user can upload image from camera
-                  onPressed: () {
-                    Navigator.pop(context);
-                    getImage(ImageSource.camera);
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(Icons.camera),
-                      Text('From Camera'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      });
   }
 
   void editSpotDialog() {
@@ -145,119 +91,34 @@ class _SpotDetailsState extends State<SpotDetails>{
       elements.add(Comment(comment: widget.spot.comment));
     }
 
-    // images
+    void deleteImageCallback(String mediumId) {
+      widget.spot.mediaIds.remove(mediumId);
+      spotService.editSpot(UpdateSpot(
+        id: widget.spot.id,
+        mediaIds: widget.spot.mediaIds
+      ));
+      setState(() {});
+    }
+
     if (widget.spot.mediaIds.isNotEmpty) {
-      List<Widget> imageWidgets = [];
-      Future<List<String>> futureMediaUrls = fetchURLs();
-
-      imageWidgets.add(
-        FutureBuilder<List<String>>(
-          future: futureMediaUrls,
-          builder: (context, snapshot) {
-            Widget skeleton = const Padding(
-                padding: EdgeInsets.all(5),
-                child: SkeletonAvatar(
-                  style: SkeletonAvatarStyle(
-                      shape: BoxShape.rectangle, width: 150, height: 250
-                  ),
-                )
-            );
-
-            if (snapshot.data != null){
-              List<String> urls = snapshot.data!;
-              deleteMediaCallback(String mediumId) {
-                widget.spot.mediaIds.remove(mediumId);
-                spotService.editSpot(
-                  UpdateSpot(
-                      id: widget.spot.id,
-                      mediaIds: widget.spot.mediaIds
-                  )
-                );
-                setState(() {});
-              }
-
-              List<Widget> images = [];
-              for (var url in urls){
-                images.add(InkWell(
-                  onTap: () =>
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) =>
-                          Dialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: MediaDetails(
-                              url: url,
-                              onDelete: deleteMediaCallback,
-                            )
-                          ),
-                      ),
-                  child: Ink(
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
-                          url,
-                          fit: BoxFit.fitHeight,
-                          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                            if (loadingProgress == null) {
-                              return child;
-                            }
-                            return skeleton;
-                          },
-                        )
-                      ),
-                    )
-                  ),
-                ));
-              }
-              return Container(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: images
-                  )
-              );
-            }
-            List<Widget> skeletons = [];
-            for (var i = 0; i < widget.spot.mediaIds.length; i++){
-              skeletons.add(skeleton);
-            }
-            return Container(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: skeletons
-                )
-            );
-          }
-        )
-      );
-      imageWidgets.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
-      elements.add(
-        SizedBox(
-          height: 250,
-          child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: imageWidgets
-          )
-        ),
-      );
+      elements.add(ImageListView(
+        onDelete: deleteImageCallback,
+        mediaIds: widget.spot.mediaIds,
+        getImage: getImage,
+      ));
     } else {
       elements.add(
         ElevatedButton.icon(
             icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
             label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AddImage(onAddImage: getImage)
+                  )
+              );
+            },
             style: MyButtonStyles.rounded
         ),
       );

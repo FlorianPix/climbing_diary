@@ -9,10 +9,14 @@ import '../../interfaces/trip/trip.dart';
 import '../../pages/diary_page/timeline/route_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
+import '../comment.dart';
 import '../grade_distribution.dart';
 import '../my_button_styles.dart';
 import '../add/add_route.dart';
 import '../edit/edit_spot.dart';
+import '../my_text_styles.dart';
+import '../rating.dart';
+import '../transport.dart';
 import 'media_details.dart';
 
 class SpotDetails extends StatefulWidget {
@@ -117,94 +121,29 @@ class _SpotDetailsState extends State<SpotDetails>{
   Widget build(BuildContext context) {
     List<Widget> elements = [];
 
-    // general info
-    elements.addAll([
-      Text(
-        widget.spot.name,
-        style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600
-        ),
-      ),
-      Text(
-        '${round(widget.spot.coordinates[0], decimals: 8)}, ${round(widget.spot.coordinates[1], decimals: 8)}',
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400
-        ),
-      ),
-      Text(
-        widget.spot.location,
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400
-        ),
-      )]);
-    // rating
-    List<Widget> ratingRowElements = [];
-
-    for (var i = 0; i < 5; i++){
-      if (widget.spot.rating > i) {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
-      } else {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
-      }
-    }
-
-    elements.add(Center(child: Padding(
-        padding: const EdgeInsets.all(10),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: ratingRowElements,
-        )
-    )));
-
-    if (widget.spot.singlePitchRouteIds.isNotEmpty || widget.spot.multiPitchRouteIds.isNotEmpty){
+    elements.add(Text(widget.spot.name, style: MyTextStyles.title));
+    elements.add(Text(
+      '${round(widget.spot.coordinates[0], decimals: 8)}, ${round(widget.spot.coordinates[1], decimals: 8)}',
+      style: MyTextStyles.description,
+    ));
+    elements.add(Text(widget.spot.location, style: MyTextStyles.description));
+    elements.add(Rating(rating: widget.spot.rating));
+    if (widget.spot.singlePitchRouteIds.isNotEmpty || widget.spot.multiPitchRouteIds.isNotEmpty) {
       elements.add(GradeDistribution(
           singlePitchRouteIds: widget.spot.singlePitchRouteIds,
           multiPitchRouteIds: widget.spot.multiPitchRouteIds)
       );
     }
-
-    // time to walk transport
-    elements.add(Center(child: Padding(
-        padding: const EdgeInsets.all(5),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            const Icon(Icons.train, size: 30.0, color: Colors.green),
-            Text(
-              '${widget.spot.distancePublicTransport} min',
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400
-              ),
-            ),
-            const Icon(Icons.directions_car, size: 30.0, color: Colors.red),
-            Text(
-              '${widget.spot.distanceParking} min',
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400
-              ),
-            )
-          ],
-        )
-    )));
-
-    if (widget.spot.comment.isNotEmpty) {
-      elements.add(Container(
-          margin: const EdgeInsets.all(15.0),
-          padding: const EdgeInsets.all(5.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.blueAccent),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            widget.spot.comment,
-          )
-      ));
+    if (widget.spot.distancePublicTransport != 0 || widget.spot.distanceParking != 0){
+      elements.add(Transport(
+        distancePublicTransport: widget.spot.distancePublicTransport,
+        distanceParking: widget.spot.distanceParking)
+      );
     }
+    if (widget.spot.comment.isNotEmpty) {
+      elements.add(Comment(comment: widget.spot.comment));
+    }
+
     // images
     if (widget.spot.mediaIds.isNotEmpty) {
       List<Widget> imageWidgets = [];
@@ -225,14 +164,13 @@ class _SpotDetailsState extends State<SpotDetails>{
 
             if (snapshot.data != null){
               List<String> urls = snapshot.data!;
-
               deleteMediaCallback(String mediumId) {
                 widget.spot.mediaIds.remove(mediumId);
                 spotService.editSpot(
-                    UpdateSpot(
-                        id: widget.spot.id,
-                        mediaIds: widget.spot.mediaIds
-                    )
+                  UpdateSpot(
+                      id: widget.spot.id,
+                      mediaIds: widget.spot.mediaIds
+                  )
                 );
                 setState(() {});
               }
@@ -244,33 +182,33 @@ class _SpotDetailsState extends State<SpotDetails>{
                       showDialog(
                         context: context,
                         builder: (BuildContext context) =>
-                            Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: MediaDetails(
-                                  url: url,
-                                  onDelete: deleteMediaCallback,
-                                )
+                          Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
                             ),
+                            child: MediaDetails(
+                              url: url,
+                              onDelete: deleteMediaCallback,
+                            )
+                          ),
                       ),
                   child: Ink(
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Image.network(
-                              url,
-                              fit: BoxFit.fitHeight,
-                              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                if (loadingProgress == null) {
-                                  return child;
-                                }
-                                return skeleton;
-                              },
-                            )
-                        ),
-                      )
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: Image.network(
+                          url,
+                          fit: BoxFit.fitHeight,
+                          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child;
+                            }
+                            return skeleton;
+                          },
+                        )
+                      ),
+                    )
                   ),
                 ));
               }
@@ -375,7 +313,7 @@ class _SpotDetailsState extends State<SpotDetails>{
         )
     );
     // routes
-    if (widget.spot.multiPitchRouteIds.isNotEmpty){
+    if (widget.spot.multiPitchRouteIds.isNotEmpty || widget.spot.singlePitchRouteIds.isNotEmpty){
       elements.add(
           RouteTimeline(
               trip: widget.trip,
