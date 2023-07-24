@@ -19,6 +19,8 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController controllerSearch = TextEditingController();
   final SpotService spotService = SpotService();
 
   bool online = false;
@@ -44,7 +46,7 @@ class _MapPageState extends State<MapPage> {
             editQueuedSpots();
             uploadQueuedSpots();
             return FutureBuilder<List<Spot>>(
-              future: spotService.getSpots(),
+              future: spotService.getSpotsByName(controllerSearch.text),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   List<Spot> spots = snapshot.data!;
@@ -108,9 +110,36 @@ class _MapPageState extends State<MapPage> {
                       )
                     );
                   }
+
+                  Widget search = Form(
+                    key: _formKey,
+                    child:
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: TextFormField(
+                          controller: controllerSearch,
+                          decoration: const InputDecoration(
+                              icon: Icon(Icons.search),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                                borderSide: BorderSide(color: Colors.blue),
+                              ),
+                              filled: true,
+                              fillColor: Color.fromRGBO(255,127,90, .3),
+                              hintText: "name",
+                              labelText: "name"
+                          ),
+                          onChanged: (String s) {
+                            setState(() {});
+                          },
+                      ),
+                    ),
+                  );
+
                   return Scaffold(
                     body: Center(
-                      child: FlutterMap(
+                      child: Stack(children: [
+                        FlutterMap(
                         options: MapOptions(
                           center: LatLng(spots[0].coordinates[0],
                               spots[0].coordinates[1]),
@@ -131,8 +160,10 @@ class _MapPageState extends State<MapPage> {
                           MarkerLayer(
                               markers: getMarkers(spots, deleteSpotCallback, updateCallback)),
                         ],
-                      )
-                    ),
+                      ),
+                      search,
+                      ]
+                    )),
                     floatingActionButton: FloatingActionButton(
                       onPressed: () {
                         Navigator.push(
