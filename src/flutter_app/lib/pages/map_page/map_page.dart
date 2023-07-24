@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'add_spot.dart';
 import 'spot_details.dart';
-import '../../services/cache.dart';
+import '../../services/cache_service.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -42,9 +42,9 @@ class _MapPageState extends State<MapPage> {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-            deleteQueuedSpots();
-            editQueuedSpots();
-            uploadQueuedSpots();
+            // TODO deleteQueuedSpots();
+            // TODO editQueuedSpots();
+            // TODO uploadQueuedSpots();
             return FutureBuilder<List<Spot>>(
               future: spotService.getSpotsByName(controllerSearch.text),
               builder: (context, snapshot) {

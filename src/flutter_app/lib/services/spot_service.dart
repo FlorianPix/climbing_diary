@@ -14,7 +14,6 @@ import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/spot/spot.dart';
 import '../interfaces/spot/update_spot.dart';
-import 'cache.dart';
 import 'locator.dart';
 
 class SpotService {
@@ -164,7 +163,7 @@ class SpotService {
       final Response response = await netWorkLocator.dio
           .put('$climbingApiHost/spot/${spot.id}', data: spot.toJson());
       if (response.statusCode == 200) {
-        deleteSpotFromEditQueue(spot.hashCode);
+        // TODO deleteSpotFromEditQueue(spot.hashCode);
         return Spot.fromJson(response.data);
       } else {
         throw Exception('Failed to edit spot');
@@ -179,7 +178,7 @@ class SpotService {
         }
       }
     } finally {
-      editSpotFromCache(spot);
+      // TODO editSpotFromCache(spot);
     }
     return null;
   }
@@ -203,7 +202,7 @@ class SpotService {
         Text('Spot was deleted: ${spotResponse.data['name']}'),
         background: Colors.green,
       );
-      deleteSpotFromDeleteQueue(spot.toJson().hashCode);
+      // TODO deleteSpotFromDeleteQueue(spot.toJson().hashCode);
       return spotResponse.data;
     } catch (e) {
       if (e is DioError) {
@@ -215,7 +214,7 @@ class SpotService {
         }
       }
     } finally {
-      deleteSpotFromCache(spot.id);
+      // TODO deleteSpotFromCache(spot.id);
     }
   }
 
@@ -249,7 +248,7 @@ class SpotService {
         }
       }
     } finally {
-      deleteSpotFromUploadQueue(data.hashCode);
+      // TODO deleteSpotFromUploadQueue(data.hashCode);
     }
     return null;
   }
