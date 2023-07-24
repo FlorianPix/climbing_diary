@@ -107,17 +107,19 @@ class _GradeDistributionState extends State<GradeDistribution> {
 
   List<BarChartGroupData> barGroups(Map<int, double> distribution) {
     List<BarChartGroupData> groups = [];
-    for (int x = 0; x < 40; x+=2){
-      groups.add(BarChartGroupData(
-        x: x,
-        barRods: [
-          BarChartRodData(
-            toY: distribution[x]! + distribution[x+1]!,
-            gradient: _barsGradient,
-          )
-        ],
-        showingTooltipIndicators: [0],
-      ));
+    for (int x = 0; x < 40; x+=1){
+      if (distribution[x]! > 0){
+        groups.add(BarChartGroupData(
+          x: x,
+          barRods: [
+            BarChartRodData(
+              toY: distribution[x]!,
+              gradient: _barsGradient,
+            )
+          ],
+          showingTooltipIndicators: [0],
+        ));
+      }
     }
     return groups;
   }
@@ -156,7 +158,7 @@ class _GradeDistributionState extends State<GradeDistribution> {
               borderData: FlBorderData(show: false),
               barGroups: barGroups(distribution),
               gridData: FlGridData(show: false),
-              alignment: BarChartAlignment.spaceAround,
+              alignment: BarChartAlignment.center,
               maxY: (widget.singlePitchRouteIds.length + widget.multiPitchRouteIds.length).toDouble(),
             ))
         )

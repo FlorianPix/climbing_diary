@@ -1,7 +1,10 @@
+import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
+import '../../pages/list_page/spot_list.dart';
 import '../../services/spot_service.dart';
 
 import '../../services/trip_service.dart';
@@ -19,6 +22,7 @@ class SelectSpot extends StatefulWidget {
 
 class _SelectSpotState extends State<SelectSpot>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController controllerSearch = TextEditingController();
   final SpotService spotService = SpotService();
   final TripService tripService = TripService();
 
@@ -29,40 +33,73 @@ class _SelectSpotState extends State<SelectSpot>{
 
   @override
   Widget build(BuildContext context) {
+    Widget search = Form(
+      key: _formKey,
+      child:
+      Padding(
+        padding: const EdgeInsets.all(20),
+        child: TextFormField(
+            controller: controllerSearch,
+            decoration: const InputDecoration(
+                icon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
+                hintText: "name",
+                labelText: "name"
+            ),
+            onChanged: (String s) {
+              setState(() {});
+            }
+        ),
+      ),
+    );
+
+    Widget spotList = FutureBuilder<List<Spot>>(
+        future: spotService.getSpotsByName(controllerSearch.text),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<Spot> spots = snapshot.data!;
+            List<Widget> elements = [];
+            for(Spot spot in spots){
+              List<String> location = spot.location.split(",");
+              elements.add(Padding(padding: const EdgeInsets.all(2), child: TextButton(
+                  onPressed: () async {
+                    if (!widget.trip.spotIds.contains(spot.id)){
+                      widget.trip.spotIds.add(spot.id);
+                      Trip? updatedTrip = await tripService.editTrip(widget.trip.toUpdateTrip());
+                      widget.onAdd.call(spot);
+                    }
+                    Navigator.popUntil(context, ModalRoute.withName('/'));
+                  },
+                  style: MyButtonStyles.rounded,
+                  child: Column(children: [
+                    Text(spot.name, style: MyTextStyles.title,),
+                    Text(spot.location, style: MyTextStyles.description),
+                  ],))
+              ));
+            }
+            return Expanded(child: ListView(children: elements));
+          } else {
+            return const CircularProgressIndicator();
+          }
+        }
+    );
+
     return AlertDialog(
       shape:
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       title: const Text('Please choose a spot'),
-      content: FutureBuilder<List<Spot>>(
-        future: spotService.getSpots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List<Spot> spots = snapshot.data!;
-            List<Widget> elements = <Widget>[];
-
-            for (int i = 0; i < spots.length; i++){
-              elements.add(ElevatedButton.icon(
-                  icon: const Icon(Icons.arrow_forward, size: 30.0, color: Colors.pink),
-                  label: Text(spots[i].name),
-                  onPressed: () async {
-                    if (!widget.trip.spotIds.contains(spots[i].id)){
-                      widget.trip.spotIds.add(spots[i].id);
-                      Trip? updatedTrip = await tripService.editTrip(widget.trip.toUpdateTrip());
-                      widget.onAdd.call(spots[i]);
-                    }
-                    Navigator.popUntil(context, ModalRoute.withName('/'));
-                  },
-                  style: MyButtonStyles.rounded
-              ));
-            }
-            return Column(
-              children: elements,
-            );
-          } else {
-            return const CircularProgressIndicator();
-          }
-        },
-      ),
+      content: SizedBox(
+          width: 500,
+          height: 600,
+          child: Column(
+          children: [
+            search,
+            spotList
+          ]
+      ))
     );
   }
 }

@@ -55,9 +55,6 @@ class SpotService {
   }
 
   Future<List<Spot>> getSpotsByName(String name) async {
-    if (name == ""){
-      return [];
-    }
     try {
       final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
 
