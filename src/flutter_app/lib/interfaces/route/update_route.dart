@@ -1,16 +1,15 @@
-class UpdateClimbingRoute {
-  List<String>? mediaIds;
-  final String id;
-  String? userId;
+import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
+
+class UpdateClimbingRoute extends UpdateMyBaseInterface{
   String? comment;
   String? location;
   String? name;
   int? rating;
 
   UpdateClimbingRoute({
-    this.mediaIds,
-    required this.id,
-    this.userId,
+    super.mediaIds,
+    required super.id,
+    super.userId,
     this.comment,
     this.location,
     this.name,

@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import '../../services/locator.dart';
 import '../sharedprefs/shared_preference_helper.dart';
 
-class DioInterceptor extends Interceptor {
+class AuthInterceptor extends Interceptor {
   final _prefsLocator = getIt.get<SharedPreferenceHelper>();
 
   @override

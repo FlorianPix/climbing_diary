@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:skeletons/skeletons.dart';
 
 import '../../components/detail/media_details.dart';
 import '../../components/grade_distribution.dart';
+import '../../components/my_skeleton.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/spot/update_spot.dart';
 import '../../services/media_service.dart';
@@ -199,15 +199,6 @@ class _SpotDetailsState extends State<SpotDetails>{
         FutureBuilder<List<String>>(
           future: futureMediaUrls,
           builder: (context, snapshot) {
-            Widget skeleton = const Padding(
-                padding: EdgeInsets.all(5),
-                child: SkeletonAvatar(
-                  style: SkeletonAvatarStyle(
-                      shape: BoxShape.rectangle, width: 150, height: 250
-                  ),
-                )
-            );
-
             if (snapshot.data != null){
               List<String> urls = snapshot.data!;
 
@@ -251,7 +242,7 @@ class _SpotDetailsState extends State<SpotDetails>{
                                 if (loadingProgress == null) {
                                   return child;
                                 }
-                                return skeleton;
+                                return const MySkeleton();
                               },
                             )
                         ),
@@ -269,7 +260,7 @@ class _SpotDetailsState extends State<SpotDetails>{
             }
             List<Widget> skeletons = [];
             for (var i = 0; i < widget.spot.mediaIds.length; i++){
-              skeletons.add(skeleton);
+              skeletons.add(const MySkeleton());
             }
             return Container(
                 padding: const EdgeInsets.all(10),

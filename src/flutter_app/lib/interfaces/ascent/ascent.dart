@@ -1,19 +1,16 @@
 import 'package:climbing_diary/interfaces/ascent/update_ascent.dart';
+import 'package:climbing_diary/interfaces/my_base_interface/my_base_interface.dart';
 
-class Ascent {
-  final List<String> mediaIds;
-  final String id;
-  final String userId;
-
+class Ascent extends MyBaseInterface {
   final String comment;
   final String date;
   final int style;
   final int type;
 
   const Ascent({
-    required this.mediaIds,
-    required this.id,
-    required this.userId,
+    required super.mediaIds,
+    required super.id,
+    required super.userId,
     required this.comment,
     required this.date,
     required this.style,

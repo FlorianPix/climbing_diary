@@ -1,11 +1,35 @@
 import 'package:climbing_diary/interfaces/spot/update_spot.dart';
 import 'package:climbing_diary/services/spot_service.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-import '../interfaces/spot/spot.dart';
-import '../interfaces/trip/trip.dart';
+import '../../interfaces/spot/spot.dart';
+import '../../interfaces/trip/trip.dart';
 
 final SpotService spotService = SpotService();
+
+Future<void> initCache(String path) async {
+  await Hive.initFlutter(path);
+  await Hive.openBox('trips');
+  await Hive.openBox('delete_later_trips');
+  await Hive.openBox('edit_later_trips');
+  await Hive.openBox('upload_later_trips');
+  await Hive.openBox('spots');
+  await Hive.openBox('delete_later_spots');
+  await Hive.openBox('edit_later_spots');
+  await Hive.openBox('upload_later_spots');
+  await Hive.openBox('routes');
+  await Hive.openBox('delete_later_routes');
+  await Hive.openBox('edit_later_routes');
+  await Hive.openBox('upload_later_routes');
+  await Hive.openBox('pitches');
+  await Hive.openBox('delete_later_pitches');
+  await Hive.openBox('edit_later_pitches');
+  await Hive.openBox('upload_later_pitches');
+  await Hive.openBox('ascents');
+  await Hive.openBox('delete_later_ascents');
+  await Hive.openBox('edit_later_ascents');
+  await Hive.openBox('upload_later_ascents');
+}
 
 void clearCache() {
   Box box1 = Hive.box('spots');

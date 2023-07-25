@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:skeletons/skeletons.dart';
 
 import '../../services/media_service.dart';
+import '../my_skeleton.dart';
 
 class MediaDetails extends StatefulWidget {
   const MediaDetails({super.key, required this.url, required this.onDelete });
@@ -29,15 +29,6 @@ class _MediaDetailsState extends State<MediaDetails>{
 
     List<Widget> elements = [];
 
-    Widget skeleton = const Padding(
-        padding: EdgeInsets.all(5),
-        child: SkeletonAvatar(
-          style: SkeletonAvatarStyle(
-              shape: BoxShape.rectangle, width: 150, height: 250
-          ),
-        )
-    );
-
     elements.add(Padding(
       padding: const EdgeInsets.all(5.0),
       child: ClipRRect(
@@ -49,7 +40,7 @@ class _MediaDetailsState extends State<MediaDetails>{
               if (loadingProgress == null) {
                 return child;
               }
-              return skeleton;
+              return const MySkeleton();
             },
           )
       ),

@@ -1,16 +1,15 @@
-class UpdateAscent {
-  List<String>? mediaIds;
-  final String id;
-  String? userId;
+import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
+
+class UpdateAscent extends UpdateMyBaseInterface{
   String? comment;
   String? date;
   int? style;
   int? type;
 
   UpdateAscent({
-    this.mediaIds,
-    required this.id,
-    this.userId,
+    super.mediaIds,
+    required super.id,
+    super.userId,
     this.comment,
     this.date,
     this.style,

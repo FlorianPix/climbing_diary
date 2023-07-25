@@ -151,7 +151,7 @@ class _AddPitchState extends State<AddPitch>{
                   rating: currentSliderValue.toInt(),
                 );
                 Pitch? createdPitch = await pitchService.createPitch(pitch, widget.route.id, result);
-                Navigator.popUntil(context, ModalRoute.withName('/'));
+                setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
               }
             },
             child: const Text("Save"))

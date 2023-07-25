@@ -1,10 +1,8 @@
+import 'package:climbing_diary/interfaces/my_base_interface/my_base_interface.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 
-class Trip {
-  final List<String> mediaIds;
+class Trip extends MyBaseInterface{
   final List<String> spotIds;
-  final String id;
-  final String userId;
 
   final String comment;
   final String endDate;
@@ -13,10 +11,10 @@ class Trip {
   final String startDate;
 
   const Trip({
-    required this.mediaIds,
+    required super.mediaIds,
     required this.spotIds,
-    required this.id,
-    required this.userId,
+    required super.id,
+    required super.userId,
     required this.comment,
     required this.endDate,
     required this.name,

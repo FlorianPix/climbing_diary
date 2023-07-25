@@ -1,8 +1,7 @@
-class UpdateTrip {
-  List<String>? mediaIds;
+import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
+
+class UpdateTrip extends UpdateMyBaseInterface{
   List<String>? spotIds;
-  final String id;
-  String? userId;
   String? comment;
   String? endDate;
   String? name;
@@ -10,10 +9,10 @@ class UpdateTrip {
   String? startDate;
 
   UpdateTrip({
-    this.mediaIds,
+    super.mediaIds,
     this.spotIds,
-    required this.id,
-    this.userId,
+    required super.id,
+    super.userId,
     this.comment,
     this.endDate,
     this.name,

@@ -4,13 +4,13 @@ import 'package:timelines/timelines.dart';
 
 import '../../../components/detail/pitch_details.dart';
 import '../../../components/info/pitch_info.dart';
+import '../../../components/rating.dart';
 import '../../../interfaces/pitch/pitch.dart';
 import '../../../interfaces/route/route.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/pitch_service.dart';
 import '../image_list_view.dart';
-import '../rating_row.dart';
 
 class PitchTimeline extends StatefulWidget {
   const PitchTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchIds});
@@ -96,12 +96,14 @@ class PitchTimelineState extends State<PitchTimeline> {
                             // pitch info
                             elements.add(PitchInfo(pitch: pitches[index]));
                             // rating as hearts in a row
-                            elements.add(RatingRow(rating: pitches[index].rating));
+                            elements.add(Rating(rating: pitches[index].rating));
                             // images list view
                             if (pitches[index].mediaIds.isNotEmpty) {
-                              elements.add(
-                                  ImageListView(mediaIds: pitches[index].mediaIds)
-                              );
+                              elements.add(ExpansionTile(
+                                  leading: const Icon(Icons.image),
+                                  title: const Text("images"),
+                                  children: [ImageListView(mediaIds: pitches[index].mediaIds)]
+                              ));
                             }
                             return InkWell(
                               onTap: () =>

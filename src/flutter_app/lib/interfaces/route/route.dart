@@ -1,9 +1,7 @@
+import 'package:climbing_diary/interfaces/my_base_interface/my_base_interface.dart';
 import 'package:climbing_diary/interfaces/route/update_route.dart';
 
-class ClimbingRoute {
-  final List<String> mediaIds;
-  final String id;
-  final String userId;
+class ClimbingRoute extends MyBaseInterface{
 
   final String comment;
   final String location;
@@ -11,9 +9,9 @@ class ClimbingRoute {
   final int rating;
 
   const ClimbingRoute({
-    required this.mediaIds,
-    required this.id,
-    required this.userId,
+    required super.mediaIds,
+    required super.id,
+    required super.userId,
     required this.comment,
     required this.location,
     required this.name,

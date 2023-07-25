@@ -1,7 +1,7 @@
+import 'package:climbing_diary/components/image_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:skeletons/skeletons.dart';
 
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/spot/update_spot.dart';
@@ -9,11 +9,14 @@ import '../../interfaces/trip/trip.dart';
 import '../../pages/diary_page/timeline/route_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
+import '../comment.dart';
 import '../grade_distribution.dart';
 import '../my_button_styles.dart';
 import '../add/add_route.dart';
 import '../edit/edit_spot.dart';
-import 'media_details.dart';
+import '../my_text_styles.dart';
+import '../rating.dart';
+import '../transport.dart';
 
 class SpotDetails extends StatefulWidget {
   const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate });
@@ -117,202 +120,44 @@ class _SpotDetailsState extends State<SpotDetails>{
   Widget build(BuildContext context) {
     List<Widget> elements = [];
 
-    // general info
-    elements.addAll([
-      Text(
-        widget.spot.name,
-        style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600
-        ),
-      ),
-      Text(
-        '${round(widget.spot.coordinates[0], decimals: 8)}, ${round(widget.spot.coordinates[1], decimals: 8)}',
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400
-        ),
-      ),
-      Text(
-        widget.spot.location,
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400
-        ),
-      )]);
-    // rating
-    List<Widget> ratingRowElements = [];
-
-    for (var i = 0; i < 5; i++){
-      if (widget.spot.rating > i) {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
-      } else {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
-      }
-    }
-
-    elements.add(Center(child: Padding(
-        padding: const EdgeInsets.all(10),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: ratingRowElements,
-        )
-    )));
-
-    if (widget.spot.singlePitchRouteIds.isNotEmpty || widget.spot.multiPitchRouteIds.isNotEmpty){
+    elements.add(Text(widget.spot.name, style: MyTextStyles.title));
+    elements.add(Text(
+      '${round(widget.spot.coordinates[0], decimals: 8)}, ${round(widget.spot.coordinates[1], decimals: 8)}',
+      style: MyTextStyles.description,
+    ));
+    elements.add(Text(widget.spot.location, style: MyTextStyles.description));
+    elements.add(Rating(rating: widget.spot.rating));
+    if (widget.spot.singlePitchRouteIds.isNotEmpty || widget.spot.multiPitchRouteIds.isNotEmpty) {
       elements.add(GradeDistribution(
           singlePitchRouteIds: widget.spot.singlePitchRouteIds,
           multiPitchRouteIds: widget.spot.multiPitchRouteIds)
       );
     }
-
-    // time to walk transport
-    elements.add(Center(child: Padding(
-        padding: const EdgeInsets.all(5),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            const Icon(Icons.train, size: 30.0, color: Colors.green),
-            Text(
-              '${widget.spot.distancePublicTransport} min',
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400
-              ),
-            ),
-            const Icon(Icons.directions_car, size: 30.0, color: Colors.red),
-            Text(
-              '${widget.spot.distanceParking} min',
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400
-              ),
-            )
-          ],
-        )
-    )));
-
-    if (widget.spot.comment.isNotEmpty) {
-      elements.add(Container(
-          margin: const EdgeInsets.all(15.0),
-          padding: const EdgeInsets.all(5.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.blueAccent),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            widget.spot.comment,
-          )
-      ));
+    if (widget.spot.distancePublicTransport != 0 || widget.spot.distanceParking != 0){
+      elements.add(Transport(
+        distancePublicTransport: widget.spot.distancePublicTransport,
+        distanceParking: widget.spot.distanceParking)
+      );
     }
-    // images
+    if (widget.spot.comment.isNotEmpty) {
+      elements.add(Comment(comment: widget.spot.comment));
+    }
+
+    void deleteImageCallback(String mediumId) {
+      widget.spot.mediaIds.remove(mediumId);
+      spotService.editSpot(UpdateSpot(
+          id: widget.spot.id,
+          mediaIds: widget.spot.mediaIds
+      ));
+      setState(() {});
+    }
+
     if (widget.spot.mediaIds.isNotEmpty) {
-      List<Widget> imageWidgets = [];
-      Future<List<String>> futureMediaUrls = fetchURLs();
-
-      imageWidgets.add(
-        FutureBuilder<List<String>>(
-          future: futureMediaUrls,
-          builder: (context, snapshot) {
-            Widget skeleton = const Padding(
-                padding: EdgeInsets.all(5),
-                child: SkeletonAvatar(
-                  style: SkeletonAvatarStyle(
-                      shape: BoxShape.rectangle, width: 150, height: 250
-                  ),
-                )
-            );
-
-            if (snapshot.data != null){
-              List<String> urls = snapshot.data!;
-
-              deleteMediaCallback(String mediumId) {
-                widget.spot.mediaIds.remove(mediumId);
-                spotService.editSpot(
-                    UpdateSpot(
-                        id: widget.spot.id,
-                        mediaIds: widget.spot.mediaIds
-                    )
-                );
-                setState(() {});
-              }
-
-              List<Widget> images = [];
-              for (var url in urls){
-                images.add(InkWell(
-                  onTap: () =>
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) =>
-                            Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: MediaDetails(
-                                  url: url,
-                                  onDelete: deleteMediaCallback,
-                                )
-                            ),
-                      ),
-                  child: Ink(
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Image.network(
-                              url,
-                              fit: BoxFit.fitHeight,
-                              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                if (loadingProgress == null) {
-                                  return child;
-                                }
-                                return skeleton;
-                              },
-                            )
-                        ),
-                      )
-                  ),
-                ));
-              }
-              return Container(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: images
-                  )
-              );
-            }
-            List<Widget> skeletons = [];
-            for (var i = 0; i < widget.spot.mediaIds.length; i++){
-              skeletons.add(skeleton);
-            }
-            return Container(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: skeletons
-                )
-            );
-          }
-        )
-      );
-      imageWidgets.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
-      elements.add(
-        SizedBox(
-          height: 250,
-          child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: imageWidgets
-          )
-        ),
-      );
+      elements.add(ImageListView(
+        onDelete: deleteImageCallback,
+        mediaIds: widget.spot.mediaIds,
+        getImage: getImage,
+      ));
     } else {
       elements.add(
         ElevatedButton.icon(
@@ -375,7 +220,7 @@ class _SpotDetailsState extends State<SpotDetails>{
         )
     );
     // routes
-    if (widget.spot.multiPitchRouteIds.isNotEmpty){
+    if (widget.spot.multiPitchRouteIds.isNotEmpty || widget.spot.singlePitchRouteIds.isNotEmpty){
       elements.add(
           RouteTimeline(
               trip: widget.trip,

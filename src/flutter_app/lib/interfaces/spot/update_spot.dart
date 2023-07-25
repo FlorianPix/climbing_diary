@@ -1,9 +1,8 @@
-class UpdateSpot {
-  List<String>? mediaIds;
+import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
+
+class UpdateSpot extends UpdateMyBaseInterface{
   List<String>? singlePitchRouteIds;
   List<String>? multiPitchRouteIds;
-  final String id;
-  String? userId;
   String? comment;
   List<double>? coordinates;
   int? distanceParking;
@@ -13,11 +12,11 @@ class UpdateSpot {
   int? rating;
 
   UpdateSpot({
-    this.mediaIds,
+    super.mediaIds,
     this.singlePitchRouteIds,
     this.multiPitchRouteIds,
-    required this.id,
-    this.userId,
+    required super.id,
+    super.userId,
     this.comment,
     this.coordinates,
     this.distanceParking,

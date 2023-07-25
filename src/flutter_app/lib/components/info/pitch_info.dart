@@ -89,10 +89,12 @@ class _PitchInfoState extends State<PitchInfo>{
             ));
 
             // comment
-            listInfo.add(Text(
-              widget.pitch.comment,
-              style: MyTextStyles.description,
-            ));
+            if (widget.pitch.comment.isNotEmpty){
+              listInfo.add(Text(
+                widget.pitch.comment,
+                style: MyTextStyles.description,
+              ));
+            }
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,

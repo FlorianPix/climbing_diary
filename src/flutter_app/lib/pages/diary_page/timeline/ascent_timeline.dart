@@ -102,9 +102,11 @@ class AscentTimelineState extends State<AscentTimeline> {
                             elements.add(AscentInfo(ascent: ascents[index]));
                             // images list view
                             if (ascents[index].mediaIds.isNotEmpty) {
-                              elements.add(
-                                  ImageListView(mediaIds: ascents[index].mediaIds)
-                              );
+                              elements.add(ExpansionTile(
+                                  leading: const Icon(Icons.image),
+                                  title: const Text("images"),
+                                  children: [ImageListView(mediaIds: ascents[index].mediaIds)]
+                              ));
                             }
                             return InkWell(
                               onTap: () =>

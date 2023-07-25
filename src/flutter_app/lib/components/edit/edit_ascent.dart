@@ -124,12 +124,11 @@ class _EditAscentState extends State<EditAscent>{
                   style: ascentStyleIndex,
                   type: ascentTypeIndex
                 );
-                Navigator.popUntil(context, ModalRoute.withName('/'));
                 Ascent? updatedAscent = await ascentService.editAscent(ascent);
                 if (updatedAscent != null) {
                   widget.onUpdate.call(updatedAscent);
-                  setState(() {});
                 }
+                setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
               }
             }
           },

@@ -6,10 +6,10 @@ import 'package:timelines/timelines.dart';
 import '../../../components/add/add_trip.dart';
 import '../../../components/detail/trip_details.dart';
 import '../../../components/info/trip_info.dart';
+import '../../../components/rating.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/trip_service.dart';
 import '../image_list_view.dart';
-import '../rating_row.dart';
 
 class TripTimeline extends StatefulWidget {
   const TripTimeline({super.key});
@@ -99,12 +99,14 @@ class TripTimelineState extends State<TripTimeline> {
                             // spot info
                             elements.add(TripInfo(trip: trips[index]));
                             // rating as hearts in a row
-                            elements.add(RatingRow(rating: trips[index].rating));
+                            elements.add(Rating(rating: trips[index].rating));
                             // images list view
                             if (trips[index].mediaIds.isNotEmpty) {
-                              elements.add(
-                                  ImageListView(mediaIds: trips[index].mediaIds)
-                              );
+                              elements.add(ExpansionTile(
+                                  leading: const Icon(Icons.image),
+                                  title: const Text("images"),
+                                  children: [ImageListView(mediaIds: trips[index].mediaIds)]
+                              ));
                             }
                             // spots
                             if (trips[index].spotIds.isNotEmpty){

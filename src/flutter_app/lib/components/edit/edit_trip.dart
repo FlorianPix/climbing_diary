@@ -131,11 +131,11 @@ class _EditTripState extends State<EditTrip>{
                 rating: currentSliderValue.toInt(),
                 startDate: controllerStartDate.text
               );
-              Navigator.popUntil(context, ModalRoute.withName('/'));
               Trip? updatedTrip = await tripService.editTrip(trip);
               if (updatedTrip != null) {
                 widget.onUpdate.call(updatedTrip);
               }
+              setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },
           icon: const Icon(Icons.save)

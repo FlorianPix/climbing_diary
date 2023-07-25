@@ -1,12 +1,12 @@
 import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
+import 'package:climbing_diary/pages/map_page/location_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../interfaces/spot/create_spot.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
-import '../../pages/map_page/navigation_screen_page.dart';
 import '../../services/spot_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
@@ -56,23 +56,20 @@ class _AddSpotState extends State<AddSpot>{
         style: MyTextStyles.title,
       ));
     }
-    elements.add(
-        TextFormField(
-          validator: (value) {
-            return value!.isNotEmpty ? null : "Please add a name";
-          },
-          controller: controllerTitle,
-          decoration: const InputDecoration(
-              hintText: "name", labelText: "name"),
-        )
-    );
+    elements.add(TextFormField(
+        validator: (value) {
+          return value!.isNotEmpty ? null : "Please add a name";
+        },
+        controller: controllerTitle,
+        decoration: const InputDecoration(hintText: "name", labelText: "name"),
+    ));
     elements.add(TextButton.icon(
       icon: const Icon(Icons.place, size: 30.0),
       onPressed: () {
         Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => NavigationScreenPage(
+              builder: (context) => LocationPicker(
                   onAdd: (List<String> results) {
                     controllerAddress.text = results[0];
                     controllerLat.text = results[1];
@@ -201,7 +198,6 @@ class _AddSpotState extends State<AddSpot>{
                   name: controllerTitle.text,
                   rating: currentSliderValue.toInt(),
                 );
-                Navigator.popUntil(context, ModalRoute.withName('/'));
                 Spot? createdSpot = await spotService.createSpot(spot, result);
                 if (createdSpot != null) {
                   if (widget.trip != null) {
@@ -212,6 +208,7 @@ class _AddSpotState extends State<AddSpot>{
                   }
                   widget.onAdd.call(createdSpot);
                 }
+                setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
               }
             },
             child: const Icon(Icons.save))

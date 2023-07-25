@@ -1,11 +1,9 @@
+import 'package:climbing_diary/interfaces/my_base_interface/my_base_interface.dart';
 import 'package:climbing_diary/interfaces/spot/update_spot.dart';
 
-class Spot {
-  final List<String> mediaIds;
+class Spot extends MyBaseInterface{
   final List<String> singlePitchRouteIds;
   final List<String> multiPitchRouteIds;
-  final String id;
-  final String userId;
 
   final String comment;
   final List<double> coordinates;
@@ -16,11 +14,11 @@ class Spot {
   final int rating;
 
   const Spot({
-    required this.mediaIds,
+    required super.mediaIds,
     required this.singlePitchRouteIds,
     required this.multiPitchRouteIds,
-    required this.id,
-    required this.userId,
+    required super.id,
+    required super.userId,
     required this.comment,
     required this.coordinates,
     required this.distanceParking,

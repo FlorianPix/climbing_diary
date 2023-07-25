@@ -146,11 +146,11 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
                 grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
                 length: int.parse(controllerLength.text)
               );
-              Navigator.popUntil(context, ModalRoute.withName('/'));
               SinglePitchRoute? updatedRoute = await routeService.editSinglePitchRoute(route);
               if (updatedRoute != null) {
                 widget.onUpdate.call(updatedRoute);
               }
+              setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },
           icon: const Icon(Icons.save)

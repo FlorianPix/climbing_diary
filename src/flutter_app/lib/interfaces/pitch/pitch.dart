@@ -1,12 +1,10 @@
+import 'package:climbing_diary/interfaces/my_base_interface/my_base_interface.dart';
 import 'package:climbing_diary/interfaces/pitch/update_pitch.dart';
 
 import '../grade.dart';
 
-class Pitch {
+class Pitch extends MyBaseInterface{
   final List<String> ascentIds;
-  final List<String> mediaIds;
-  final String id;
-  final String userId;
 
   final String comment;
   final Grade grade;
@@ -17,9 +15,9 @@ class Pitch {
 
   const Pitch({
     required this.ascentIds,
-    required this.mediaIds,
-    required this.id,
-    required this.userId,
+    required super.mediaIds,
+    required super.id,
+    required super.userId,
     required this.comment,
     required this.grade,
     required this.length,

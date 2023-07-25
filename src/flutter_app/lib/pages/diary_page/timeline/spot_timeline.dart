@@ -4,12 +4,12 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
 import '../../../components/info/spot_info.dart';
+import '../../../components/rating.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/spot_service.dart';
 import '../../../services/trip_service.dart';
 import '../image_list_view.dart';
-import '../rating_row.dart';
 import '../spot_details.dart';
 
 class SpotTimeline extends StatefulWidget {
@@ -92,12 +92,14 @@ class SpotTimelineState extends State<SpotTimeline> {
                             // spot info
                             elements.add(SpotInfo(spot: spots[index]));
                             // rating as hearts in a row
-                            elements.add(RatingRow(rating: spots[index].rating));
+                            elements.add(Rating(rating: spots[index].rating));
                             // images list view
                             if (spots[index].mediaIds.isNotEmpty) {
-                              elements.add(
-                                  ImageListView(mediaIds: spots[index].mediaIds)
-                              );
+                              elements.add(ExpansionTile(
+                                  leading: const Icon(Icons.image),
+                                  title: const Text("images"),
+                                  children: [ImageListView(mediaIds: spots[index].mediaIds)]
+                              ));
                             }
                             // routes
                             if (spots[index].multiPitchRouteIds.isNotEmpty || spots[index].singlePitchRouteIds.isNotEmpty){

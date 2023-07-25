@@ -10,16 +10,16 @@ class Rating extends StatelessWidget{
     List<Widget> ratingRowElements = [];
     for (var i = 0; i < 5; i++){
       if (rating > i) {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
+        ratingRowElements.add(const Icon(Icons.favorite, size: 14.0, color: Colors.pink));
       } else {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
+        ratingRowElements.add(const Icon(Icons.favorite, size: 14.0, color: Colors.grey));
       }
     }
 
     return Center(child: Padding(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.only(top: 5, bottom: 5),
         child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: ratingRowElements,
         )
     ));
