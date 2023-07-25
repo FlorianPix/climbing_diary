@@ -105,9 +105,11 @@ class RouteTimelineState extends State<RouteTimeline> {
                                   elements.add(Rating(rating: multiPitchRoute.rating));
                                   // images list view
                                   if (multiPitchRoute.mediaIds.isNotEmpty) {
-                                    elements.add(
-                                        ImageListView(mediaIds: multiPitchRoute.mediaIds)
-                                    );
+                                    elements.add(ExpansionTile(
+                                        leading: const Icon(Icons.image),
+                                        title: const Text("images"),
+                                        children: [ImageListView(mediaIds: multiPitchRoute.mediaIds)]
+                                    ));
                                   }
                                   // pitches
                                   if (multiPitchRoute.pitchIds.isNotEmpty) {

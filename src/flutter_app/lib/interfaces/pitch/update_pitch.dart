@@ -1,10 +1,9 @@
+import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
+
 import '../grade.dart';
 
-class UpdatePitch {
+class UpdatePitch extends UpdateMyBaseInterface{
   List<String>? ascentIds;
-  List<String>? mediaIds;
-  final String id;
-  String? userId;
   String? comment;
   Grade? grade;
   int? length;
@@ -13,10 +12,10 @@ class UpdatePitch {
   int? rating;
 
   UpdatePitch({
-    this.mediaIds,
+    super.mediaIds,
     this.ascentIds,
-    required this.id,
-    this.userId,
+    required super.id,
+    super.userId,
     this.comment,
     this.grade,
     this.length,

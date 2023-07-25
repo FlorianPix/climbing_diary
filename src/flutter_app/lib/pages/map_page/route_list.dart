@@ -98,9 +98,11 @@ class RouteListState extends State<RouteList> {
                             timeLineElements.add(Rating(rating: multiPitchRoute.rating));
                             // images list view
                             if (multiPitchRoute.mediaIds.isNotEmpty) {
-                              timeLineElements.add(
-                                  ImageListView(mediaIds: multiPitchRoute.mediaIds)
-                              );
+                              timeLineElements.add(ExpansionTile(
+                                  leading: const Icon(Icons.image),
+                                  title: const Text("images"),
+                                  children: [ImageListView(mediaIds: multiPitchRoute.mediaIds)]
+                              ));
                             }
                             // pitches
                             if (multiPitchRoute.pitchIds.isNotEmpty) {
@@ -213,9 +215,11 @@ class RouteListState extends State<RouteList> {
                                       elements.add(Rating(rating: singlePitchRoute.rating));
                                       // images list view
                                       if (singlePitchRoute.mediaIds.isNotEmpty) {
-                                        elements.add(
-                                            ImageListView(mediaIds: singlePitchRoute.mediaIds)
-                                        );
+                                        elements.add(ExpansionTile(
+                                          leading: const Icon(Icons.image),
+                                          title: const Text("images"),
+                                          children: [ImageListView(mediaIds: singlePitchRoute.mediaIds)]
+                                        ));
                                       }
 
                                       return InkWell(

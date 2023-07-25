@@ -2,8 +2,8 @@ import 'package:climbing_diary/interfaces/spot/update_spot.dart';
 import 'package:climbing_diary/services/spot_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import '../interfaces/spot/spot.dart';
-import '../interfaces/trip/trip.dart';
+import '../../interfaces/spot/spot.dart';
+import '../../interfaces/trip/trip.dart';
 
 final SpotService spotService = SpotService();
 
