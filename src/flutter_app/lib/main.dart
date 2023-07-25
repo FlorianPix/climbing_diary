@@ -14,7 +14,7 @@ import 'pages/statistic_page/statistic_page.dart';
 import 'services/locator.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'services/cache_service/cache_service.dart';
+import 'services/cache_service.dart';
 
 import 'data/sharedprefs/shared_preference_helper.dart';
 

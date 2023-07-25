@@ -1,4 +1,5 @@
-from typing import List
+import datetime
+from typing import List, Tuple
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security, status
 from fastapi.encoders import jsonable_encoder
@@ -12,6 +13,7 @@ from app.core.auth import auth
 from app.models.trip.trip_model import TripModel
 from app.models.trip.create_trip_model import CreateTripModel
 from app.models.trip.update_trip_model import UpdateTripModel
+from app.models.id_with_datetime import IdWithDatetime
 
 router = APIRouter()
 
@@ -22,6 +24,7 @@ async def create_trip(trip: CreateTripModel = Body(...), user: Auth0User = Secur
     trip["user_id"] = user.id
     trip["spot_ids"] = []
     trip["media_ids"] = []
+    trip["updated"] = datetime.datetime.now()
     db = await get_db()
     # check if trip already exists
     if (trips := await db["trip"].find({
@@ -41,12 +44,35 @@ async def retrieve_trips(user: Auth0User = Security(auth.get_user, scopes=["read
     return trips
 
 
+@router.get('/ids', description="Retrieve all trip ids", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_trip_ids(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    trip_ids = await db["trip"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
+    return trip_ids
+
+
 @router.get('/{trip_id}', description="Get a trip", response_model=TripModel, dependencies=[Depends(auth.implicit_scheme)])
 async def retrieve_trip(trip_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
     if (trip := await db["trip"].find_one({"_id": ObjectId(trip_id), "user_id": user.id})) is not None:
         return trip
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Trip {trip_id} not found")
+
+
+@router.post('/ids', description="Get trips of ids", response_model=List[TripModel], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_trips_of_ids(trip_ids: List[str] = Body(...), user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    if not trip_ids:
+        return []
+    db = await get_db()
+    trips = []
+    for trip_id in trip_ids:
+        if (trip := await db["trip"].find_one({"_id": ObjectId(trip_id), "user_id": user.id})) is not None:
+            trips.append(trip)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Trip {trip_id} not found")
+    if trips:
+        return trips
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Trips not found")
 
 
 @router.put('/{trip_id}', description="Update a trip", response_model=TripModel, dependencies=[Depends(auth.implicit_scheme)])

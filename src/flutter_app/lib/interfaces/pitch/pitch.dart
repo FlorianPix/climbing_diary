@@ -14,6 +14,7 @@ class Pitch extends MyBaseInterface{
   final int rating;
 
   const Pitch({
+    required super.updated,
     required this.ascentIds,
     required super.mediaIds,
     required super.id,
@@ -28,6 +29,7 @@ class Pitch extends MyBaseInterface{
 
   factory Pitch.fromJson(Map<String, dynamic> json) {
     return Pitch(
+      updated: json['updated'],
       ascentIds: List<String>.from(json['ascent_ids']),
       mediaIds: List<String>.from(json['media_ids']),
       id: json['_id'],
@@ -43,6 +45,7 @@ class Pitch extends MyBaseInterface{
 
   factory Pitch.fromCache(Map<dynamic, dynamic> cache) {
     return Pitch(
+      updated: cache['updated'],
       ascentIds: cache['ascent_ids'] != null ? List<String>.from(cache['ascent_ids']) : [],
       mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : [],
       id: cache['_id'],
@@ -56,7 +59,9 @@ class Pitch extends MyBaseInterface{
     );
   }
 
+  @override
   Map toJson() => {
+    "updated": updated,
     "ascent_ids": ascentIds,
     "media_ids": mediaIds,
     "_id": id,

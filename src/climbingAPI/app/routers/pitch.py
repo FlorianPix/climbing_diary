@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security, status
@@ -23,6 +24,7 @@ async def create_pitch(route_id: str, pitch: CreatePitchModel = Body(...), user:
     pitch["user_id"] = user.id
     pitch["ascent_ids"] = []
     pitch["media_ids"] = []
+    pitch["updated"] = datetime.datetime.now()
     db = await get_db()
     route = await db["multi_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})
     if route is None:

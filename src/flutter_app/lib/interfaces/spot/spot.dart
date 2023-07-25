@@ -14,6 +14,7 @@ class Spot extends MyBaseInterface{
   final int rating;
 
   const Spot({
+    required super.updated,
     required super.mediaIds,
     required this.singlePitchRouteIds,
     required this.multiPitchRouteIds,
@@ -30,6 +31,7 @@ class Spot extends MyBaseInterface{
 
   factory Spot.fromJson(Map<String, dynamic> json) {
     return Spot(
+      updated: json['updated'],
       mediaIds: List<String>.from(json['media_ids']),
       singlePitchRouteIds: List<String>.from(json['single_pitch_route_ids']),
       multiPitchRouteIds: List<String>.from(json['multi_pitch_route_ids']),
@@ -47,6 +49,7 @@ class Spot extends MyBaseInterface{
 
   factory Spot.fromCache(Map<dynamic, dynamic> cache) {
     return Spot(
+      updated: cache['updated'],
       mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : [],
       singlePitchRouteIds: cache['single_pitch_route_ids'] != null ? List<String>.from(cache['single_pitch_route_ids']) : [],
       multiPitchRouteIds: cache['multi_pitch_route_ids'] != null ? List<String>.from(cache['multi_pitch_route_ids']) : [],
@@ -62,7 +65,9 @@ class Spot extends MyBaseInterface{
     );
   }
 
+  @override
   Map toJson() => {
+    "updated": updated,
     "media_ids": mediaIds,
     "single_pitch_route_ids": singlePitchRouteIds,
     "multi_pitch_route_ids": multiPitchRouteIds,

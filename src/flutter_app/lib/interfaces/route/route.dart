@@ -9,6 +9,7 @@ class ClimbingRoute extends MyBaseInterface{
   final int rating;
 
   const ClimbingRoute({
+    required super.updated,
     required super.mediaIds,
     required super.id,
     required super.userId,
@@ -20,6 +21,7 @@ class ClimbingRoute extends MyBaseInterface{
 
   factory ClimbingRoute.fromJson(Map<String, dynamic> json) {
     return ClimbingRoute(
+      updated: json['updated'],
       mediaIds: List<String>.from(json['media_ids']),
       id: json['_id'],
       userId: json['user_id'],
@@ -32,6 +34,7 @@ class ClimbingRoute extends MyBaseInterface{
 
   factory ClimbingRoute.fromCache(Map<dynamic, dynamic> cache) {
     return ClimbingRoute(
+      updated: cache['updated'],
       mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : [],
       id: cache['_id'],
       userId: cache['user_id'],
@@ -42,7 +45,9 @@ class ClimbingRoute extends MyBaseInterface{
     );
   }
 
+  @override
   Map toJson() => {
+    "updated": updated,
     "media_ids": mediaIds,
     "_id": id,
     "user_id": userId,

@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security, status
@@ -25,7 +26,7 @@ async def create_spot(spot: CreateSpotModel = Body(...), user: Auth0User = Secur
     spot["single_pitch_route_ids"] = []
     spot["multi_pitch_route_ids"] = []
     spot["media_ids"] = []
-
+    spot["updated"] = datetime.datetime.now()
     db = await get_db()
 
     # check if spot already exists

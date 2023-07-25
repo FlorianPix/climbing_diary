@@ -2,44 +2,31 @@ import 'package:climbing_diary/interfaces/spot/update_spot.dart';
 import 'package:climbing_diary/services/spot_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
+import '../interfaces/spot/spot.dart';
+import '../interfaces/trip/trip.dart';
 
 final SpotService spotService = SpotService();
+final List<String> boxNames = [
+  'trips', 'delete_later_trips', 'edit_later_trips', 'upload_later_trips',
+  'spots', 'delete_later_spots', 'edit_later_spots', 'upload_later_spots',
+  'single_pitch_routes', 'delete_later_single_pitch_routes', 'edit_later_single_pitch_routes', 'upload_later_single_pitch_routes',
+  'multi_pitch_routes', 'delete_later_multi_pitch_routes', 'edit_later_multi_pitch_routes', 'upload_later_multi_pitch_routes',
+  'pitches', 'delete_later_pitches', 'edit_later_pitches', 'upload_later_pitches',
+  'ascents', 'delete_later_ascents', 'edit_later_ascents', 'upload_later_ascents',
+];
 
 Future<void> initCache(String path) async {
   await Hive.initFlutter(path);
-  await Hive.openBox('trips');
-  await Hive.openBox('delete_later_trips');
-  await Hive.openBox('edit_later_trips');
-  await Hive.openBox('upload_later_trips');
-  await Hive.openBox('spots');
-  await Hive.openBox('delete_later_spots');
-  await Hive.openBox('edit_later_spots');
-  await Hive.openBox('upload_later_spots');
-  await Hive.openBox('routes');
-  await Hive.openBox('delete_later_routes');
-  await Hive.openBox('edit_later_routes');
-  await Hive.openBox('upload_later_routes');
-  await Hive.openBox('pitches');
-  await Hive.openBox('delete_later_pitches');
-  await Hive.openBox('edit_later_pitches');
-  await Hive.openBox('upload_later_pitches');
-  await Hive.openBox('ascents');
-  await Hive.openBox('delete_later_ascents');
-  await Hive.openBox('edit_later_ascents');
-  await Hive.openBox('upload_later_ascents');
+  for (String boxName in boxNames){
+    await Hive.openBox(boxName);
+  }
 }
 
 void clearCache() {
-  Box box1 = Hive.box('spots');
-  Box box2 = Hive.box('upload_later_spots');
-  Box box3 = Hive.box('edit_later_spots');
-  Box box4 = Hive.box('delete_later_spots');
-  box1.clear();
-  box2.clear();
-  box3.clear();
-  box4.clear();
+  for (String boxName in boxNames){
+    Box box = Hive.box(boxName);
+    box.clear();
+  }
 }
 
 List<Spot> getSpotsFromCache() {

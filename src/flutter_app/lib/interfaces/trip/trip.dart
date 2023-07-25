@@ -11,6 +11,7 @@ class Trip extends MyBaseInterface{
   final String startDate;
 
   const Trip({
+    required super.updated,
     required super.mediaIds,
     required this.spotIds,
     required super.id,
@@ -24,6 +25,7 @@ class Trip extends MyBaseInterface{
 
   factory Trip.fromJson(Map<String, dynamic> json) {
     return Trip(
+      updated: json['updated'],
       mediaIds: List<String>.from(json['media_ids']),
       spotIds: List<String>.from(json['spot_ids']),
       id: json['_id'],
@@ -38,8 +40,9 @@ class Trip extends MyBaseInterface{
 
   factory Trip.fromCache(Map<dynamic, dynamic> cache) {
     return Trip(
+      updated: cache['updated'],
       mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : [],
-      spotIds: cache['spots'] != null ? List<String>.from(cache['spots']) : [],
+      spotIds: cache['spot_ids'] != null ? List<String>.from(cache['spot_ids']) : [],
       id: cache['_id'],
       userId: cache['user_id'],
       comment: cache['comment'],
@@ -50,7 +53,9 @@ class Trip extends MyBaseInterface{
     );
   }
 
+  @override
   Map toJson() => {
+    "updated": updated,
     "media_ids": mediaIds,
     "spot_ids": spotIds,
     "_id": id,

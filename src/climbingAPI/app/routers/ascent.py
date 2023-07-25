@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security, status
@@ -22,6 +23,7 @@ async def create_ascent_for_pitch(pitch_id: str, ascent: CreateAscentModel = Bod
     ascent = jsonable_encoder(ascent)
     ascent["user_id"] = user.id
     ascent["media_ids"] = []
+    ascent["updated"] = datetime.datetime.now()
     db = await get_db()
     pitch = await db["pitch"].find_one({"_id": ObjectId(pitch_id), "user_id": user.id})
     if pitch is None:
@@ -51,6 +53,7 @@ async def create_ascent_for_single_pitch_route(route_id: str, ascent: CreateAsce
     ascent = jsonable_encoder(ascent)
     ascent["user_id"] = user.id
     ascent["media_ids"] = []
+    ascent["updated"] = datetime.datetime.now()
     db = await get_db()
     route = await db["single_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})
     if route is None:

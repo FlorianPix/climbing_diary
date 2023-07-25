@@ -10,6 +10,7 @@ import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/trip/trip.dart';
 import '../interfaces/trip/update_trip.dart';
+import 'cache_service.dart';
 import 'locator.dart';
 
 class TripService {
@@ -18,16 +19,40 @@ class TripService {
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<List<Trip>> getTrips() async {
-    try {
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/trip');
+  bool isStale(Map cache, String serverUpdatedString){
+    DateTime cachedUpdated = DateTime.parse(cache['updated']);
+    DateTime serverUpdated = DateTime.parse(serverUpdatedString);
+    if (serverUpdated.compareTo(cachedUpdated) == 1) return true;
+    return false;
+  }
 
-      if (response.statusCode == 200) {
-        // If the server did return a 200 OK response, then parse the JSON.
+  Future<List<Trip>> getTrips(bool online) async {
+    try {
+      if(online){
+        final Response tripIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/trip/ids');
+        if (tripIdsResponse.statusCode != 200) {
+          throw Exception("Error during request of trip ids");
+        }
         List<Trip> trips = [];
-        // save to cache
+        List<String> missingTripIds = [];
         Box box = Hive.box('trips');
-        response.data.forEach((s) {
+        tripIdsResponse.data.forEach((idWithDatetime) {
+          String id = idWithDatetime['_id'];
+          String serverUpdated = idWithDatetime['updated'];
+          if (!box.containsKey(id) || isStale(box.get(id), serverUpdated)) {
+            missingTripIds.add(id);
+          } else {
+            trips.add(Trip.fromCache(box.get(id)));
+          }
+        });
+        if (missingTripIds.isEmpty){
+          return trips;
+        }
+        final Response missingTripsResponse = await netWorkLocator.dio.post('$climbingApiHost/trip/ids', data: missingTripIds);
+        if (missingTripsResponse.statusCode != 200) {
+          throw Exception("Error during request of missing trips");
+        }
+        missingTripsResponse.data.forEach((s) {
           Trip trip = Trip.fromJson(s);
           if (!box.containsKey(trip.id)) {
             box.put(trip.id, trip.toJson());
@@ -35,6 +60,9 @@ class TripService {
           trips.add(trip);
         });
         return trips;
+      } else {
+        // offline
+        getTripsFromCache();
       }
     } catch (e) {
       if (e is DioError) {
@@ -59,7 +87,7 @@ class TripService {
     }
   }
 
-  Future<Trip?> createTrip(CreateTrip createTrip, bool hasConnection) async {
+  Future<Trip?> createTrip(CreateTrip createTrip, bool online) async {
     CreateTrip trip = CreateTrip(
       comment: (createTrip.comment != null) ? createTrip.comment! : "",
       endDate: createTrip.endDate,
@@ -67,7 +95,7 @@ class TripService {
       rating: createTrip.rating,
       startDate: createTrip.startDate,
     );
-    if (hasConnection) {
+    if (online) {
       var data = trip.toJson();
       return uploadTrip(data);
     } else {

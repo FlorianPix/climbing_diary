@@ -9,6 +9,7 @@ class SinglePitchRoute extends ClimbingRoute{
   final int length;
 
   const SinglePitchRoute({
+    required super.updated,
     required this.ascentIds,
     required super.mediaIds,
     required super.id,
@@ -23,6 +24,7 @@ class SinglePitchRoute extends ClimbingRoute{
 
   factory SinglePitchRoute.fromJson(Map<String, dynamic> json) {
     return SinglePitchRoute(
+      updated: json['updated'],
       ascentIds: List<String>.from(json['ascent_ids']),
       mediaIds: List<String>.from(json['media_ids']),
       id: json['_id'],
@@ -38,6 +40,7 @@ class SinglePitchRoute extends ClimbingRoute{
 
   factory SinglePitchRoute.fromCache(Map<dynamic, dynamic> cache) {
     return SinglePitchRoute(
+      updated: cache['updated'],
       ascentIds: cache['ascent_ids'] != null ? List<String>.from(cache['ascent_ids']) : [],
       mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : [],
       id: cache['_id'],
@@ -53,6 +56,7 @@ class SinglePitchRoute extends ClimbingRoute{
 
   @override
   Map toJson() => {
+    "updated": updated,
     "ascent_ids": ascentIds,
     "media_ids": mediaIds,
     "_id": id,

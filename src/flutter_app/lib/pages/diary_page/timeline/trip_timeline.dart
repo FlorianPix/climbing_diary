@@ -36,7 +36,7 @@ class TripTimelineState extends State<TripTimeline> {
           var online = snapshot.data!;
           if (online) {
             return FutureBuilder<List<Trip>>(
-              future: tripService.getTrips(),
+              future: tripService.getTrips(online),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   List<Trip> trips = snapshot.data!;

@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security, status
@@ -25,6 +26,7 @@ async def create_route(spot_id: str, route: CreateSinglePitchRouteModel = Body(.
     route["user_id"] = user.id
     route["ascent_ids"] = []
     route["media_ids"] = []
+    route["updated"] = datetime.datetime.now()
     db = await get_db()
     spot = await db["spot"].find_one({"_id": ObjectId(spot_id), "user_id": user.id})
     if spot is None:
