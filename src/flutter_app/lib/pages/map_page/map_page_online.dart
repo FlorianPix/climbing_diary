@@ -27,7 +27,7 @@ class _MapPageOnlineState extends State<MapPageOnline> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Spot>>(
-        future: spotService.getSpotsByName(controllerSearch.text),
+        future: spotService.getSpotsByName(controllerSearch.text, true), // TODO check if online
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List<Spot> spots = snapshot.data!;

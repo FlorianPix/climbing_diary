@@ -15,6 +15,7 @@ from app.models.spot.spot_model import SpotModel
 from app.models.multi_pitch_route.multi_pitch_route_model import MultiPitchRouteModel
 from app.models.multi_pitch_route.create_multi_pitch_route_model import CreateMultiPitchRouteModel
 from app.models.multi_pitch_route.update_multi_pitch_route_model import UpdateMultiPitchRouteModel
+from app.models.id_with_datetime import IdWithDatetime
 
 router = APIRouter()
 
@@ -58,6 +59,13 @@ async def retrieve_routes(user: Auth0User = Security(auth.get_user, scopes=["rea
     return routes
 
 
+@router.get('/ids', description="Retrieve all multi pitch route ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_route_ids(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    multi_pitch_route_ids = await db["multi_pitch_route"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
+    return multi_pitch_route_ids
+
+
 @router.get('/{route_id}', description="Retrieve a multi pitch route", response_model=MultiPitchRouteModel, dependencies=[Depends(auth.implicit_scheme)])
 async def retrieve_route(route_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
@@ -71,7 +79,7 @@ async def retrieve_route(route_id: str, user: Auth0User = Security(auth.get_user
 async def update_route(route_id: str, route: UpdateMultiPitchRouteModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     route = {k: v for k, v in route.dict().items() if v is not None}
-
+    route['updated'] = datetime.datetime.now()
     if len(route) >= 1:
         update_result = await db["multi_pitch_route"].update_one({"_id": ObjectId(route_id)}, {"$set": route})
 

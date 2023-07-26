@@ -25,8 +25,9 @@ Future<void> main() async {
   );
   Environment().initConfig(environment);
   WidgetsFlutterBinding.ensureInitialized();
+  final CacheService cacheService = CacheService();
   final applicationDocumentDir = await getApplicationDocumentsDirectory();
-  await initCache(applicationDocumentDir.path);
+  await cacheService.initCache(applicationDocumentDir.path);
   await setup();
   runApp(const OverlaySupport.global(child: MyApp()));
 }

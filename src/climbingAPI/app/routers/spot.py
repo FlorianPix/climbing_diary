@@ -15,6 +15,7 @@ from app.models.spot.create_spot_model import CreateSpotModel
 from app.models.spot.update_spot_model import UpdateSpotModel
 from app.models.route.route_model import RouteModel
 from app.models.route.create_route_model import CreateRouteModel
+from app.models.id_with_datetime import IdWithDatetime
 
 router = APIRouter()
 
@@ -52,6 +53,13 @@ async def retrieve_spots(user: Auth0User = Security(auth.get_user, scopes=["read
     return spots
 
 
+@router.get('/ids', description="Retrieve all spot ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_spot_ids(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    spot_ids = await db["spot"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
+    return spot_ids
+
+
 @router.get('/{spot_id}', description="Retrieve a spot", response_model=SpotModel, dependencies=[Depends(auth.implicit_scheme)])
 async def retrieve_spot(spot_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
@@ -61,11 +69,27 @@ async def retrieve_spot(spot_id: str, user: Auth0User = Security(auth.get_user, 
                         detail=f"Spot {spot_id} not found")
 
 
+@router.post('/ids', description="Get spots of ids", response_model=List[SpotModel], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_spots_of_ids(spot_ids: List[str] = Body(...), user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    if not spot_ids:
+        return []
+    db = await get_db()
+    spots = []
+    for spot_id in spot_ids:
+        if (spot := await db["spot"].find_one({"_id": ObjectId(spot_id), "user_id": user.id})) is not None:
+            spots.append(spot)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spot {spot_id} not found")
+    if spots:
+        return spots
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spots not found")
+
+
 @router.put('/{spot_id}', description="Update a spot", response_model=SpotModel, dependencies=[Depends(auth.implicit_scheme)])
 async def update_spot(spot_id: str, spot: UpdateSpotModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     spot = {k: v for k, v in spot.dict().items() if v is not None}
-
+    spot['updated'] = datetime.datetime.now()
     if len(spot) >= 1:
         update_result = await db["spot"].update_one({"_id": ObjectId(spot_id)}, {"$set": spot})
 

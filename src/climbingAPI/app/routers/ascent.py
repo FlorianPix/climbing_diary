@@ -14,6 +14,7 @@ from app.models.ascent.ascent_model import AscentModel
 from app.models.ascent.update_ascent_model import UpdateAscentModel
 from app.models.ascent.create_ascent_model import CreateAscentModel
 from app.models.pitch.pitch_model import PitchModel
+from app.models.id_with_datetime import IdWithDatetime
 
 router = APIRouter()
 
@@ -85,6 +86,13 @@ async def retrieve_ascents(user: Auth0User = Security(auth.get_user, scopes=["re
     return ascents
 
 
+@router.get('/ids', description="Retrieve all ascent ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_ascent_ids(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    ascent_ids = await db["ascent"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
+    return ascent_ids
+
+
 @router.get('/{ascent_id}', description="Retrieve an ascent", response_model=AscentModel, dependencies=[Depends(auth.implicit_scheme)])
 async def retrieve_ascent(ascent_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
@@ -98,6 +106,7 @@ async def retrieve_ascent(ascent_id: str, user: Auth0User = Security(auth.get_us
 async def update_ascent(ascent_id: str, ascent: UpdateAscentModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     ascent = {k: v for k, v in ascent.dict().items() if v is not None}
+    ascent['updated'] = datetime.datetime.now()
 
     if len(ascent) >= 1:
         update_result = await db["ascent"].update_one({"_id": ObjectId(ascent_id)}, {"$set": ascent})

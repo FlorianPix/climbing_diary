@@ -14,17 +14,11 @@ import 'cache_service.dart';
 import 'locator.dart';
 
 class TripService {
+  final CacheService cacheService = CacheService();
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
-
-  bool isStale(Map cache, String serverUpdatedString){
-    DateTime cachedUpdated = DateTime.parse(cache['updated']);
-    DateTime serverUpdated = DateTime.parse(serverUpdatedString);
-    if (serverUpdated.compareTo(cachedUpdated) == 1) return true;
-    return false;
-  }
 
   Future<List<Trip>> getTrips(bool online) async {
     try {
@@ -39,7 +33,7 @@ class TripService {
         tripIdsResponse.data.forEach((idWithDatetime) {
           String id = idWithDatetime['_id'];
           String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || isStale(box.get(id), serverUpdated)) {
+          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
             missingTripIds.add(id);
           } else {
             trips.add(Trip.fromCache(box.get(id)));
@@ -62,7 +56,7 @@ class TripService {
         return trips;
       } else {
         // offline
-        getTripsFromCache();
+        return cacheService.getTsFromCache<Trip>('trips', Trip.fromCache);
       }
     } catch (e) {
       if (e is DioError) {

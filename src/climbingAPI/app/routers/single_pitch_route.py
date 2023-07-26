@@ -14,8 +14,8 @@ from app.models.single_pitch_route.single_pitch_route_model import SinglePitchRo
 from app.models.single_pitch_route.update_single_pitch_route_model import UpdateSinglePitchRouteModel
 from app.models.spot.spot_model import SpotModel
 from app.models.single_pitch_route.create_single_pitch_route_model import CreateSinglePitchRouteModel
-
 from app.models.grading_system import GradingSystem
+from app.models.id_with_datetime import IdWithDatetime
 
 router = APIRouter()
 
@@ -60,6 +60,13 @@ async def retrieve_routes(user: Auth0User = Security(auth.get_user, scopes=["rea
     return routes
 
 
+@router.get('/ids', description="Retrieve all single pitch route ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_route_ids(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    single_pitch_route_ids = await db["single_pitch_route"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
+    return single_pitch_route_ids
+
+
 @router.get('/{route_id}', description="Retrieve a single pitch route", response_model=SinglePitchRouteModel, dependencies=[Depends(auth.implicit_scheme)])
 async def retrieve_route(route_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
@@ -73,6 +80,7 @@ async def retrieve_route(route_id: str, user: Auth0User = Security(auth.get_user
 async def update_route(route_id: str, route: UpdateSinglePitchRouteModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     route = {k: v for k, v in route.dict().items() if v is not None}
+    route['updated'] = datetime.datetime.now()
     if 'grade' in route.keys():
         if 'system' in route['grade'].keys():
             route['grade']['system'] = route['grade']['system'].value

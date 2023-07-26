@@ -9,7 +9,6 @@ from bson import ObjectId
 
 from app.core.db import get_db
 from app.core.auth import auth
-
 from app.models.trip.trip_model import TripModel
 from app.models.trip.create_trip_model import CreateTripModel
 from app.models.trip.update_trip_model import UpdateTripModel
@@ -44,7 +43,7 @@ async def retrieve_trips(user: Auth0User = Security(auth.get_user, scopes=["read
     return trips
 
 
-@router.get('/ids', description="Retrieve all trip ids", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+@router.get('/ids', description="Retrieve all trip ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
 async def retrieve_trip_ids(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
     trip_ids = await db["trip"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
@@ -79,7 +78,7 @@ async def retrieve_trips_of_ids(trip_ids: List[str] = Body(...), user: Auth0User
 async def update_trip(trip_id: str, trip: UpdateTripModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     trip = {k: v for k, v in trip.dict().items() if v is not None}
-
+    trip['updated'] = datetime.datetime.now()
     if len(trip) >= 1:
         update_result = await db["trip"].update_one({"_id": ObjectId(trip_id)}, {"$set": trip})
 

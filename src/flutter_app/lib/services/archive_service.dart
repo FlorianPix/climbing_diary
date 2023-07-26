@@ -83,9 +83,9 @@ class ArchiveService {
 
   Future<File?> writeBackup() async {
     List<Trip> trips = await tripService.getTrips(true);
-    List<Spot> spots = await spotService.getSpots();
+    List<Spot> spots = await spotService.getSpots(true);
     List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutes();
-    List<MultiPitchRoute> multiPitchRoutes = await routeService.getMultiPitchRoutes();
+    List<MultiPitchRoute> multiPitchRoutes = await routeService.getMultiPitchRoutes(true);
     List<Pitch> pitches = await pitchService.getPitches();
     List<Ascent> ascents = await ascentService.getAscents();
     Map<String, dynamic> json = {

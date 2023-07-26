@@ -137,14 +137,16 @@ class _TripDetailsState extends State<TripDetails>{
       ),
     ));
 
-    elements.add(Text(
-      trip.comment,
-      style: const TextStyle(
-          color: Color(0xff989898),
-          fontSize: 12.0,
-          fontWeight: FontWeight.w400
-      ),
-    ));
+    if (trip.comment.isNotEmpty){
+      elements.add(Text(
+        trip.comment,
+        style: const TextStyle(
+            color: Color(0xff989898),
+            fontSize: 12.0,
+            fontWeight: FontWeight.w400
+        ),
+      ));
+    }
 
     elements.add(Rating(rating: trip.rating));
 

@@ -14,6 +14,7 @@ from app.models.pitch.pitch_model import PitchModel
 from app.models.pitch.update_pitch_model import UpdatePitchModel
 from app.models.route.route_model import RouteModel
 from app.models.pitch.create_pitch_model import CreatePitchModel
+from app.models.id_with_datetime import IdWithDatetime
 
 router = APIRouter()
 
@@ -56,6 +57,13 @@ async def retrieve_pitches(user: Auth0User = Security(auth.get_user, scopes=["re
     return pitches
 
 
+@router.get('/ids', description="Retrieve all pitch ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_pitch_ids(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    pitch_ids = await db["pitch"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
+    return pitch_ids
+
+
 @router.get('/{pitch_id}', description="Retrieve a pitch", response_model=PitchModel, dependencies=[Depends(auth.implicit_scheme)])
 async def retrieve_pitch(pitch_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
@@ -69,6 +77,7 @@ async def retrieve_pitch(pitch_id: str, user: Auth0User = Security(auth.get_user
 async def update_pitch(pitch_id: str, pitch: UpdatePitchModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     pitch = {k: v for k, v in pitch.dict().items() if v is not None}
+    pitch['updated'] = datetime.datetime.now()
     if 'grade' in pitch.keys():
         if 'system' in pitch['grade'].keys():
             pitch['grade']['system'] = pitch['grade']['system'].value

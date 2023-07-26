@@ -5,6 +5,7 @@ import '../../interfaces/grading_system.dart';
 
 import '../services/admin_service.dart';
 import '../services/archive_service.dart';
+import '../services/cache_service.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -14,6 +15,7 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings>{
+  final CacheService cacheService = CacheService();
   final AdminService adminService = AdminService();
   final ArchiveService archiveService = ArchiveService();
   GradingSystem gradingSystem = GradingSystem.french;
@@ -89,6 +91,18 @@ class _SettingsState extends State<Settings>{
               ),
               label: const Text("save your climbing data\nto this device"),
             )
+          ])),
+          Card(child: Column(children: [Padding(padding: const EdgeInsets.only(top: 5), child: Text("Cache", style: MyTextStyles.title)),
+              ElevatedButton.icon(
+                onPressed: () {cacheService.clearCache();},
+                icon: const Icon(
+                  Icons.delete,
+                  color: Colors.black,
+                  size: 30.0,
+                  semanticLabel: 'clear cache',
+                ),
+                label: const Text("clear cache"),
+              )
           ])),
           Card(child: Column(children: [
             Padding(padding: const EdgeInsets.only(top: 5), child: Text("Delete", style: MyTextStyles.title)),

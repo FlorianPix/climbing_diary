@@ -14,24 +14,43 @@ import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/spot/spot.dart';
 import '../interfaces/spot/update_spot.dart';
+import 'cache_service.dart';
 import 'locator.dart';
 
 class SpotService {
+  final CacheService cacheService = CacheService();
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<List<Spot>> getSpots() async {
+  Future<List<Spot>> getSpots(bool online) async {
     try {
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
-
-      if (response.statusCode == 200) {
-        // If the server did return a 200 OK response, then parse the JSON.
+      if(online){
+        final Response spotIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/spot/ids');
+        if (spotIdsResponse.statusCode != 200) {
+          throw Exception("Error during request of spot ids");
+        }
         List<Spot> spots = [];
-        // save to cache
+        List<String> missingSpotIds = [];
         Box box = Hive.box('spots');
-        response.data.forEach((s) {
+        spotIdsResponse.data.forEach((idWithDatetime) {
+          String id = idWithDatetime['_id'];
+          String serverUpdated = idWithDatetime['updated'];
+          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+            missingSpotIds.add(id);
+          } else {
+            spots.add(Spot.fromCache(box.get(id)));
+          }
+        });
+        if (missingSpotIds.isEmpty){
+          return spots;
+        }
+        final Response missingSpotsResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/ids', data: missingSpotIds);
+        if (missingSpotsResponse.statusCode != 200) {
+          throw Exception("Error during request of missing spots");
+        }
+        missingSpotsResponse.data.forEach((s) {
           Spot spot = Spot.fromJson(s);
           if (!box.containsKey(spot.id)) {
             box.put(spot.id, spot.toJson());
@@ -39,6 +58,9 @@ class SpotService {
           spots.add(spot);
         });
         return spots;
+      } else {
+        // offline
+        return cacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
       }
     } catch (e) {
       if (e is DioError) {
@@ -53,32 +75,12 @@ class SpotService {
     return [];
   }
 
-  Future<List<Spot>> getSpotsByName(String name) async {
-    try {
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
-
-      if (response.statusCode == 200) {
-        // If the server did return a 200 OK response, then parse the JSON.
-        List<Spot> spots = [];
-        response.data.forEach((s) {
-          Spot spot = Spot.fromJson(s);
-          if (spot.name.contains(name)) {
-            spots.add(spot);
-          }
-        });
-        return spots;
-      }
-    } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          showSimpleNotification(
-            const Text('Couldn\'t connect to API'),
-            background: Colors.red,
-          );
-        }
-      }
+  Future<List<Spot>> getSpotsByName(String name, bool online) async {
+    List<Spot> spots = await getSpots(online);
+    if (name.isEmpty){
+      return spots;
     }
-    return [];
+    return spots.where((spot) => spot.name.contains(name)).toList();
   }
 
   Future<Spot?> getSpot(String spotId) async {
