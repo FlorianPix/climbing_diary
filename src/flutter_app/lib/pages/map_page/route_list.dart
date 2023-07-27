@@ -50,7 +50,7 @@ class RouteListState extends State<RouteList> {
           if (online) {
             List<Widget> elements = [];
             return FutureBuilder<List<MultiPitchRoute?>>(
-              future: Future.wait(multiPitchRouteIds.map((routeId) => routeService.getMultiPitchRoute(routeId))),
+              future: routeService.getMultiPitchRoutesOfIds(online, multiPitchRouteIds),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   List<MultiPitchRoute> multiPitchRoutes = snapshot.data!.whereType<MultiPitchRoute>().toList();
@@ -163,7 +163,7 @@ class RouteListState extends State<RouteList> {
                     );
                   }
                   return FutureBuilder<List<SinglePitchRoute?>>(
-                      future: Future.wait(singlePitchRouteIds.map((routeId) => routeService.getSinglePitchRoute(routeId))),
+                      future: routeService.getSinglePitchRoutesOfIds(online, singlePitchRouteIds),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           List<SinglePitchRoute> singlePitchRoutes = snapshot.data!.whereType<SinglePitchRoute>().toList();

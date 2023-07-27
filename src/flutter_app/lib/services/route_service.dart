@@ -1,8 +1,8 @@
 import 'package:climbing_diary/interfaces/multi_pitch_route/create_multi_pitch_route.dart';
-import 'package:flutter/material.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
 import 'package:hive/hive.dart';
-import 'package:overlay_support/overlay_support.dart';
 
+import '../components/my_notifications.dart';
 import '../config/environment.dart';
 import '../interfaces/ascent/ascent.dart';
 import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
@@ -15,20 +15,81 @@ import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/single_pitch_route/create_single_pitch_route.dart';
 import '../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../interfaces/single_pitch_route/update_single_pitch_route.dart';
+import 'ascent_service.dart';
 import 'cache_service.dart';
 import 'locator.dart';
 
 class RouteService {
   final CacheService cacheService = CacheService();
+  final PitchService pitchService = PitchService();
+  final AscentService ascentService = AscentService();
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
+  Future<MultiPitchRoute> getMultiPitchRoute(String routeId) async {
+    final Response response =
+    await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route/$routeId');
+    if (response.statusCode == 200) {
+      return MultiPitchRoute.fromJson(response.data);
+    } else {
+      throw Exception('Failed to load route');
+    }
+  }
+
+  Future<List<MultiPitchRoute>> getMultiPitchRoutesOfIds(bool online, List<String> multiPitchRouteIds) async {
+    try {
+      if(online){
+        final Response multiPitchRouteIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/multi_pitch_routeUpdated/ids', data: multiPitchRouteIds);
+        if (multiPitchRouteIdsUpdatedResponse.statusCode != 200) {
+          throw Exception("Error during request of multiPitchRoute ids updated");
+        }
+        List<MultiPitchRoute> multiPitchRoutes = [];
+        List<String> missingMultiPitchRouteIds = [];
+        Box box = Hive.box('multi_pitch_routes');
+        multiPitchRouteIdsUpdatedResponse.data.forEach((idWithDatetime) {
+          String id = idWithDatetime['_id'];
+          String serverUpdated = idWithDatetime['updated'];
+          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+            missingMultiPitchRouteIds.add(id);
+          } else {
+            multiPitchRoutes.add(MultiPitchRoute.fromCache(box.get(id)));
+          }
+        });
+        if (missingMultiPitchRouteIds.isEmpty){
+          return multiPitchRoutes;
+        }
+        final Response missingMultiPitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/multi_pitch_route/ids', data: missingMultiPitchRouteIds);
+        if (missingMultiPitchRoutesResponse.statusCode != 200) {
+          throw Exception("Error during request of missing multiPitchRoutes");
+        }
+        missingMultiPitchRoutesResponse.data.forEach((s) {
+          MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromJson(s);
+          if (!box.containsKey(multiPitchRoute.id)) {
+            box.put(multiPitchRoute.id, multiPitchRoute.toJson());
+          }
+          multiPitchRoutes.add(multiPitchRoute);
+        });
+        return multiPitchRoutes;
+      } else {
+        // offline
+        return cacheService.getTsFromCache<MultiPitchRoute>('multi_pitch_routes', MultiPitchRoute.fromCache);
+      }
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
+        }
+      }
+    }
+    return [];
+  }
+
   Future<List<MultiPitchRoute>> getMultiPitchRoutes(bool online) async {
     try {
       if(online){
-        final Response multiPitchRouteIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route/ids');
+        final Response multiPitchRouteIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_routeUpdated');
         if (multiPitchRouteIdsResponse.statusCode != 200) {
           throw Exception("Error during request of multiPitchRoute ids");
         }
@@ -66,24 +127,11 @@ class RouteService {
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          showSimpleNotification(
-            const Text('Couldn\'t connect to API'),
-            background: Colors.red,
-          );
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
         }
       }
     }
     return [];
-  }
-
-  Future<MultiPitchRoute> getMultiPitchRoute(String routeId) async {
-    final Response response =
-    await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route/$routeId');
-    if (response.statusCode == 200) {
-      return MultiPitchRoute.fromJson(response.data);
-    } else {
-      throw Exception('Failed to load route');
-    }
   }
 
   Future<List<MultiPitchRoute>> getMultiPitchRoutesByName(String name, bool online) async {
@@ -95,25 +143,18 @@ class RouteService {
   }
 
   Future<MultiPitchRoute?> getMultiPitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate) async {
-    final Response response = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route/$routeId');
-    if (response.statusCode == 200) {
-      MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromJson(response.data);
-      for (String pitchId in multiPitchRoute.pitchIds){
-        final Response pitchResponse = await netWorkLocator.dio.get('$climbingApiHost/pitch/$pitchId');
-        Pitch pitch = Pitch.fromJson(pitchResponse.data);
-        for (String ascentId in pitch.ascentIds){
-          final Response ascentResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
-          Ascent ascent = Ascent.fromJson(ascentResponse.data);
-          DateTime dateOfAscent = DateTime.parse(ascent.date);
-          if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
-            return multiPitchRoute;
-          }
+    MultiPitchRoute multiPitchRoute = await getMultiPitchRoute(routeId);
+    List<Pitch> pitches = await pitchService.getPitchesOfIds(true, multiPitchRoute.pitchIds); // TODO check if online
+    for (Pitch pitch in pitches){
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(true, pitch.ascentIds); // TODO check if online
+      for (Ascent ascent in ascents){
+        DateTime dateOfAscent = DateTime.parse(ascent.date);
+        if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
+          return multiPitchRoute;
         }
       }
-      return null;
-    } else {
-      throw Exception('Failed to load route');
     }
+    return null;
   }
 
   Future<MultiPitchRoute?> createMultiPitchRoute(CreateMultiPitchRoute createRoute, String spotId, bool hasConnection) async {
@@ -175,10 +216,7 @@ class RouteService {
       if (routeResponse.statusCode != 204) {
         throw Exception('Failed to delete route');
       }
-      showSimpleNotification(
-        Text('Multi pitch route was deleted: ${routeResponse.data['name']}'),
-        background: Colors.green,
-      );
+      MyNotifications.showPositiveNotification('Multi pitch route was deleted: ${routeResponse.data['name']}');
       // TODO deleteRouteFromDeleteQueue(route.toJson().hashCode);
       return routeResponse.data;
     } catch (e) {
@@ -200,10 +238,7 @@ class RouteService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/multi_pitch_route/spot/$spotId', data: data);
       if (response.statusCode == 201) {
-        showSimpleNotification(
-          Text('Created new multi pitch route: ${response.data['name']}'),
-          background: Colors.green,
-        );
+        MyNotifications.showPositiveNotification('Created new multi pitch route: ${response.data['name']}');
         return MultiPitchRoute.fromJson(response.data);
       } else {
         throw Exception('Failed to create route');
@@ -214,10 +249,7 @@ class RouteService {
         if (response != null) {
           switch (response.statusCode) {
             case 409:
-              showSimpleNotification(
-                const Text('This route already exists!'),
-                background: Colors.red,
-              );
+              MyNotifications.showNegativeNotification('This route already exists!');
               break;
             default:
               throw Exception('Failed to create route');
@@ -232,34 +264,28 @@ class RouteService {
 
   Future<Ascent?> getBestAscent(MultiPitchRoute route) async {
     List<Ascent> bestPitchAscents = [];
-    for (String pitchId in route.pitchIds){
-      final Response pitchResponse = await netWorkLocator.dio.get('$climbingApiHost/pitch/$pitchId');
-      if (pitchResponse.statusCode == 200) {
-        Pitch pitch = Pitch.fromJson(pitchResponse.data);
-        int pitchStyle = 6;
-        int pitchType = 4;
-        Ascent? bestPitchAscent;
-        for (String ascentId in pitch.ascentIds) {
-          final Response ascentResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
-          if (ascentResponse.statusCode == 200) {
-            Ascent ascent = Ascent.fromJson(ascentResponse.data);
-            if (ascent.style < pitchStyle){
-              bestPitchAscent = ascent;
-              pitchStyle = bestPitchAscent.style;
-              pitchType = bestPitchAscent.type;
-            }
-            if (ascent.style == pitchStyle && ascent.type < pitchType){
-              bestPitchAscent = ascent;
-              pitchStyle = bestPitchAscent.style;
-              pitchType = bestPitchAscent.type;
-            }
-          }
+    List<Pitch> pitches = await pitchService.getPitchesOfIds(true, route.pitchIds); // TODO check if online
+    for (Pitch pitch in pitches){
+      int pitchStyle = 6;
+      int pitchType = 4;
+      Ascent? bestPitchAscent;
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(true, pitch.ascentIds); // TODO check if online
+      for (Ascent ascent in ascents) {
+        if (ascent.style < pitchStyle){
+          bestPitchAscent = ascent;
+          pitchStyle = bestPitchAscent.style;
+          pitchType = bestPitchAscent.type;
         }
-        if (bestPitchAscent == null){
-          return null;
-        } else {
-          bestPitchAscents.add(bestPitchAscent);
+        if (ascent.style == pitchStyle && ascent.type < pitchType){
+          bestPitchAscent = ascent;
+          pitchStyle = bestPitchAscent.style;
+          pitchType = bestPitchAscent.type;
         }
+      }
+      if (bestPitchAscent == null){
+        return null;
+      } else {
+        bestPitchAscents.add(bestPitchAscent);
       }
     }
     int routeStyle = 0;
@@ -280,37 +306,25 @@ class RouteService {
     return bestRouteAscent;
   }
 
-  Future<List<SinglePitchRoute>> getSinglePitchRoutes() async {
-    try {
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route');
-
-      if (response.statusCode == 200) {
-        // If the server did return a 200 OK response, then parse the JSON.
-        List<SinglePitchRoute> routes = [];
-        // save to cache
-        Box box = Hive.box('routes');
-        response.data.forEach((s) {
-          SinglePitchRoute route = SinglePitchRoute.fromJson(s);
-          if (!box.containsKey(route.id)) {
-            box.put(route.id, route.toJson());
-          }
-          routes.add(route);
-        });
-        return routes;
-      }
-    } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          showSimpleNotification(
-            const Text('Couldn\'t connect to API'),
-            background: Colors.red,
-          );
-        }
-      } else {
-        print(e);
-      }
+  Future<SinglePitchRoute?> createSinglePitchRoute(CreateSinglePitchRoute createRoute, String spotId, bool hasConnection) async {
+    CreateSinglePitchRoute route = CreateSinglePitchRoute(
+        comment: (createRoute.comment != null) ? createRoute.comment! : "",
+        location: createRoute.location,
+        name: createRoute.name,
+        rating: createRoute.rating,
+        grade: createRoute.grade,
+        length: createRoute.length
+    );
+    if (hasConnection) {
+      var data = route.toJson();
+      return uploadSinglePitchRoute(spotId, data);
+    } else {
+      // save to cache
+      Box box = Hive.box('upload_later_routes');
+      Map routeJson = route.toJson();
+      box.put(routeJson.hashCode, routeJson);
     }
-    return [];
+    return null;
   }
 
   Future<SinglePitchRoute> getSinglePitchRoute(String routeId) async {
@@ -321,6 +335,103 @@ class RouteService {
     } else {
       throw Exception('Failed to load route');
     }
+  }
+
+  Future<List<SinglePitchRoute>> getSinglePitchRoutesOfIds(bool online, List<String> singlePitchRouteIds) async {
+    try {
+      if(online){
+        final Response singlePitchRouteIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_routeUpdated/ids', data: singlePitchRouteIds);
+        if (singlePitchRouteIdsUpdatedResponse.statusCode != 200) {
+          throw Exception("Error during request of singlePitchRoute ids updated");
+        }
+        List<SinglePitchRoute> singlePitchRoutes = [];
+        List<String> missingSinglePitchRouteIds = [];
+        Box box = Hive.box('single_pitch_routes');
+        singlePitchRouteIdsUpdatedResponse.data.forEach((idWithDatetime) {
+          String id = idWithDatetime['_id'];
+          String serverUpdated = idWithDatetime['updated'];
+          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+            missingSinglePitchRouteIds.add(id);
+          } else {
+            singlePitchRoutes.add(SinglePitchRoute.fromCache(box.get(id)));
+          }
+        });
+        if (missingSinglePitchRouteIds.isEmpty){
+          return singlePitchRoutes;
+        }
+        final Response missingSinglePitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_route/ids', data: missingSinglePitchRouteIds);
+        if (missingSinglePitchRoutesResponse.statusCode != 200) {
+          throw Exception("Error during request of missing singlePitchRoutes");
+        }
+        missingSinglePitchRoutesResponse.data.forEach((s) {
+          SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(s);
+          if (!box.containsKey(singlePitchRoute.id)) {
+            box.put(singlePitchRoute.id, singlePitchRoute.toJson());
+          }
+          singlePitchRoutes.add(singlePitchRoute);
+        });
+        return singlePitchRoutes;
+      } else {
+        // offline
+        return cacheService.getTsFromCache<SinglePitchRoute>('single_pitch_routes', SinglePitchRoute.fromCache);
+      }
+    } catch (e) {
+      print(e);
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
+        }
+      }
+    }
+    return [];
+  }
+
+  Future<List<SinglePitchRoute>> getSinglePitchRoutes(bool online) async {
+    try {
+      if(online){
+        final Response singlePitchRouteIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_routeUpdated');
+        if (singlePitchRouteIdsResponse.statusCode != 200) {
+          throw Exception("Error during request of singlePitchRoute ids");
+        }
+        List<SinglePitchRoute> singlePitchRoutes = [];
+        List<String> missingSinglePitchRouteIds = [];
+        Box box = Hive.box('single_pitch_routes');
+        singlePitchRouteIdsResponse.data.forEach((idWithDatetime) {
+          String id = idWithDatetime['_id'];
+          String serverUpdated = idWithDatetime['updated'];
+          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+            missingSinglePitchRouteIds.add(id);
+          } else {
+            singlePitchRoutes.add(SinglePitchRoute.fromCache(box.get(id)));
+          }
+        });
+        if (missingSinglePitchRouteIds.isEmpty){
+          return singlePitchRoutes;
+        }
+        final Response missingSinglePitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_route/ids', data: missingSinglePitchRouteIds);
+        if (missingSinglePitchRoutesResponse.statusCode != 200) {
+          throw Exception("Error during request of missing singlePitchRoutes");
+        }
+        missingSinglePitchRoutesResponse.data.forEach((s) {
+          SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(s);
+          if (!box.containsKey(singlePitchRoute.id)) {
+            box.put(singlePitchRoute.id, singlePitchRoute.toJson());
+          }
+          singlePitchRoutes.add(singlePitchRoute);
+        });
+        return singlePitchRoutes;
+      } else {
+        // offline
+        return cacheService.getTsFromCache<SinglePitchRoute>('single_pitch_routes', SinglePitchRoute.fromCache);
+      }
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
+        }
+      }
+    }
+    return [];
   }
 
   Future<List<SinglePitchRoute>> getSinglePitchRoutesByName(String name) async {
@@ -340,42 +451,13 @@ class RouteService {
   }
 
   Future<SinglePitchRoute?> getSinglePitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate) async {
-    final Response response = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$routeId');
-    if (response.statusCode == 200) {
-      SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(response.data);
-      for (String ascentId in singlePitchRoute.ascentIds){
-        final Response ascentResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
-        if (response.statusCode == 200){
-          Ascent ascent = Ascent.fromJson(ascentResponse.data);
-          DateTime dateOfAscent = DateTime.parse(ascent.date);
-          if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
-            return singlePitchRoute;
-          }
-        }
+    SinglePitchRoute singlePitchRoute = await getSinglePitchRoute(routeId);
+    List<Ascent> ascents = await ascentService.getAscentsOfIds(true, singlePitchRoute.ascentIds); // TODO check if online
+    for (Ascent ascent in ascents) {
+      DateTime dateOfAscent = DateTime.parse(ascent.date);
+      if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
+        return singlePitchRoute;
       }
-      return null;
-    } else {
-      throw Exception('Failed to load route');
-    }
-  }
-
-  Future<SinglePitchRoute?> createSinglePitchRoute(CreateSinglePitchRoute createRoute, String spotId, bool hasConnection) async {
-    CreateSinglePitchRoute route = CreateSinglePitchRoute(
-      comment: (createRoute.comment != null) ? createRoute.comment! : "",
-      location: createRoute.location,
-      name: createRoute.name,
-      rating: createRoute.rating,
-      grade: createRoute.grade,
-      length: createRoute.length
-    );
-    if (hasConnection) {
-      var data = route.toJson();
-      return uploadSinglePitchRoute(spotId, data);
-    } else {
-      // save to cache
-      Box box = Hive.box('upload_later_routes');
-      Map routeJson = route.toJson();
-      box.put(routeJson.hashCode, routeJson);
     }
     return null;
   }
@@ -419,10 +501,7 @@ class RouteService {
       if (routeResponse.statusCode != 204) {
         throw Exception('Failed to delete route');
       }
-      showSimpleNotification(
-        Text('Single pitch route was deleted: ${routeResponse.data['name']}'),
-        background: Colors.green,
-      );
+      MyNotifications.showPositiveNotification('Single pitch route was deleted: ${routeResponse.data['name']}');
       // TODO deleteRouteFromDeleteQueue(route.toJson().hashCode);
       return routeResponse.data;
     } catch (e) {
@@ -444,10 +523,7 @@ class RouteService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/single_pitch_route/spot/$spotId', data: data);
       if (response.statusCode == 201) {
-        showSimpleNotification(
-          Text('Created new single pitch route: ${response.data['name']}'),
-          background: Colors.green,
-        );
+        MyNotifications.showPositiveNotification('Created new single pitch route: ${response.data['name']}');
         return SinglePitchRoute.fromJson(response.data);
       } else {
         throw Exception('Failed to create route');
@@ -458,10 +534,7 @@ class RouteService {
         if (response != null) {
           switch (response.statusCode) {
             case 409:
-              showSimpleNotification(
-                const Text('This route already exists!'),
-                background: Colors.red,
-              );
+              MyNotifications.showNegativeNotification('This route already exists!');
               break;
             default:
               throw Exception('Failed to create route');

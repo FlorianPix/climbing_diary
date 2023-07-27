@@ -43,7 +43,7 @@ class PitchTimelineState extends State<PitchTimeline> {
           var online = snapshot.data!;
           if (online) {
             return FutureBuilder<List<Pitch>>(
-              future: Future.wait(pitchIds.map((pitchId) => pitchService.getPitch(pitchId))),
+              future: pitchService.getPitchesOfIds(online, pitchIds),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   List<Pitch> pitches = snapshot.data!;

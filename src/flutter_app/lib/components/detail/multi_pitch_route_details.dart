@@ -230,9 +230,11 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         )
     );
     // pitches
-    elements.add(
-      PitchTimeline(trip: widget.trip, spot: widget.spot, route: route, pitchIds: route.pitchIds)
-    );
+    if (route.pitchIds.isNotEmpty){
+      elements.add(
+          PitchTimeline(trip: widget.trip, spot: widget.spot, route: route, pitchIds: route.pitchIds)
+      );
+    }
     return Stack(
         children: <Widget>[
           Padding(

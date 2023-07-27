@@ -49,23 +49,23 @@ class _GradeDistributionState extends State<GradeDistribution> {
       _distribution[i] = 0;
     }
 
-    for (String routeId in widget.singlePitchRouteIds) {
-      SinglePitchRoute singlePitchRoute = await routeService.getSinglePitchRoute(routeId);
+    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutesOfIds(true, widget.singlePitchRouteIds);
+    for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
       int gradeIndex = Grade.translationTable[singlePitchRoute.grade.system.index].indexOf(singlePitchRoute.grade.grade);
       _distribution[gradeIndex] = _distribution[gradeIndex]! + 1;
     }
 
-    for (String routeId in widget.multiPitchRouteIds) {
-      MultiPitchRoute multiPitchRoute = await routeService.getMultiPitchRoute(
-          routeId);
-      int maxGradeIndex = 0;
-      for (String pitchId in multiPitchRoute.pitchIds) {
-        Pitch pitch = await pitchService.getPitch(pitchId);
-        int gradeIndex = Grade.translationTable[pitch.grade.system.index]
-            .indexOf(pitch.grade.grade);
+    List<MultiPitchRoute> multiPitchRoutes = await routeService.getMultiPitchRoutesOfIds(true, widget.multiPitchRouteIds);
+    for (MultiPitchRoute multiPitchRoute in multiPitchRoutes) {
+      int maxGradeIndex = -1;
+      List<Pitch> pitches = await pitchService.getPitchesOfIds(true, multiPitchRoute.pitchIds);
+      for (Pitch pitch in pitches) {
+        int gradeIndex = Grade.translationTable[pitch.grade.system.index].indexOf(pitch.grade.grade);
         maxGradeIndex = math.max(maxGradeIndex, gradeIndex);
       }
-      _distribution[maxGradeIndex] = _distribution[maxGradeIndex]! + 1;
+      if (maxGradeIndex >= 0) {
+        _distribution[maxGradeIndex] = _distribution[maxGradeIndex]! + 1;
+      }
     }
 
     setState(() {

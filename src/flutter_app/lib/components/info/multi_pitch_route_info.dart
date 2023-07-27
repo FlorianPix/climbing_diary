@@ -37,10 +37,8 @@ class _MultiPitchInfoState extends State<MultiPitchInfo>{
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> listInfo = [];
-
     return FutureBuilder<List<Pitch>>(
-      future: Future.wait(widget.pitchIds.map((pitchId) => pitchService.getPitch(pitchId))),
+      future: pitchService.getPitchesOfIds(true, widget.pitchIds), // TODO check if online
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<Pitch> pitches = snapshot.data!;

@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:overlay_support/overlay_support.dart';
-
+import '../components/my_notifications.dart';
 import '../config/environment.dart';
 import 'package:dio/dio.dart';
 
@@ -20,19 +18,13 @@ class AdminService {
       if (dataResponse.statusCode != 200) {
         throw Exception('Failed to delete all data');
       }
-      showSimpleNotification(
-        const Text('All your data was deleted'),
-        background: Colors.green,
-      );
+      MyNotifications.showPositiveNotification('All your data was deleted');
       final Response mediaResponse = await netWorkLocator.dio.delete('$mediaApiHost/media');
       if (mediaResponse.statusCode != 204) {
         throw Exception('Failed to delete all images');
       }
       // TODO delete from cache
-      showSimpleNotification(
-        const Text('All your images were deleted'),
-        background: Colors.green,
-      );
+      MyNotifications.showPositiveNotification('All your images were deleted');
       // TODO delete from cache;
     } catch (e) {
       if (e is DioError) {

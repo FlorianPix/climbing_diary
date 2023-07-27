@@ -49,8 +49,8 @@ class SinglePitchRoute extends ClimbingRoute{
       location: cache['location'],
       name: cache['name'],
       rating: cache['rating'],
-      grade: cache['rating'],
-      length: cache['rating'],
+      grade: Grade.fromCache(cache['grade']),
+      length: cache['length'],
     );
   }
 
@@ -65,7 +65,7 @@ class SinglePitchRoute extends ClimbingRoute{
     "location": location,
     "name": name,
     "rating": rating,
-    "grade": grade,
+    "grade": grade.toJson(),
     "length": length,
   };
 

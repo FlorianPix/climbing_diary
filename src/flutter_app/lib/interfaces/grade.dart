@@ -57,4 +57,11 @@ class Grade{
       'system': system.index,
     };
   }
+
+  factory Grade.fromCache(Map<dynamic, dynamic> cache) {
+    return Grade(
+        grade: cache['grade'],
+        system: GradingSystem.values[cache['system']]
+    );
+  }
 }

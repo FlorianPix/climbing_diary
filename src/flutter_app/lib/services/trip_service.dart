@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:overlay_support/overlay_support.dart';
 
+import '../components/my_notifications.dart';
 import '../config/environment.dart';
 import '../interfaces/trip/create_trip.dart';
 import 'package:dio/dio.dart';
@@ -20,10 +19,20 @@ class TripService {
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
+  Future<Trip> getTrip(String tripId) async {
+    final Response response =
+    await netWorkLocator.dio.get('$climbingApiHost/trip/$tripId');
+    if (response.statusCode == 200) {
+      return Trip.fromJson(response.data);
+    } else {
+      throw Exception('Failed to load trip');
+    }
+  }
+
   Future<List<Trip>> getTrips(bool online) async {
     try {
       if(online){
-        final Response tripIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/trip/ids');
+        final Response tripIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/tripUpdated');
         if (tripIdsResponse.statusCode != 200) {
           throw Exception("Error during request of trip ids");
         }
@@ -61,24 +70,11 @@ class TripService {
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          showSimpleNotification(
-            const Text('Couldn\'t connect to API'),
-            background: Colors.red,
-          );
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
         }
       }
     }
     return [];
-  }
-
-  Future<Trip> getTrip(String tripId) async {
-    final Response response =
-        await netWorkLocator.dio.get('$climbingApiHost/trip/$tripId');
-    if (response.statusCode == 200) {
-      return Trip.fromJson(response.data);
-    } else {
-      throw Exception('Failed to load trip');
-    }
   }
 
   Future<Trip?> createTrip(CreateTrip createTrip, bool online) async {
@@ -141,10 +137,7 @@ class TripService {
       if (tripResponse.statusCode != 200) {
         throw Exception('Failed to delete trip');
       }
-      showSimpleNotification(
-        Text('Trip was deleted: ${tripResponse.data['name']}'),
-        background: Colors.green,
-      );
+      MyNotifications.showPositiveNotification('Trip was deleted: ${tripResponse.data['name']}');
       // TODO deleteTripFromDeleteQueue(trip.toJson().hashCode);
       return tripResponse.data;
     } catch (e) {
@@ -166,10 +159,7 @@ class TripService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/trip', data: data);
       if (response.statusCode == 201) {
-        showSimpleNotification(
-          Text('Created new trip: ${response.data['name']}'),
-          background: Colors.green,
-        );
+        MyNotifications.showPositiveNotification('Created new trip: ${response.data['name']}');
         return Trip.fromJson(response.data);
       } else {
         throw Exception('Failed to create trip');
@@ -180,10 +170,7 @@ class TripService {
         if (response != null) {
           switch (response.statusCode) {
             case 409:
-              showSimpleNotification(
-                const Text('This trip already exists!'),
-                background: Colors.red,
-              );
+              MyNotifications.showNegativeNotification('This trip already exists!');
               break;
             default:
               throw Exception('Failed to create trip');

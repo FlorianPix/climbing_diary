@@ -19,7 +19,7 @@ class StatisticPageState extends State<StatisticPage> {
     return Scaffold(
       body: Center(
         child: FutureBuilder<List<Ascent>>(
-          future: ascentService.getAscents(),
+          future: ascentService.getAscents(true), // TODO check if online
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               List<Ascent> ascents = snapshot.data!;

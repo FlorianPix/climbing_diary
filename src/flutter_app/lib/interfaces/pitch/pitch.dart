@@ -51,7 +51,7 @@ class Pitch extends MyBaseInterface{
       id: cache['_id'],
       userId: cache['user_id'],
       comment: cache['comment'],
-      grade: cache['grade'],
+      grade: Grade.fromCache(cache['grade']),
       length: cache['length'],
       name: cache['name'],
       num: cache['num'],

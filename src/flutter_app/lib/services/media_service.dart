@@ -1,8 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:overlay_support/overlay_support.dart';
-import 'package:flutter/material.dart';
 
+import '../components/my_notifications.dart';
 import '../config/environment.dart';
 import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
@@ -50,10 +49,7 @@ class MediaService {
     );
 
     if (response.statusCode == 200) {
-      showSimpleNotification(
-        const Text('Added new image'),
-        background: Colors.green,
-      );
+      MyNotifications.showPositiveNotification('Added new image');
       return response.data['id'];
     } else {
       throw Exception('Failed to upload media');
@@ -66,10 +62,7 @@ class MediaService {
     );
 
     if (response.statusCode == 204) {
-      showSimpleNotification(
-        const Text('Image was deleted'),
-        background: Colors.green,
-      );
+      MyNotifications.showPositiveNotification('Image was deleted');
       return;
     } else {
       throw Exception('Failed to load spots');

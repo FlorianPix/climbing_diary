@@ -42,9 +42,8 @@ class SpotTimelineState extends State<SpotTimeline> {
         if (snapshot.hasData) {
           var online = snapshot.data!;
           if (online) {
-
             return FutureBuilder<List<Spot?>>(
-              future: Future.wait(spotIds.map((spotId) => spotService.getSpot(spotId))),
+              future: spotService.getSpotsOfIds(online, spotIds),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   List<Spot> spots = snapshot.data!.whereType<Spot>().toList();
