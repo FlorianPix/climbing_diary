@@ -46,20 +46,6 @@ async def create_spot(spot: CreateSpotModel = Body(...), user: Auth0User = Secur
                         content=jsonable_encoder(SpotModel(**created_spot)))
 
 
-@router.get('', description="Retrieve all spots", response_model=List[SpotModel], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_spots(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    spots = await db["spot"].find({"user_id": user.id}).to_list(None)
-    return spots
-
-
-@router.get('/ids', description="Retrieve all spot ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_spot_ids(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    spot_ids = await db["spot"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
-    return spot_ids
-
-
 @router.get('/{spot_id}', description="Retrieve a spot", response_model=SpotModel, dependencies=[Depends(auth.implicit_scheme)])
 async def retrieve_spot(spot_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
@@ -83,6 +69,44 @@ async def retrieve_spots_of_ids(spot_ids: List[str] = Body(...), user: Auth0User
     if spots:
         return spots
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spots not found")
+
+
+@router.get('', description="Retrieve all spots", response_model=List[SpotModel], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_spots(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    spots = await db["spot"].find({"user_id": user.id}).to_list(None)
+    return spots
+
+
+@router.get('Updated/{spot_id}', description="Get a spot id and when it was updated", response_model=IdWithDatetime, dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_spot_id_updated(spot_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    if (idWithDatetime := await db["spot"].find_one({"_id": ObjectId(spot_id), "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
+        return idWithDatetime
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spot {spot_id} not found")
+
+
+@router.post('Updated/ids', description="Get spot ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_spot_ids_updated(spot_ids: List[str] = Body(...), user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    if not spot_ids:
+        return []
+    db = await get_db()
+    idsWithDatetime = []
+    for spot_id in spot_ids:
+        if (spot := await db["spot"].find_one({"_id": ObjectId(spot_id), "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
+            idsWithDatetime.append(spot)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spot {spot_id} not found")
+    if idsWithDatetime:
+        return idsWithDatetime
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spots not found")
+
+
+@router.get('Updated', description="Retrieve all spot ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_all_spot_ids_updated(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    spot_ids = await db["spot"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
+    return spot_ids
 
 
 @router.put('/{spot_id}', description="Update a spot", response_model=SpotModel, dependencies=[Depends(auth.implicit_scheme)])

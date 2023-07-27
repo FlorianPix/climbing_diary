@@ -44,27 +44,13 @@ async def create_route(spot_id: str, route: CreateSinglePitchRouteModel = Body(.
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Route {new_route.inserted_id} not found")
     # route was found
-    update_result = await db["spot"].update_one({"_id": ObjectId(spot_id)}, {"$push": {"single_pitch_route_ids": new_route.inserted_id}})
+    update_result = await db["spot"].update_one({"_id": ObjectId(spot_id)}, {"$set": {"updated": datetime.datetime.now()}, "$push": {"single_pitch_route_ids": new_route.inserted_id}})
     if update_result.modified_count != 1:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Route {new_route.inserted_id} was not added to spot {spot_id}")
     # route_id was added to spot
     return JSONResponse(status_code=status.HTTP_201_CREATED,
                         content=jsonable_encoder(SinglePitchRouteModel(**created_route)))
-
-
-@router.get('', description="Retrieve all single pitch routes", response_model=List[SinglePitchRouteModel], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_routes(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    routes = await db["single_pitch_route"].find({"user_id": user.id}).to_list(None)
-    return routes
-
-
-@router.get('/ids', description="Retrieve all single pitch route ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_route_ids(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    single_pitch_route_ids = await db["single_pitch_route"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
-    return single_pitch_route_ids
 
 
 @router.get('/{route_id}', description="Retrieve a single pitch route", response_model=SinglePitchRouteModel, dependencies=[Depends(auth.implicit_scheme)])
@@ -74,6 +60,60 @@ async def retrieve_route(route_id: str, user: Auth0User = Security(auth.get_user
         return route
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                         detail=f"Route {route_id} not found")
+
+
+@router.post('/ids', description="Get single pitch routes of ids", response_model=List[SinglePitchRouteModel], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_routes_of_ids(route_ids: List[str] = Body(...), user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    if not route_ids:
+        return []
+    db = await get_db()
+    routes = []
+    for route_id in route_ids:
+        if (route := await db["single_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})) is not None:
+            routes.append(route)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")
+    if routes:
+        return routes
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Routes not found")
+
+
+@router.get('', description="Retrieve all single pitch routes", response_model=List[SinglePitchRouteModel], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_all_routes(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    routes = await db["single_pitch_route"].find({"user_id": user.id}).to_list(None)
+    return routes
+
+
+@router.get('Updated/{route_id}', description="Get a route id and when it was updated", response_model=IdWithDatetime, dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_route_id_updated(route_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    if (idWithDatetime := await db["single_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
+        return idWithDatetime
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")
+
+
+@router.post('Updated/ids', description="Get route ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_route_ids_updated(route_ids: List[str] = Body(...), user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    if not route_ids:
+        return []
+    db = await get_db()
+    idsWithDatetime = []
+    for route_id in route_ids:
+        if (route := await db["single_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
+            idsWithDatetime.append(route)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")
+    if idsWithDatetime:
+        return idsWithDatetime
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Routes not found")
+
+
+@router.get('Updated', description="Retrieve all single pitch route ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_all_route_ids_updated(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    single_pitch_route_ids = await db["single_pitch_route"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
+    return single_pitch_route_ids
 
 
 @router.put('/{route_id}', description="Update a single pitch route", response_model=SinglePitchRouteModel, dependencies=[Depends(auth.implicit_scheme)])
@@ -128,7 +168,7 @@ async def delete_route(spot_id: str, route_id: str, user: Auth0User = Security(a
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Route {route_id} could not be deleted")
     # route was deleted
-    update_result = await db["spot"].update_one({"_id": ObjectId(spot_id)}, {"$pull": {"single_pitch_route_ids": ObjectId(route_id)}})
+    update_result = await db["spot"].update_one({"_id": ObjectId(spot_id)}, {"$set": {"updated": datetime.datetime.now()}, "$pull": {"single_pitch_route_ids": ObjectId(route_id)}})
     if update_result.modified_count != 1:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Removing route_id {route_id} from spot {spot_id} failed")

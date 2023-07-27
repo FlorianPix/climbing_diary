@@ -41,7 +41,7 @@ async def create_pitch(route_id: str, pitch: CreatePitchModel = Body(...), user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Pitch {new_pitch.inserted_id} not found")
     # pitch was found
-    update_result = await db["multi_pitch_route"].update_one({"_id": ObjectId(route_id)}, {"$push": {"pitch_ids": new_pitch.inserted_id}})
+    update_result = await db["multi_pitch_route"].update_one({"_id": ObjectId(route_id)}, {"$set": {"updated": datetime.datetime.now()}, "$push": {"pitch_ids": new_pitch.inserted_id}})
     if update_result.modified_count != 1:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Pitch {new_pitch.inserted_id} was not added to route {route_id}")
@@ -50,27 +50,67 @@ async def create_pitch(route_id: str, pitch: CreatePitchModel = Body(...), user:
                         content=jsonable_encoder(PitchModel(**created_pitch)))
 
 
-@router.get('', description="Retrieve all pitches", response_model=List[PitchModel], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_pitches(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    pitches = await db["pitch"].find({"user_id": user.id}).to_list(None)
-    return pitches
-
-
-@router.get('/ids', description="Retrieve all pitch ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_pitch_ids(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    pitch_ids = await db["pitch"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
-    return pitch_ids
-
-
 @router.get('/{pitch_id}', description="Retrieve a pitch", response_model=PitchModel, dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_pitch(pitch_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+async def retrieve_pitch_of_id(pitch_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
     if (pitch := await db["pitch"].find_one({"_id": ObjectId(pitch_id), "user_id": user.id})) is not None:
         return pitch
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                         detail=f"Pitch {pitch_id} not found")
+
+
+@router.post('/ids', description="Get pitches of ids", response_model=List[PitchModel], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_pitches_of_ids(pitch_ids: List[str] = Body(...), user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    if not pitch_ids:
+        return []
+    db = await get_db()
+    pitches = []
+    for pitch_id in pitch_ids:
+        if (pitch := await db["pitch"].find_one({"_id": ObjectId(pitch_id), "user_id": user.id})) is not None:
+            pitches.append(pitch)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Pitch {pitch_id} not found")
+    if pitches:
+        return pitches
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Pitches not found")
+
+
+@router.get('', description="Retrieve all pitches", response_model=List[PitchModel], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_all_pitches(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    pitches = await db["pitch"].find({"user_id": user.id}).to_list(None)
+    return pitches
+
+
+@router.get('Updated/{pitch_id}', description="Get a pitch id and when it was updated", response_model=IdWithDatetime, dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_pitch_id_updated(pitch_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    if (idWithDatetime := await db["pitch"].find_one({"_id": ObjectId(pitch_id), "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
+        return idWithDatetime
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Pitch {pitch_id} not found")
+
+
+@router.post('Updated/ids', description="Get pitch ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_pitch_ids_updated(pitch_ids: List[str] = Body(...), user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    if not pitch_ids:
+        return []
+    db = await get_db()
+    idsWithDatetime = []
+    for pitch_id in pitch_ids:
+        if (pitch := await db["pitch"].find_one({"_id": ObjectId(pitch_id), "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
+            idsWithDatetime.append(pitch)
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Pitch {pitch_id} not found")
+    if idsWithDatetime:
+        return idsWithDatetime
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Pitches not found")
+
+
+@router.get('Updated', description="Retrieve all pitch ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_all_pitch_ids_updated(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    pitch_ids = await db["pitch"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
+    return pitch_ids
 
 
 @router.put('/{pitch_id}', description="Update a pitch", response_model=PitchModel, dependencies=[Depends(auth.implicit_scheme)])
@@ -125,7 +165,7 @@ async def delete_pitch(route_id: str, pitch_id: str, user: Auth0User = Security(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Pitch {pitch_id} could not be deleted")
     # pitch was deleted
-    update_result = await db["multi_pitch_route"].update_one({"_id": ObjectId(route_id)}, {"$pull": {"pitch_ids": ObjectId(pitch_id)}})
+    update_result = await db["multi_pitch_route"].update_one({"_id": ObjectId(route_id)}, {"$set": {"updated": datetime.datetime.now()}, "$pull": {"pitch_ids": ObjectId(pitch_id)}})
     if update_result.modified_count != 1:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Removing pitch_id {pitch_id} from route {route_id} failed")
