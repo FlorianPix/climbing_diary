@@ -70,6 +70,19 @@ class _SettingsState extends State<Settings>{
                 ))
           ])),
           Card(child: Column(children: [
+            Padding(padding: const EdgeInsets.only(top: 5), child: Text("Import", style: MyTextStyles.title)),
+            ElevatedButton.icon(
+              onPressed: () {archiveService.readPicked();},
+              icon: const Icon(
+                Icons.upload,
+                color: Colors.black,
+                size: 30.0,
+                semanticLabel: 'load',
+              ),
+              label: const Text("pick a .json file to import"),
+            )
+          ])),
+          Card(child: Column(children: [
             Padding(padding: const EdgeInsets.only(top: 5), child: Text("Backup", style: MyTextStyles.title)),
             ElevatedButton.icon(
               onPressed: () {archiveService.readBackup();},
