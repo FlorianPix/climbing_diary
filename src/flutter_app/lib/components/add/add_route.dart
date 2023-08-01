@@ -31,11 +31,11 @@ class _AddRouteState extends State<AddRoute>{
   final TextEditingController controllerLocation = TextEditingController();
   final TextEditingController controllerName = TextEditingController();
   final TextEditingController controllerRating = TextEditingController();
-  final TextEditingController controllerGrade = TextEditingController();
   final TextEditingController controllerLength = TextEditingController();
 
   double currentSliderValue = 0;
   GradingSystem gradingSystem = GradingSystem.french;
+  String grade = Grade.translationTable[GradingSystem.french.index][0];
   bool isMultiPitch = false;
 
   @override
@@ -82,13 +82,19 @@ class _AddRouteState extends State<AddRoute>{
               ),
               Visibility(
                 visible: !isMultiPitch,
-                child: TextFormField(
-                  validator: (value) {
-                    return value!.isNotEmpty ? null : "please add a grade";
+                child: DropdownButton<String>(
+                  value: grade,
+                  items: Grade.translationTable[gradingSystem.index].toSet().map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value)
+                    );
+                  }).toList(),
+                  onChanged: (String? value) {
+                    setState(() {
+                      grade = value!;
+                    });
                   },
-                  controller: controllerGrade,
-                  decoration: const InputDecoration(
-                      hintText: "grade of the route", labelText: "grade"),
                 ),
               ),
               Visibility(
@@ -103,7 +109,9 @@ class _AddRouteState extends State<AddRoute>{
                   }).toList(),
                   onChanged: (GradingSystem? value) {
                     setState(() {
+                      int oldIndex = Grade.translationTable[gradingSystem.index].indexOf(grade);
                       gradingSystem = value!;
+                      grade = Grade.translationTable[gradingSystem.index][oldIndex];
                     });
                   },
                 )
@@ -181,7 +189,7 @@ class _AddRouteState extends State<AddRoute>{
                     location: controllerLocation.text,
                     rating: currentSliderValue.toInt(),
                     comment: controllerComment.text,
-                    grade: Grade(grade: controllerGrade.text, system: gradingSystem),
+                    grade: Grade(grade: grade, system: gradingSystem),
                     length: int.parse(controllerLength.text)
                   );
                   SinglePitchRoute? createdRoute = await routeService.createSinglePitchRoute(route, spot.id, result);

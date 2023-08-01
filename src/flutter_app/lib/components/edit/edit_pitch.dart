@@ -21,18 +21,18 @@ class _EditPitchState extends State<EditPitch>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final PitchService pitchService = PitchService();
   final TextEditingController controllerComment = TextEditingController();
-  final TextEditingController controllerGrade = TextEditingController();
   final TextEditingController controllerLength = TextEditingController();
   final TextEditingController controllerName = TextEditingController();
   final TextEditingController controllerNum = TextEditingController();
 
   int currentSliderValue = 0;
-  GradingSystem? gradingSystem;
+  GradingSystem gradingSystem = GradingSystem.french;
+  String grade = Grade.translationTable[GradingSystem.french.index][0];
 
   @override
   void initState(){
     controllerComment.text = widget.pitch.comment;
-    controllerGrade.text = widget.pitch.grade.grade;
+    grade = widget.pitch.grade.grade;
     gradingSystem = widget.pitch.grade.system;
     controllerLength.text = widget.pitch.length.toString();
     controllerName.text = widget.pitch.name;
@@ -69,10 +69,19 @@ class _EditPitchState extends State<EditPitch>{
                 decoration: const InputDecoration(
                     hintText: "num", labelText: "num"),
               ),
-              TextFormField(
-                controller: controllerGrade,
-                decoration: const InputDecoration(
-                    hintText: "grade", labelText: "grade"),
+              DropdownButton<String>(
+                value: grade,
+                items: Grade.translationTable[gradingSystem.index].toSet().map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value)
+                  );
+                }).toList(),
+                onChanged: (String? value) {
+                  setState(() {
+                    grade = value!;
+                  });
+                },
               ),
               DropdownButton<GradingSystem>(
                 value: gradingSystem,
@@ -84,7 +93,9 @@ class _EditPitchState extends State<EditPitch>{
                 }).toList(),
                 onChanged: (GradingSystem? value) {
                   setState(() {
+                    int oldIndex = Grade.translationTable[gradingSystem.index].indexOf(grade);
                     gradingSystem = value!;
+                    grade = Grade.translationTable[gradingSystem.index][oldIndex];
                   });
                 },
               ),
@@ -134,7 +145,7 @@ class _EditPitchState extends State<EditPitch>{
               UpdatePitch pitch = UpdatePitch(
                 id: widget.pitch.id,
                 comment: controllerComment.text,
-                grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
+                grade: Grade(grade: grade, system: gradingSystem),
                 length: int.parse(controllerLength.text),
                 name: controllerName.text,
                 num: int.parse(controllerNum.text),

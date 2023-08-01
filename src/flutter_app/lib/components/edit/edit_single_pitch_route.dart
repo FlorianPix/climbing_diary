@@ -22,19 +22,19 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final RouteService routeService = RouteService();
   final TextEditingController controllerComment = TextEditingController();
-  final TextEditingController controllerGrade = TextEditingController();
   final TextEditingController controllerLength = TextEditingController();
   final TextEditingController controllerLocation = TextEditingController();
   final TextEditingController controllerName = TextEditingController();
   final TextEditingController controllerRating = TextEditingController();
 
   int currentSliderValue = 0;
-  GradingSystem? gradingSystem;
+  GradingSystem gradingSystem = GradingSystem.french;
+  String grade = Grade.translationTable[GradingSystem.french.index][0];
 
   @override
   void initState(){
     controllerComment.text = widget.route.comment;
-    controllerGrade.text = widget.route.grade.grade;
+    grade = widget.route.grade.grade;
     gradingSystem = widget.route.grade.system;
     controllerLength.text = widget.route.length.toString();
     controllerLocation.text = widget.route.location;
@@ -67,10 +67,19 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
                 decoration: const InputDecoration(
                     hintText: "name of the route", labelText: "name"),
               ),
-              TextFormField(
-                controller: controllerGrade,
-                decoration: const InputDecoration(
-                    hintText: "grade of the route", labelText: "grade"),
+              DropdownButton<String>(
+                value: grade,
+                items: Grade.translationTable[gradingSystem.index].toSet().map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value)
+                  );
+                }).toList(),
+                onChanged: (String? value) {
+                  setState(() {
+                    grade = value!;
+                  });
+                },
               ),
               DropdownButton<GradingSystem>(
                 value: gradingSystem,
@@ -82,7 +91,9 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
                 }).toList(),
                 onChanged: (GradingSystem? value) {
                   setState(() {
+                    int oldIndex = Grade.translationTable[gradingSystem.index].indexOf(grade);
                     gradingSystem = value!;
+                    grade = Grade.translationTable[gradingSystem.index][oldIndex];
                   });
                 },
               ),
@@ -136,14 +147,14 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
         IconButton(
           onPressed: () async {
             bool result = await InternetConnectionChecker().hasConnection;
-            if (_formKey.currentState!.validate() && gradingSystem != null) {
+            if (_formKey.currentState!.validate()) {
               UpdateSinglePitchRoute route = UpdateSinglePitchRoute(
                 id: widget.route.id,
                 comment: controllerComment.text,
                 location: controllerLocation.text,
                 name: controllerName.text,
                 rating: currentSliderValue.toInt(),
-                grade: Grade(grade: controllerGrade.text, system: gradingSystem!),
+                grade: Grade(grade: grade, system: gradingSystem),
                 length: int.parse(controllerLength.text)
               );
               SinglePitchRoute? updatedRoute = await routeService.editSinglePitchRoute(route);
