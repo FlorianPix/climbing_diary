@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_view/photo_view.dart';
 
 import '../../services/media_service.dart';
 import '../my_skeleton.dart';
@@ -29,54 +31,34 @@ class _MediaDetailsState extends State<MediaDetails>{
 
     List<Widget> elements = [];
 
-    elements.add(Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: ClipRRect(
-          borderRadius: BorderRadius.circular(8.0),
-          child: Image.network(
-            widget.url,
-            fit: BoxFit.fitHeight,
-            loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-              if (loadingProgress == null) {
-                return child;
-              }
-              return const MySkeleton();
-            },
-          )
-      ),
+    elements.add(ClipRRect(
+      borderRadius: BorderRadius.circular(8.0),
+      child: PhotoView(imageProvider: CachedNetworkImageProvider(widget.url)),
     ));
 
     // delete, edit, close
-    elements.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // delete spot button
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-                mediaService.deleteMedium(mediumId);
-                widget.onDelete.call(mediumId);
-              },
-              icon: const Icon(Icons.delete),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        )
-    );
+    elements.add(Positioned(child: Card(child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // delete spot button
+        IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+            mediaService.deleteMedium(mediumId);
+            widget.onDelete.call(mediumId);
+          },
+          icon: const Icon(Icons.delete),
+        ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        ),
+      ],
+    ))));
 
     return Stack(
-        children: <Widget>[
-          Container(
-              padding: const EdgeInsets.all(20),
-              child: ListView(
-                  children: elements
-              )
-          )
-        ]
+        alignment: Alignment.bottomCenter,
+        children: elements,
     );
   }
 }

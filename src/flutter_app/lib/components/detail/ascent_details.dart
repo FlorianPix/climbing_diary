@@ -27,21 +27,27 @@ class _AscentDetailsState extends State<AscentDetails>{
   final MediaService mediaService = MediaService();
   final AscentService ascentService = AscentService();
 
-  XFile? image;
   final ImagePicker picker = ImagePicker();
 
   Future<void> getImage(ImageSource media) async {
-    var img = await picker.pickImage(source: media);
-    if (img != null){
-      var mediaId = await mediaService.uploadMedia(img);
-      Ascent ascent = widget.ascent;
-      ascent.mediaIds.add(mediaId);
-      ascentService.editAscent(ascent.toUpdateAscent());
+    if (media == ImageSource.camera) {
+      var img = await picker.pickImage(source: media);
+      if (img != null) {
+        var mediaId = await mediaService.uploadMedia(img);
+        Ascent ascent = widget.ascent;
+        ascent.mediaIds.add(mediaId);
+        ascentService.editAscent(ascent.toUpdateAscent());
+      }
+    } else {
+      List<XFile> images = await picker.pickMultiImage();
+      for (XFile img in images){
+        var mediaId = await mediaService.uploadMedia(img);
+        Ascent ascent = widget.ascent;
+        ascent.mediaIds.add(mediaId);
+        ascentService.editAscent(ascent.toUpdateAscent());
+      }
     }
-
-    setState(() {
-      image = img;
-    });
+    setState(() {});
   }
 
   void editAscentDialog() {

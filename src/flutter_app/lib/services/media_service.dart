@@ -68,4 +68,6 @@ class MediaService {
       throw Exception('Failed to load spots');
     }
   }
+
+
 }

@@ -10,6 +10,7 @@ import '../../components/image_list_view.dart';
 import '../../pages/diary_page/timeline/ascent_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
+import '../add/add_image.dart';
 import '../my_button_styles.dart';
 import '../add/add_ascent.dart';
 import '../edit/edit_pitch.dart';
@@ -42,66 +43,36 @@ class _PitchDetailsState extends State<PitchDetails>{
     return Future.wait(futures);
   }
 
-  XFile? image;
   final ImagePicker picker = ImagePicker();
 
-  Future getImage(ImageSource media) async {
-    var img = await picker.pickImage(source: media);
-    if (img != null){
-      var mediaId = await mediaService.uploadMedia(img);
-      Pitch pitch = widget.pitch;
-      pitch.mediaIds.add(mediaId);
-      pitchService.editPitch(pitch.toUpdatePitch());
+  Future<void> getImage(ImageSource media) async {
+    if (media == ImageSource.camera) {
+      var img = await picker.pickImage(source: media);
+      if (img != null) {
+        var mediaId = await mediaService.uploadMedia(img);
+        Pitch pitch = widget.pitch;
+        pitch.mediaIds.add(mediaId);
+        pitchService.editPitch(pitch.toUpdatePitch());
+      }
+    } else {
+      List<XFile> images = await picker.pickMultiImage();
+      for (XFile img in images){
+        var mediaId = await mediaService.uploadMedia(img);
+        Pitch pitch = widget.pitch;
+        pitch.mediaIds.add(mediaId);
+        pitchService.editPitch(pitch.toUpdatePitch());
+      }
     }
-
-    setState(() {
-      image = img;
-    });
+    setState(() {});
   }
 
   void addImageDialog() {
     showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          title: const Text('Please choose media to select'),
-          content: SizedBox(
-            height: MediaQuery.of(context).size.height / 6,
-            child: Column(
-              children: [
-                ElevatedButton(
-                  //if user click this button, user can upload image from gallery
-                  onPressed: () {
-                    Navigator.pop(context);
-                    getImage(ImageSource.gallery);
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(Icons.image),
-                      Text('From Gallery'),
-                    ],
-                  ),
-                ),
-                ElevatedButton(
-                  //if user click this button. user can upload image from camera
-                  onPressed: () {
-                    Navigator.pop(context);
-                    getImage(ImageSource.camera);
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(Icons.camera),
-                      Text('From Camera'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      });
+        context: context,
+        builder: (BuildContext context) {
+          return AddImage(onAddImage: getImage);
+        }
+    );
   }
 
   void editPitchDialog() {
