@@ -42,7 +42,7 @@ class _PitchInfoState extends State<PitchInfo>{
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Ascent>>(
-        future: Future.wait(widget.pitch.ascentIds.map((ascentId) => ascentService.getAscent(ascentId))),
+        future: ascentService.getAscentsOfIds(true, widget.pitch.ascentIds), // TODO check if online
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List<Ascent> ascents = snapshot.data!;

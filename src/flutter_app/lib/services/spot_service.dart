@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
+import 'package:climbing_diary/services/route_service.dart';
 import 'package:hive/hive.dart';
-import 'package:overlay_support/overlay_support.dart';
 
+import '../components/my_notifications.dart';
 import '../config/environment.dart';
 import '../interfaces/ascent/ascent.dart';
 import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
@@ -14,24 +15,57 @@ import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/spot/spot.dart';
 import '../interfaces/spot/update_spot.dart';
+import 'ascent_service.dart';
+import 'cache_service.dart';
 import 'locator.dart';
 
 class SpotService {
+  final CacheService cacheService = CacheService();
+  final RouteService routeService = RouteService();
+  final PitchService pitchService = PitchService();
+  final AscentService ascentService = AscentService();
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<List<Spot>> getSpots() async {
-    try {
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
+  Future<Spot> getSpot(String spotId) async {
+    final Response response =
+    await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
+    if (response.statusCode == 200) {
+      return Spot.fromJson(response.data);
+    } else {
+      throw Exception('Failed to load spot');
+    }
+  }
 
-      if (response.statusCode == 200) {
-        // If the server did return a 200 OK response, then parse the JSON.
+  Future<List<Spot>> getSpotsOfIds(bool online, List<String> spotIds) async {
+    try {
+      if(online){
+        final Response spotIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/spotUpdated/ids', data: spotIds);
+        if (spotIdsUpdatedResponse.statusCode != 200) {
+          throw Exception("Error during request of spot ids updated");
+        }
         List<Spot> spots = [];
-        // save to cache
+        List<String> missingSpotIds = [];
         Box box = Hive.box('spots');
-        response.data.forEach((s) {
+        spotIdsUpdatedResponse.data.forEach((idWithDatetime) {
+          String id = idWithDatetime['_id'];
+          String serverUpdated = idWithDatetime['updated'];
+          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+            missingSpotIds.add(id);
+          } else {
+            spots.add(Spot.fromCache(box.get(id)));
+          }
+        });
+        if (missingSpotIds.isEmpty){
+          return spots;
+        }
+        final Response missingSpotsResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/ids', data: missingSpotIds);
+        if (missingSpotsResponse.statusCode != 200) {
+          throw Exception("Error during request of missing spots");
+        }
+        missingSpotsResponse.data.forEach((s) {
           Spot spot = Spot.fromJson(s);
           if (!box.containsKey(spot.id)) {
             box.put(spot.id, spot.toJson());
@@ -39,97 +73,105 @@ class SpotService {
           spots.add(spot);
         });
         return spots;
+      } else {
+        // offline
+        return cacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
       }
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          showSimpleNotification(
-            const Text('Couldn\'t connect to API'),
-            background: Colors.red,
-          );
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
         }
       }
     }
     return [];
   }
 
-  Future<List<Spot>> getSpotsByName(String name) async {
+  Future<List<Spot>> getSpots(bool online) async {
     try {
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/spot');
-
-      if (response.statusCode == 200) {
-        // If the server did return a 200 OK response, then parse the JSON.
+      if(online){
+        final Response spotIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/spotUpdated');
+        if (spotIdsResponse.statusCode != 200) {
+          throw Exception("Error during request of spot ids");
+        }
         List<Spot> spots = [];
-        response.data.forEach((s) {
-          Spot spot = Spot.fromJson(s);
-          if (spot.name.contains(name)) {
-            spots.add(spot);
+        List<String> missingSpotIds = [];
+        Box box = Hive.box('spots');
+        spotIdsResponse.data.forEach((idWithDatetime) {
+          String id = idWithDatetime['_id'];
+          String serverUpdated = idWithDatetime['updated'];
+          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+            missingSpotIds.add(id);
+          } else {
+            spots.add(Spot.fromCache(box.get(id)));
           }
         });
+        if (missingSpotIds.isEmpty){
+          return spots;
+        }
+        final Response missingSpotsResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/ids', data: missingSpotIds);
+        if (missingSpotsResponse.statusCode != 200) {
+          throw Exception("Error during request of missing spots");
+        }
+        missingSpotsResponse.data.forEach((s) {
+          Spot spot = Spot.fromJson(s);
+          if (!box.containsKey(spot.id)) {
+            box.put(spot.id, spot.toJson());
+          }
+          spots.add(spot);
+        });
         return spots;
+      } else {
+        // offline
+        return cacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
       }
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          showSimpleNotification(
-            const Text('Couldn\'t connect to API'),
-            background: Colors.red,
-          );
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
         }
       }
     }
     return [];
   }
 
-  Future<Spot?> getSpot(String spotId) async {
-    final Response response =
-        await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
-    if (response.statusCode == 200) {
-      return Spot.fromJson(response.data);
-    } else {
-      return null;
+  Future<List<Spot>> getSpotsByName(String name, bool online) async {
+    List<Spot> spots = await getSpots(online);
+    if (name.isEmpty){
+      return spots;
     }
+    return spots.where((spot) => spot.name.contains(name)).toList();
   }
 
   Future<Spot?> getSpotIfWithinDateRange(String spotId, DateTime startDate, DateTime endDate) async {
-    final Response spotResponse =
-    await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
-    if (spotResponse.statusCode == 200) {
-      Spot spot = Spot.fromJson(spotResponse.data);
-      for (String routeId in spot.multiPitchRouteIds){
-        final Response multiPitchResponse = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route/$routeId');
-        if (multiPitchResponse.statusCode == 200) {
-          MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromJson(multiPitchResponse.data);
-          for (String pitchId in multiPitchRoute.pitchIds){
-            final Response pitchResponse = await netWorkLocator.dio.get('$climbingApiHost/pitch/$pitchId');
-            Pitch pitch = Pitch.fromJson(pitchResponse.data);
-            for (String ascentId in pitch.ascentIds){
-              final Response ascentResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
-              Ascent ascent = Ascent.fromJson(ascentResponse.data);
-              DateTime dateOfAscent = DateTime.parse(ascent.date);
-              if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
-                return spot;
-              }
-            }
-          }
-        }
-      }
-      for (String routeId in spot.singlePitchRouteIds){
-        final Response singlePitchResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$routeId');
-        if (singlePitchResponse.statusCode == 200) {
-          SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(singlePitchResponse.data);
-          for (String ascentId in singlePitchRoute.ascentIds){
-            final Response ascentResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
-            Ascent ascent = Ascent.fromJson(ascentResponse.data);
-            DateTime dateOfAscent = DateTime.parse(ascent.date);
-            if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
-              return spot;
-            }
+    Spot spot = await getSpot(spotId);
+    List<MultiPitchRoute> multiPitchRoutes = await routeService.getMultiPitchRoutesOfIds(true, spot.multiPitchRouteIds); // TODO check if online
+    for (MultiPitchRoute multiPitchRoute in multiPitchRoutes) {
+      List<Pitch> pitches = await pitchService.getPitchesOfIds(true, multiPitchRoute.pitchIds); // TODO check if online
+      for (Pitch pitch in pitches){
+        List<Ascent> ascents = await ascentService.getAscentsOfIds(true, pitch.ascentIds); // TODO check if online
+        for (Ascent ascent in ascents){
+          DateTime dateOfAscent = DateTime.parse(ascent.date);
+          if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
+            return spot;
           }
         }
       }
     }
-    return null;
+    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutesOfIds(true, spot.singlePitchRouteIds); // TODO check if online
+    for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(true, singlePitchRoute.ascentIds); // TODO check if online
+      for (Ascent ascent in ascents){
+        DateTime dateOfAscent = DateTime.parse(ascent.date);
+        if ((dateOfAscent.isAfter(startDate) &&
+            dateOfAscent.isBefore(endDate)) ||
+            dateOfAscent.isAtSameMomentAs(startDate) ||
+            dateOfAscent.isAtSameMomentAs(endDate)) {
+          return spot;
+        }
+      }
+    }
+    throw Exception('Failed to load spot');
   }
 
   Future<Spot?> createSpot(CreateSpot createSpot, bool hasConnection) async {
@@ -160,8 +202,7 @@ class SpotService {
 
   Future<Spot?> editSpot(UpdateSpot spot) async {
     try {
-      final Response response = await netWorkLocator.dio
-          .put('$climbingApiHost/spot/${spot.id}', data: spot.toJson());
+      final Response response = await netWorkLocator.dio.put('$climbingApiHost/spot/${spot.id}', data: spot.toJson());
       if (response.statusCode == 200) {
         // TODO deleteSpotFromEditQueue(spot.hashCode);
         return Spot.fromJson(response.data);
@@ -198,10 +239,7 @@ class SpotService {
       if (spotResponse.statusCode != 200) {
         throw Exception('Failed to delete spot');
       }
-      showSimpleNotification(
-        Text('Spot was deleted: ${spotResponse.data['name']}'),
-        background: Colors.green,
-      );
+      MyNotifications.showPositiveNotification('Spot was deleted: ${spotResponse.data['name']}');
       // TODO deleteSpotFromDeleteQueue(spot.toJson().hashCode);
       return spotResponse.data;
     } catch (e) {
@@ -223,10 +261,7 @@ class SpotService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/spot', data: data);
       if (response.statusCode == 201) {
-        showSimpleNotification(
-          Text('Created new spot: ${response.data['name']}'),
-          background: Colors.green,
-        );
+        MyNotifications.showPositiveNotification('Created new spot: ${response.data['name']}');
         return Spot.fromJson(response.data);
       } else {
         throw Exception('Failed to create spot');
@@ -237,10 +272,7 @@ class SpotService {
         if (response != null) {
           switch (response.statusCode) {
             case 409:
-              showSimpleNotification(
-                const Text('This spot already exists!'),
-                background: Colors.red,
-              );
+              MyNotifications.showNegativeNotification('This spot already exists!');
               break;
             default:
               throw Exception('Failed to create spot');

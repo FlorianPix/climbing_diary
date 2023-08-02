@@ -58,6 +58,9 @@ dependencies:
   overlay_support: ^2.1.0
   flutter_heatmap_calendar: ^1.0.5
   fl_chart: ^0.62.0
+  file_picker: ^5.3.1
+  cached_network_image: ^3.2.3
+  photo_view: ^0.14.0
 
 dev_dependencies:
   flutter_test:

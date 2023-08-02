@@ -46,7 +46,7 @@ class AscentTimelineState extends State<AscentTimeline> {
           var online = snapshot.data!;
           if (online) {
             return FutureBuilder<List<Ascent>>(
-              future: Future.wait(ascentIds.map((ascentId) => ascentService.getAscent(ascentId))),
+              future: ascentService.getAscentsOfIds(online, ascentIds),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   List<Ascent> ascents = snapshot.data!;

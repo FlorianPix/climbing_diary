@@ -23,7 +23,6 @@ class _AddPitchState extends State<AddPitch>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final PitchService pitchService = PitchService();
   final TextEditingController controllerComment = TextEditingController();
-  final TextEditingController controllerGrade = TextEditingController();
   final TextEditingController controllerLength = TextEditingController();
   final TextEditingController controllerName = TextEditingController();
   final TextEditingController controllerNum = TextEditingController();
@@ -31,6 +30,7 @@ class _AddPitchState extends State<AddPitch>{
 
   double currentSliderValue = 0;
   GradingSystem gradingSystem = GradingSystem.french;
+  String grade = Grade.translationTable[GradingSystem.french.index][0];
 
   bool isNumeric(String s) {
     return double.tryParse(s) != null;
@@ -80,10 +80,19 @@ class _AddPitchState extends State<AddPitch>{
                 decoration: const InputDecoration(
                     hintText: "pitch number", labelText: "pitch number"),
               ),
-              TextFormField(
-                controller: controllerGrade,
-                decoration: const InputDecoration(
-                    hintText: "grade", labelText: "grade"),
+              DropdownButton<String>(
+                value: grade,
+                items: Grade.translationTable[gradingSystem.index].toSet().map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value)
+                  );
+                }).toList(),
+                onChanged: (String? value) {
+                  setState(() {
+                    grade = value!;
+                  });
+                },
               ),
               DropdownButton<GradingSystem>(
                 value: gradingSystem,
@@ -95,7 +104,9 @@ class _AddPitchState extends State<AddPitch>{
                 }).toList(),
                 onChanged: (GradingSystem? value) {
                   setState(() {
+                    int oldIndex = Grade.translationTable[gradingSystem.index].indexOf(grade);
                     gradingSystem = value!;
+                    grade = Grade.translationTable[gradingSystem.index][oldIndex];
                   });
                 },
               ),
@@ -144,7 +155,7 @@ class _AddPitchState extends State<AddPitch>{
               if (_formKey.currentState!.validate()) {
                 CreatePitch pitch = CreatePitch(
                   comment: controllerComment.text,
-                  grade: Grade(grade: controllerGrade.text, system: gradingSystem),
+                  grade: Grade(grade: grade, system: gradingSystem),
                   length: int.parse(controllerLength.text),
                   name: controllerName.text,
                   num: int.parse(controllerNum.text),

@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from pydantic import BaseModel, Field
 from bson import ObjectId
 from typing import List
@@ -7,6 +7,7 @@ from app.models.py_object_id import PyObjectId
 
 
 class SpotModel(BaseModel):
+    updated: datetime
     media_ids: List[str] = []
     single_pitch_route_ids: List[PyObjectId] = []
     multi_pitch_route_ids: List[PyObjectId] = []
@@ -27,6 +28,7 @@ class SpotModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
+                "updated": "2022-10-06T20:13:16.816000",
                 "_id": "",
                 "media_ids": [],
                 "single_pitch_route_ids": [],

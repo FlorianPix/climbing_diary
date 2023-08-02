@@ -20,6 +20,7 @@ class SinglePitchRouteModel(RouteModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
+                "updated": "2022-10-06T20:13:16.816000",
                 "_id": "",
                 "media_ids": [],
                 "ascent_ids": [],

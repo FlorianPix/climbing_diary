@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../components/add/add_image.dart';
 import '../../components/info/multi_pitch_route_info.dart';
 import '../../components/my_skeleton.dart';
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
@@ -30,66 +32,36 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
     return Future.wait(futures);
   }
 
-  XFile? image;
   final ImagePicker picker = ImagePicker();
 
-  Future getImage(ImageSource media) async {
-    var img = await picker.pickImage(source: media);
-    if (img != null){
-      var mediaId = await mediaService.uploadMedia(img);
-      MultiPitchRoute route = widget.route;
-      route.mediaIds.add(mediaId);
-      routeService.editMultiPitchRoute(route.toUpdateMultiPitchRoute());
+  Future<void> getImage(ImageSource media) async {
+    if (media == ImageSource.camera) {
+      var img = await picker.pickImage(source: media);
+      if (img != null) {
+        var mediaId = await mediaService.uploadMedia(img);
+        MultiPitchRoute multiPitchRoute = widget.route;
+        multiPitchRoute.mediaIds.add(mediaId);
+        routeService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
+      }
+    } else {
+      List<XFile> images = await picker.pickMultiImage();
+      for (XFile img in images){
+        var mediaId = await mediaService.uploadMedia(img);
+        MultiPitchRoute multiPitchRoute = widget.route;
+        multiPitchRoute.mediaIds.add(mediaId);
+        routeService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
+      }
     }
-
-    setState(() {
-      image = img;
-    });
+    setState(() {});
   }
 
   void addImageDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          title: const Text('Please choose media to select'),
-          content: SizedBox(
-            height: MediaQuery.of(context).size.height / 6,
-            child: Column(
-              children: [
-                ElevatedButton(
-                  //if user click this button, user can upload image from gallery
-                  onPressed: () {
-                    Navigator.pop(context);
-                    getImage(ImageSource.gallery);
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(Icons.image),
-                      Text('From Gallery'),
-                    ],
-                  ),
-                ),
-                ElevatedButton(
-                  //if user click this button. user can upload image from camera
-                  onPressed: () {
-                    Navigator.pop(context);
-                    getImage(ImageSource.camera);
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(Icons.camera),
-                      Text('From Camera'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      });
+        return AddImage(onAddImage: getImage);
+      }
+    );
   }
 
   @override
@@ -171,15 +143,11 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
                     padding: const EdgeInsets.all(5.0),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
-                      child: Image.network(
-                        url,
+                      child: CachedNetworkImage(
+                        imageUrl: url,
                         fit: BoxFit.fitHeight,
-                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                          if (loadingProgress == null) {
-                            return child;
-                          }
-                          return const MySkeleton();
-                        },
+                        placeholder: (context, url) => const MySkeleton(),
+                        errorWidget: (context, url, error) => const Icon(Icons.error),
                       )
                     ),
                   )

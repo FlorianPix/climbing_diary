@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:climbing_diary/components/my_skeleton.dart';
 import 'package:flutter/material.dart';
 
@@ -35,16 +36,11 @@ class ImageListView extends StatelessWidget {
                         padding: const EdgeInsets.all(5.0),
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(8.0),
-                            child: Image.network(
-                              url,
-                              loadingBuilder: (BuildContext context,
-                                  Widget child,
-                                  ImageChunkEvent? loadingProgress) {
-                                if (loadingProgress == null) {
-                                  return child;
-                                }
-                                return const MySkeleton();
-                              },
+                            child: CachedNetworkImage(
+                              imageUrl: url,
+                              fit: BoxFit.fitHeight,
+                              placeholder: (context, url) => const MySkeleton(),
+                              errorWidget: (context, url, error) => const Icon(Icons.error),
                             )
                         ),
                       )

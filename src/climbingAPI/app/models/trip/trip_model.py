@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from pydantic import BaseModel, Field
 from bson import ObjectId
 from typing import List
@@ -7,6 +7,7 @@ from app.models.py_object_id import PyObjectId
 
 
 class TripModel(BaseModel):
+    updated: datetime
     media_ids: List[str] = []
     spot_ids: List[str] = []
     trip_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
@@ -24,6 +25,7 @@ class TripModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
+                "updated": "2022-10-06T20:13:16.816000",
                 "media_ids": [],
                 "spot_ids": [],
                 "_id": "",

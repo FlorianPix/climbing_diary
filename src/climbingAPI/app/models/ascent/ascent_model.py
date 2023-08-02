@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from pydantic import BaseModel, Field
 from bson import ObjectId
 from typing import List
@@ -7,6 +7,7 @@ from app.models.py_object_id import PyObjectId
 
 
 class AscentModel(BaseModel):
+    updated: datetime
     media_ids: List[str] = []
     ascent_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     user_id: str = Field(...)
@@ -22,6 +23,7 @@ class AscentModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
+                "updated": "2022-10-06T20:13:16.816000",
                 "_id": "",
                 "media_ids": [],
                 "user_id": "",

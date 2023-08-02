@@ -1,7 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../components/add/add_image.dart';
 import '../../components/detail/media_details.dart';
 import '../../components/grade_distribution.dart';
 import '../../components/my_skeleton.dart';
@@ -50,47 +52,11 @@ class _SpotDetailsState extends State<SpotDetails>{
 
   void addImageDialog() {
     showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          title: const Text('Please choose media to select'),
-          content: SizedBox(
-            height: MediaQuery.of(context).size.height / 6,
-            child: Column(
-              children: [
-                ElevatedButton(
-                  //if user click this button, user can upload image from gallery
-                  onPressed: () {
-                    Navigator.pop(context);
-                    getImage(ImageSource.gallery);
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(Icons.image),
-                      Text('From Gallery'),
-                    ],
-                  ),
-                ),
-                ElevatedButton(
-                  //if user click this button. user can upload image from camera
-                  onPressed: () {
-                    Navigator.pop(context);
-                    getImage(ImageSource.camera);
-                  },
-                  child: Row(
-                    children: const [
-                      Icon(Icons.camera),
-                      Text('From Camera'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      });
+        context: context,
+        builder: (BuildContext context) {
+          return AddImage(onAddImage: getImage);
+        }
+    );
   }
 
   @override
@@ -220,30 +186,21 @@ class _SpotDetailsState extends State<SpotDetails>{
                       showDialog(
                         context: context,
                         builder: (BuildContext context) =>
-                            Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: MediaDetails(
-                                  url: url,
-                                  onDelete: deleteMediaCallback,
-                                )
-                            ),
+                          MediaDetails(
+                            url: url,
+                            onDelete: deleteMediaCallback,
+                          )
                       ),
                   child: Ink(
                       child: Padding(
                         padding: const EdgeInsets.all(5.0),
                         child: ClipRRect(
                             borderRadius: BorderRadius.circular(8.0),
-                            child: Image.network(
-                              url,
+                            child: CachedNetworkImage(
+                              imageUrl: url,
                               fit: BoxFit.fitHeight,
-                              loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                                if (loadingProgress == null) {
-                                  return child;
-                                }
-                                return const MySkeleton();
-                              },
+                              placeholder: (context, url) => const MySkeleton(),
+                              errorWidget: (context, url, error) => const Icon(Icons.error),
                             )
                         ),
                       )

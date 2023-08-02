@@ -5,6 +5,7 @@ class MultiPitchRoute extends ClimbingRoute{
   final List<String> pitchIds;
 
   const MultiPitchRoute({
+    required super.updated,
     required super.mediaIds,
     required this.pitchIds,
     required super.id,
@@ -17,6 +18,7 @@ class MultiPitchRoute extends ClimbingRoute{
 
   factory MultiPitchRoute.fromJson(Map<String, dynamic> json) {
     return MultiPitchRoute(
+      updated: json['updated'],
       mediaIds: List<String>.from(json['media_ids']),
       pitchIds: List<String>.from(json['pitch_ids']),
       id: json['_id'],
@@ -30,6 +32,7 @@ class MultiPitchRoute extends ClimbingRoute{
 
   factory MultiPitchRoute.fromCache(Map<dynamic, dynamic> cache) {
     return MultiPitchRoute(
+      updated: cache['updated'],
       mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : [],
       pitchIds: cache['pitch_ids'] != null ? List<String>.from(cache['pitch_ids']) : [],
       id: cache['_id'],
@@ -43,6 +46,7 @@ class MultiPitchRoute extends ClimbingRoute{
 
   @override
   Map toJson() => {
+    "updated": updated,
     "media_ids": mediaIds,
     "pitch_ids": pitchIds,
     "_id": id,

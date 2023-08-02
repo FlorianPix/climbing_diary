@@ -16,6 +16,7 @@ import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import '../interfaces/my_base_interface/my_base_interface.dart';
@@ -69,6 +70,17 @@ class ArchiveService {
     return null;
   }
 
+  Future<File?> _pickedFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      String? path = result.files.single.path;
+      if (path != null) return File(path);
+    } else {
+      // User canceled the picker
+    }
+    return null;
+  }
+
   Future<bool> _requestPermission(Permission permission) async {
     if (await permission.isGranted) {
       return true;
@@ -82,12 +94,12 @@ class ArchiveService {
   }
 
   Future<File?> writeBackup() async {
-    List<Trip> trips = await tripService.getTrips();
-    List<Spot> spots = await spotService.getSpots();
-    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutes();
-    List<MultiPitchRoute> multiPitchRoutes = await routeService.getMultiPitchRoutes();
-    List<Pitch> pitches = await pitchService.getPitches();
-    List<Ascent> ascents = await ascentService.getAscents();
+    List<Trip> trips = await tripService.getTrips(true);
+    List<Spot> spots = await spotService.getSpots(true);
+    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutes(true);
+    List<MultiPitchRoute> multiPitchRoutes = await routeService.getMultiPitchRoutes(true);
+    List<Pitch> pitches = await pitchService.getPitches(true);
+    List<Ascent> ascents = await ascentService.getAscents(true);
     Map<String, dynamic> json = {
       "trips": [],
       "spots": [],
@@ -123,9 +135,18 @@ class ArchiveService {
     return null;
   }
 
+  Future<Map<String, dynamic>> readPicked() async {
+    return readFile(_pickedFile());
+  }
+
   Future<Map<String, dynamic>> readBackup() async {
+    return readFile(_externalFile);
+  }
+
+  Future<Map<String, dynamic>> readFile(rFile) async {
+
     try {
-      final File? file = await _externalFile;
+      final File? file = await rFile;
       if (file != null) {
         final String contents = await file.readAsString();
         Map<String, dynamic> json = jsonDecode(contents);
@@ -279,11 +300,11 @@ class ArchiveService {
 
   List<T> decodeJsonList<T extends MyBaseInterface>(Map<String, dynamic> json, String key, T Function(Map<String, dynamic>) fromJsonFactory) {
     List<T> ts = [];
-    for (dynamic t in jsonDecode(json[key])
-        .map((t) => fromJsonFactory(t))
-        .toList()) {
+    for (dynamic t in jsonDecode(json[key]).map((t) => fromJsonFactory(t)).toList()) {
       ts.add(t as T);
     }
     return ts;
   }
+
+
 }

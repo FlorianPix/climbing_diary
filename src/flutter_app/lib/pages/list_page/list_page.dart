@@ -96,7 +96,7 @@ class ListPageState extends State<ListPage> {
     );
 
     Widget spotList = FutureBuilder<List<Spot>>(
-        future: spotService.getSpotsByName(controllerSearch.text),
+        future: spotService.getSpotsByName(controllerSearch.text, true), // TODO check if online
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List<Spot> spots = snapshot.data!;
@@ -110,7 +110,7 @@ class ListPageState extends State<ListPage> {
     );
 
     Widget routeList = FutureBuilder<List<MultiPitchRoute>>(
-        future: routeService.getMultiPitchRoutesByName(controllerSearch.text),
+        future: routeService.getMultiPitchRoutesByName(controllerSearch.text, true), // TODO check if online
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List<MultiPitchRoute> multiPitchRoutes = snapshot.data!;

@@ -1,5 +1,5 @@
 from bson import ObjectId
-from datetime import date
+from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import List
 
@@ -9,6 +9,7 @@ from ..grade import Grade
 
 
 class PitchModel(BaseModel):
+    updated: datetime
     ascent_ids: List[PyObjectId] = []
     media_ids: List[str] = []
     pitch_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
@@ -27,6 +28,7 @@ class PitchModel(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
+                "updated": "2022-10-06T20:13:16.816000",
                 "_id": "",
                 "ascent_ids": [],
                 "media_ids": [],

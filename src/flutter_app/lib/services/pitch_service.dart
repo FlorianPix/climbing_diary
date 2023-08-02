@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:overlay_support/overlay_support.dart';
 
+import '../components/my_notifications.dart';
 import '../config/environment.dart';
 import '../interfaces/pitch/create_pitch.dart';
 import 'package:dio/dio.dart';
@@ -10,24 +9,74 @@ import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/pitch/pitch.dart';
 import '../interfaces/pitch/update_pitch.dart';
+import 'cache_service.dart';
 import 'locator.dart';
 
 class PitchService {
+  final CacheService cacheService = CacheService();
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<List<Pitch>> getPitches() async {
-    try {
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/pitch');
+  Future<Pitch?> createPitch(CreatePitch createPitch, String routeId, bool hasConnection) async {
+    CreatePitch pitch = CreatePitch(
+      comment: (createPitch.comment != null) ? createPitch.comment! : "",
+      grade: createPitch.grade,
+      length: createPitch.length,
+      name: createPitch.name,
+      num: createPitch.num,
+      rating: createPitch.rating,
+    );
+    if (hasConnection) {
+      var data = pitch.toJson();
+      return uploadPitch(routeId, data);
+    } else {
+      // save to cache
+      Box box = Hive.box('upload_later_pitches');
+      Map pitchJson = pitch.toJson();
+      box.put(pitchJson.hashCode, pitchJson);
+    }
+    return null;
+  }
 
-      if (response.statusCode == 200) {
-        // If the server did return a 200 OK response, then parse the JSON.
+  Future<Pitch> getPitch(String pitchId) async {
+    final Response response =
+    await netWorkLocator.dio.get('$climbingApiHost/pitch/$pitchId');
+    if (response.statusCode == 200) {
+      return Pitch.fromJson(response.data);
+    } else {
+      throw Exception('Failed to load pitch');
+    }
+  }
+
+  Future<List<Pitch>> getPitchesOfIds(bool online, List<String> pitchIds) async {
+    try {
+      if(online){
+        final Response pitchIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/pitchUpdated/ids', data: pitchIds);
+        if (pitchIdsUpdatedResponse.statusCode != 200) {
+          throw Exception("Error during request of pitch ids updated");
+        }
         List<Pitch> pitches = [];
-        // save to cache
+        List<String> missingPitchIds = [];
         Box box = Hive.box('pitches');
-        response.data.forEach((s) {
+        pitchIdsUpdatedResponse.data.forEach((idWithDatetime) {
+          String id = idWithDatetime['_id'];
+          String serverUpdated = idWithDatetime['updated'];
+          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+            missingPitchIds.add(id);
+          } else {
+            pitches.add(Pitch.fromCache(box.get(id)));
+          }
+        });
+        if (missingPitchIds.isEmpty){
+          return pitches;
+        }
+        final Response missingPitchesResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/ids', data: missingPitchIds);
+        if (missingPitchesResponse.statusCode != 200) {
+          throw Exception("Error during request of missing pitches");
+        }
+        missingPitchesResponse.data.forEach((s) {
           Pitch pitch = Pitch.fromJson(s);
           if (!box.containsKey(pitch.id)) {
             box.put(pitch.id, pitch.toJson());
@@ -35,28 +84,66 @@ class PitchService {
           pitches.add(pitch);
         });
         return pitches;
+      } else {
+        // offline
+        return cacheService.getTsFromCache<Pitch>('pitches', Pitch.fromCache);
       }
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          showSimpleNotification(
-            const Text('Couldn\'t connect to API'),
-            background: Colors.red,
-          );
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
         }
       }
     }
     return [];
   }
 
-  Future<Pitch> getPitch(String pitchId) async {
-    final Response response =
-        await netWorkLocator.dio.get('$climbingApiHost/pitch/$pitchId');
-    if (response.statusCode == 200) {
-      return Pitch.fromJson(response.data);
-    } else {
-      throw Exception('Failed to load pitch');
+  Future<List<Pitch>> getPitches(bool online) async {
+    try {
+      if(online){
+        final Response pitchIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/pitchUpdated');
+        if (pitchIdsResponse.statusCode != 200) {
+          throw Exception("Error during request of pitch ids");
+        }
+        List<Pitch> pitches = [];
+        List<String> missingPitchIds = [];
+        Box box = Hive.box('pitches');
+        pitchIdsResponse.data.forEach((idWithDatetime) {
+          String id = idWithDatetime['_id'];
+          String serverUpdated = idWithDatetime['updated'];
+          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+            missingPitchIds.add(id);
+          } else {
+            pitches.add(Pitch.fromCache(box.get(id)));
+          }
+        });
+        if (missingPitchIds.isEmpty){
+          return pitches;
+        }
+        final Response missingPitchesResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/ids', data: missingPitchIds);
+        if (missingPitchesResponse.statusCode != 200) {
+          throw Exception("Error during request of missing pitches");
+        }
+        missingPitchesResponse.data.forEach((s) {
+          Pitch pitch = Pitch.fromJson(s);
+          if (!box.containsKey(pitch.id)) {
+            box.put(pitch.id, pitch.toJson());
+          }
+          pitches.add(pitch);
+        });
+        return pitches;
+      } else {
+        // offline
+        return cacheService.getTsFromCache<Pitch>('pitches', Pitch.fromCache);
+      }
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
+        }
+      }
     }
+    return [];
   }
 
   Future<List<Pitch>> getPitchesByName(String name) async {
@@ -77,35 +164,11 @@ class PitchService {
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          showSimpleNotification(
-            const Text('Couldn\'t connect to API'),
-            background: Colors.red,
-          );
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
         }
       }
     }
     return [];
-  }
-
-  Future<Pitch?> createPitch(CreatePitch createPitch, String routeId, bool hasConnection) async {
-    CreatePitch pitch = CreatePitch(
-      comment: (createPitch.comment != null) ? createPitch.comment! : "",
-      grade: createPitch.grade,
-      length: createPitch.length,
-      name: createPitch.name,
-      num: createPitch.num,
-      rating: createPitch.rating,
-    );
-    if (hasConnection) {
-      var data = pitch.toJson();
-      return uploadPitch(routeId, data);
-    } else {
-      // save to cache
-      Box box = Hive.box('upload_later_pitchs');
-      Map pitchJson = pitch.toJson();
-      box.put(pitchJson.hashCode, pitchJson);
-    }
-    return null;
   }
 
   Future<Pitch?> editPitch(UpdatePitch pitch) async {
@@ -146,15 +209,9 @@ class PitchService {
       final Response pitchResponse =
       await netWorkLocator.dio.delete('$climbingApiHost/pitch/${pitch.id}/route/$routeId');
       if (pitchResponse.statusCode != 200) {
-        showSimpleNotification(
-          Text('Failed to delete pitch: ${pitch.name}'),
-          background: Colors.red,
-        );
+        MyNotifications.showNegativeNotification('Failed to delete pitch: ${pitch.name}');
       }
-      showSimpleNotification(
-        Text('Pitch was deleted: ${pitchResponse.data['name']}'),
-        background: Colors.green,
-      );
+      MyNotifications.showPositiveNotification('Pitch was deleted: ${pitchResponse.data['name']}');
       // TODO deletePitchFromDeleteQueue(pitch.toJson().hashCode);
       return pitchResponse.data;
     } catch (e) {
@@ -176,10 +233,7 @@ class PitchService {
       final Response response = await netWorkLocator.dio
           .post('$climbingApiHost/pitch/route/$routeId', data: data);
       if (response.statusCode == 201) {
-        showSimpleNotification(
-          Text('Created new pitch: ${response.data['name']}'),
-          background: Colors.green,
-        );
+        MyNotifications.showPositiveNotification('Created new pitch: ${response.data['name']}');
         return Pitch.fromJson(response.data);
       } else {
         throw Exception('Failed to create pitch $response');
@@ -190,10 +244,7 @@ class PitchService {
         if (response != null) {
           switch (response.statusCode) {
             case 409:
-              showSimpleNotification(
-                const Text('This pitch already exists!'),
-                background: Colors.red,
-              );
+              MyNotifications.showNegativeNotification('This pitch already exists!');
               break;
             default:
               throw Exception('Failed to create pitch $response');

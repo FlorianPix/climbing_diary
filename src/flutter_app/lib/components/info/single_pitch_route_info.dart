@@ -46,7 +46,7 @@ class _SinglePitchRouteInfoState extends State<SinglePitchRouteInfo>{
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Ascent>>(
-        future: Future.wait(widget.route.ascentIds.map((ascentId) => ascentService.getAscent(ascentId))),
+        future: ascentService.getAscentsOfIds(true, widget.route.ascentIds), // TODO check if online
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List<Ascent> ascents = snapshot.data!;
