@@ -39,21 +39,27 @@ class _SpotDetailsState extends State<SpotDetails>{
     return Future.wait(futures);
   }
 
-  XFile? image;
   final ImagePicker picker = ImagePicker();
 
-  Future getImage(ImageSource media) async {
-    var img = await picker.pickImage(source: media);
-    if (img != null){
-      var mediaId = await mediaService.uploadMedia(img);
-      Spot spot = widget.spot;
-      spot.mediaIds.add(mediaId);
-      spotService.editSpot(spot.toUpdateSpot());
+  Future<void> getImage(ImageSource media) async {
+    if (media == ImageSource.camera) {
+      var img = await picker.pickImage(source: media);
+      if (img != null) {
+        var mediaId = await mediaService.uploadMedia(img);
+        Spot spot = widget.spot;
+        spot.mediaIds.add(mediaId);
+        spotService.editSpot(spot.toUpdateSpot());
+      }
+    } else {
+      List<XFile> images = await picker.pickMultiImage();
+      for (XFile img in images){
+        var mediaId = await mediaService.uploadMedia(img);
+        Spot spot = widget.spot;
+        spot.mediaIds.add(mediaId);
+        spotService.editSpot(spot.toUpdateSpot());
+      }
     }
-
-    setState(() {
-      image = img;
-    });
+    setState(() {});
   }
 
   void addImageDialog() {

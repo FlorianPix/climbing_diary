@@ -34,18 +34,25 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
   XFile? image;
   final ImagePicker picker = ImagePicker();
 
-  Future getImage(ImageSource media) async {
-    var img = await picker.pickImage(source: media);
-    if (img != null){
-      var mediaId = await mediaService.uploadMedia(img);
-      SinglePitchRoute route = widget.route;
-      route.mediaIds.add(mediaId);
-      routeService.editSinglePitchRoute(route.toUpdateSinglePitchRoute());
+  Future<void> getImage(ImageSource media) async {
+    if (media == ImageSource.camera) {
+      var img = await picker.pickImage(source: media);
+      if (img != null) {
+        var mediaId = await mediaService.uploadMedia(img);
+        SinglePitchRoute singlePitchRoute = widget.route;
+        singlePitchRoute.mediaIds.add(mediaId);
+        routeService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
+      }
+    } else {
+      List<XFile> images = await picker.pickMultiImage();
+      for (XFile img in images){
+        var mediaId = await mediaService.uploadMedia(img);
+        SinglePitchRoute singlePitchRoute = widget.route;
+        singlePitchRoute.mediaIds.add(mediaId);
+        routeService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
+      }
     }
-
-    setState(() {
-      image = img;
-    });
+    setState(() {});
   }
 
   void addImageDialog() {

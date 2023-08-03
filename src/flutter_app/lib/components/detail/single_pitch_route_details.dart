@@ -135,7 +135,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
     if (route.mediaIds.isNotEmpty) {
       elements.add(ImageListView(
         onDelete: deleteImageCallback,
-        mediaIds: widget.spot.mediaIds,
+        mediaIds: widget.route.mediaIds,
         getImage: getImage,
       ));
     } else {

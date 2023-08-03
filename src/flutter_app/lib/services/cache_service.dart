@@ -1,8 +1,8 @@
-import 'package:climbing_diary/interfaces/spot/update_spot.dart';
 import 'package:climbing_diary/services/spot_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../interfaces/spot/spot.dart';
+import '../interfaces/spot/update_spot.dart';
 
 final SpotService spotService = SpotService();
 
@@ -115,6 +115,7 @@ class CacheService{
   }
 
   bool isStale(Map cache, String serverUpdatedString){
+    if (cache['updated'] == null) return true;
     DateTime cachedUpdated = DateTime.parse(cache['updated']);
     DateTime serverUpdated = DateTime.parse(serverUpdatedString);
     if (serverUpdated.compareTo(cachedUpdated) == 1) return true;
