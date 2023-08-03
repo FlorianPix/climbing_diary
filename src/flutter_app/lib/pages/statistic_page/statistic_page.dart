@@ -23,6 +23,7 @@ class StatisticPageState extends State<StatisticPage> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               List<Ascent> ascents = snapshot.data!;
+              print(ascents);
               Map<DateTime, int> datasets = <DateTime, int>{};
               for (var ascent in ascents) {
                 DateTime date = DateTime.parse(ascent.date);
