@@ -46,7 +46,7 @@ class _MultiPitchInfoState extends State<MultiPitchInfo>{
           int length = 0;
           for (var pitch in pitches) {
             Grade otherGrade = pitch.grade;
-            grade += otherGrade;
+            if(otherGrade > grade) grade = otherGrade;
             length += pitch.length;
           }
           String gradeString = grade.grade;
