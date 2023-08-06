@@ -5,7 +5,8 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+  const MapPage({super.key, required this.onNetworkChange});
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -14,31 +15,22 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   bool online = false;
 
-  Future<bool> checkConnection() async {
-    return await InternetConnectionChecker().hasConnection;
+  void checkConnection() async {
+    await InternetConnectionChecker().hasConnection.then((value) {
+      widget.onNetworkChange.call(value);
+      setState(() => online = value);
+    });
   }
 
   @override
   void initState() {
     super.initState();
+    checkConnection();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: checkConnection(),
-      builder: (context, AsyncSnapshot<bool> snapshot) {
-        if (snapshot.hasData) {
-          var online = snapshot.data!;
-          if (online) {
-            return const MapPageOnline();
-          } else {
-            return const MapPageOffline();
-          }
-        } else if (snapshot.hasError) {
-          return Text('${snapshot.error}');
-        }
-        return const CircularProgressIndicator();
-      });
+    if (online) return MapPageOnline(onNetworkChange: (bool value) => setState(() => online = value));
+    return const MapPageOffline();
   }
 }

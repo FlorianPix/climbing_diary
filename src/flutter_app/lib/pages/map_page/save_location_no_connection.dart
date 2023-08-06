@@ -25,7 +25,6 @@ class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> 
   }
 
   @override
-  //Just a test case for "Save spot" - feature
   Widget build(BuildContext context) {
     return FutureBuilder<Position>(
       future: locationService.getPosition(),

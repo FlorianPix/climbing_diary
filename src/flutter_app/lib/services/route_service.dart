@@ -28,14 +28,31 @@ class RouteService {
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<MultiPitchRoute> getMultiPitchRoute(String routeId) async {
-    final Response response =
-    await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route/$routeId');
-    if (response.statusCode == 200) {
-      return MultiPitchRoute.fromJson(response.data);
-    } else {
-      throw Exception('Failed to load route');
+  Future<MultiPitchRoute?> getMultiPitchRoute(String routeId, bool online) async {
+    try {
+      Box box = Hive.box('spots');
+      if (online) {
+        final Response multiPitchRouteIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_routeUpdated/$routeId');
+        if (multiPitchRouteIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot id updated");
+        String id = multiPitchRouteIdUpdatedResponse.data['_id'];
+        String serverUpdated = multiPitchRouteIdUpdatedResponse.data['updated'];
+        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          final Response missingMultiPitchRouteResponse = await netWorkLocator.dio.post('$climbingApiHost/multi_pitch_route/$routeId');
+          if (missingMultiPitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing spot");
+          return MultiPitchRoute.fromJson(missingMultiPitchRouteResponse.data);
+        } else {
+          return MultiPitchRoute.fromCache(box.get(id));
+        }
+      }
+      return MultiPitchRoute.fromCache(box.get(routeId));
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
+        }
+      }
     }
+    return null;
   }
 
   Future<List<MultiPitchRoute>> getMultiPitchRoutesOfIds(bool online, List<String> multiPitchRouteIds) async {
@@ -74,7 +91,8 @@ class RouteService {
         return multiPitchRoutes;
       } else {
         // offline
-        return cacheService.getTsFromCache<MultiPitchRoute>('multi_pitch_routes', MultiPitchRoute.fromCache);
+        List<MultiPitchRoute> multiPitchRoutes = cacheService.getTsFromCache<MultiPitchRoute>('multi_pitch_routes', MultiPitchRoute.fromCache);
+        return multiPitchRoutes.where((element) => multiPitchRouteIds.contains(element.id)).toList();
       }
     } catch (e) {
       if (e is DioError) {
@@ -142,11 +160,12 @@ class RouteService {
     return multiPitchRoutes.where((multiPitchRoute) => multiPitchRoute.name.contains(name)).toList();
   }
 
-  Future<MultiPitchRoute?> getMultiPitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate) async {
-    MultiPitchRoute multiPitchRoute = await getMultiPitchRoute(routeId);
-    List<Pitch> pitches = await pitchService.getPitchesOfIds(true, multiPitchRoute.pitchIds); // TODO check if online
+  Future<MultiPitchRoute?> getMultiPitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate, bool online) async {
+    MultiPitchRoute? multiPitchRoute = await getMultiPitchRoute(routeId, online);
+    if (multiPitchRoute == null) return null;
+    List<Pitch> pitches = await pitchService.getPitchesOfIds(online, multiPitchRoute.pitchIds);
     for (Pitch pitch in pitches){
-      List<Ascent> ascents = await ascentService.getAscentsOfIds(true, pitch.ascentIds); // TODO check if online
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(online, pitch.ascentIds);
       for (Ascent ascent in ascents){
         DateTime dateOfAscent = DateTime.parse(ascent.date);
         if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
@@ -327,14 +346,32 @@ class RouteService {
     return null;
   }
 
-  Future<SinglePitchRoute> getSinglePitchRoute(String routeId) async {
-    final Response response =
-    await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$routeId');
-    if (response.statusCode == 200) {
-      return SinglePitchRoute.fromJson(response.data);
-    } else {
-      throw Exception('Failed to load route');
+  Future<SinglePitchRoute?> getSinglePitchRoute(String routeId, bool online) async {
+    try {
+      Box box = Hive.box('spots');
+      if (online) {
+        final Response singlePitchRouteIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_routeUpdated/$routeId');
+        if (singlePitchRouteIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot id updated");
+        String id = singlePitchRouteIdUpdatedResponse.data['_id'];
+        String serverUpdated = singlePitchRouteIdUpdatedResponse.data['updated'];
+        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          final Response missingSinglePitchRouteResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$routeId');
+          if (missingSinglePitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing spot");
+          return SinglePitchRoute.fromJson(missingSinglePitchRouteResponse.data);
+        } else {
+          return SinglePitchRoute.fromCache(box.get(id));
+        }
+      }
+      return SinglePitchRoute.fromCache(box.get(routeId));
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
+        }
+      }
+      print(e);
     }
+    return null;
   }
 
   Future<List<SinglePitchRoute>> getSinglePitchRoutesOfIds(bool online, List<String> singlePitchRouteIds) async {
@@ -373,15 +410,16 @@ class RouteService {
         return singlePitchRoutes;
       } else {
         // offline
-        return cacheService.getTsFromCache<SinglePitchRoute>('single_pitch_routes', SinglePitchRoute.fromCache);
+        List<SinglePitchRoute> singlePitchRoutes = cacheService.getTsFromCache<SinglePitchRoute>('single_pitch_routes', SinglePitchRoute.fromCache);
+        return singlePitchRoutes.where((element) => singlePitchRouteIds.contains(element.id)).toList();
       }
     } catch (e) {
-      print(e);
       if (e is DioError) {
         if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
           MyNotifications.showNegativeNotification('Couldn\'t connect to API');
         }
       }
+      print(e);
     }
     return [];
   }
@@ -434,25 +472,16 @@ class RouteService {
     return [];
   }
 
-  Future<List<SinglePitchRoute>> getSinglePitchRoutesByName(String name) async {
-    final Response response = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route');
-    if (response.statusCode == 200) {
-      List<SinglePitchRoute> routes = [];
-      response.data.forEach((r) {
-        SinglePitchRoute route = SinglePitchRoute.fromJson(r);
-        if (route.name.contains(name)) {
-          routes.add(route);
-        }
-      });
-      return routes;
-    } else {
-      throw Exception('Failed to load route');
-    }
+  Future<List<SinglePitchRoute>> getSinglePitchRoutesByName(String name, bool online) async {
+    List<SinglePitchRoute> singlePitchRoutes = await getSinglePitchRoutes(online);
+    if (name.isEmpty) return singlePitchRoutes;
+    return singlePitchRoutes.where((singlePitchRoute) => singlePitchRoute.name.contains(name)).toList();
   }
 
-  Future<SinglePitchRoute?> getSinglePitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate) async {
-    SinglePitchRoute singlePitchRoute = await getSinglePitchRoute(routeId);
-    List<Ascent> ascents = await ascentService.getAscentsOfIds(true, singlePitchRoute.ascentIds); // TODO check if online
+  Future<SinglePitchRoute?> getSinglePitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate, bool online) async {
+    SinglePitchRoute? singlePitchRoute = await getSinglePitchRoute(routeId, online);
+    if (singlePitchRoute == null) return null;
+    List<Ascent> ascents = await ascentService.getAscentsOfIds(online, singlePitchRoute.ascentIds);
     for (Ascent ascent in ascents) {
       DateTime dateOfAscent = DateTime.parse(ascent.date);
       if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){

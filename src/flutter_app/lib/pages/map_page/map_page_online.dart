@@ -8,7 +8,9 @@ import '../../interfaces/spot/spot.dart';
 import '../../services/spot_service.dart';
 
 class MapPageOnline extends StatefulWidget {
-  const MapPageOnline({super.key});
+  const MapPageOnline({super.key, required this.onNetworkChange});
+
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<MapPageOnline> createState() => _MapPageOnlineState();
@@ -27,64 +29,99 @@ class _MapPageOnlineState extends State<MapPageOnline> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Spot>>(
-        future: spotService.getSpotsByName(controllerSearch.text, true), // TODO check if online
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List<Spot> spots = snapshot.data!;
+      future: spotService.getSpotsByName(controllerSearch.text, true),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          List<Spot> spots = snapshot.data!;
 
-            addSpotCallback(Spot spot) {
-              spots.add(spot);
-              setState(() {});
+          addSpotCallback(Spot spot) {
+            spots.add(spot);
+            setState(() {});
+          }
+
+          updateSpotCallback(Spot spot) {
+            var index = -1;
+            for (int i = 0; i < spots.length; i++) {
+              if (spots[i].id == spot.id) index = i;
             }
+            spots.removeAt(index);
+            spots.add(spot);
+            setState(() {});
+          }
 
-            updateCallback(Spot spot) {
-              var index = -1;
-              for (int i = 0; i < spots.length; i++) {
-                if (spots[i].id == spot.id) {
-                  index = i;
-                }
-              }
-              spots.removeAt(index);
-              spots.add(spot);
-              setState(() {});
-            }
+          deleteSpotCallback(Spot spot) {
+            spots.remove(spot);
+            setState(() {});
+          }
 
-            deleteSpotCallback(Spot spot) {
-              spots.remove(spot);
-              setState(() {});
-            }
-
-            Widget search = Form(
-              key: _formKey,
-              child:
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: TextFormField(
-                  controller: controllerSearch,
-                  decoration: const InputDecoration(
-                      icon: Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                        borderSide: BorderSide(color: Colors.blue),
-                      ),
-                      filled: true,
-                      fillColor: Color.fromRGBO(255,127,90, .3),
-                      hintText: "name",
-                      labelText: "name"
+          Widget search = Form(
+            key: _formKey,
+            child:
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: TextFormField(
+                controller: controllerSearch,
+                decoration: const InputDecoration(
+                  icon: Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                    borderSide: BorderSide(color: Colors.blue),
                   ),
-                  onChanged: (String s) {
-                    setState(() {});
-                  },
+                  filled: true,
+                  fillColor: Color.fromRGBO(255,127,90, .3),
+                  hintText: "name",
+                  labelText: "name"
                 ),
+                onChanged: (String s) => setState(() {}),
               ),
-            );
+            ),
+          );
 
-            if (spots.isEmpty) {
-              return Scaffold(
-                  body: Center(child: Stack(children: [
+          if (spots.isEmpty) {
+            return Scaffold(
+              body: Center(child: Stack(children: [
+                FlutterMap(
+                  options: MapOptions(
+                    center: LatLng(50.746036, 10.642666),
+                    zoom: 5,
+                  ),
+                  nonRotatedChildren: [
+                    AttributionWidget.defaultWidget(
+                      source: 'OpenStreetMap contributors',
+                      onSourceTapped: null,
+                    ),
+                  ],
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.climbing_diary',
+                    ),
+                  ],
+                ),
+                search
+              ])),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (context) => AddSpot(onAdd: (spot) => addSpotCallback(spot))
+                    ),
+                  );
+                },
+                backgroundColor: Colors.green,
+                elevation: 5,
+                child: const Icon(Icons.add, size: 50.0, color: Colors.white),
+              )
+            );
+          }
+
+          return Scaffold(
+              body: Center(
+                  child: Stack(children: [
                     FlutterMap(
                       options: MapOptions(
-                        center: LatLng(50.746036, 10.642666),
+                        center: LatLng(spots[0].coordinates[0], spots[0].coordinates[1]),
                         zoom: 5,
                       ),
                       nonRotatedChildren: [
@@ -97,79 +134,40 @@ class _MapPageOnlineState extends State<MapPageOnline> {
                         TileLayer(
                           urlTemplate:
                           'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.example.climbing_diary',
+                          userAgentPackageName: 'com.example.app',
+                        ),
+                        MarkerLayer(
+                          markers: getMarkers(spots, deleteSpotCallback, updateSpotCallback)
                         ),
                       ],
                     ),
-                    search
-                  ])),
-                  floatingActionButton: FloatingActionButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => AddSpot(onAdd: (spot) => addSpotCallback(spot))),
-                      );
-                    },
-                    backgroundColor: Colors.green,
-                    elevation: 5,
-                    child: const Icon(Icons.add, size: 50.0, color: Colors.white),
-                  )
-              );
-            }
-
-            return Scaffold(
-                body: Center(
-                    child: Stack(children: [
-                      FlutterMap(
-                        options: MapOptions(
-                          center: LatLng(spots[0].coordinates[0],
-                              spots[0].coordinates[1]),
-                          zoom: 5,
-                        ),
-                        nonRotatedChildren: [
-                          AttributionWidget.defaultWidget(
-                            source: 'OpenStreetMap contributors',
-                            onSourceTapped: null,
-                          ),
-                        ],
-                        children: [
-                          TileLayer(
-                            urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                            userAgentPackageName: 'com.example.app',
-                          ),
-                          MarkerLayer(
-                              markers: getMarkers(spots, deleteSpotCallback, updateCallback)),
-                        ],
-                      ),
-                      search,
-                    ]
-                    )),
-                floatingActionButton: FloatingActionButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AddSpot(onAdd: (spot) => addSpotCallback(spot)),
-                        )
-                    );
-                  },
-                  backgroundColor: Colors.green,
-                  elevation: 5,
-                  child: const Icon(Icons.add, size: 50.0, color: Colors.white),
-                )
-            );
-          } else if (snapshot.hasError) {
-            return Text('${snapshot.error}');
-          } else {
-            return const CircularProgressIndicator();
-          }
+                    search,
+                  ]
+                  )),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddSpot(onAdd: (spot) => addSpotCallback(spot)),
+                      )
+                  );
+                },
+                backgroundColor: Colors.green,
+                elevation: 5,
+                child: const Icon(Icons.add, size: 50.0, color: Colors.white),
+              )
+          );
+        } else if (snapshot.hasError) {
+          return Text('${snapshot.error}');
+        } else {
+          return const CircularProgressIndicator();
         }
+      }
     );
   }
 
-  getMarkers(List<Spot> spots, ValueSetter<Spot> deleteCallback, ValueSetter<Spot> updateCallback) {
+  List<Marker> getMarkers(List<Spot> spots, ValueSetter<Spot> deleteCallback, ValueSetter<Spot> updateCallback) {
     List<Marker> markers = [];
     for (var spot in spots) {
       markers.add(
@@ -187,9 +185,11 @@ class _MapPageOnlineState extends State<MapPageOnline> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: SpotDetails(
-                    spot: spot,
-                    onDelete: deleteCallback,
-                    onUpdate: updateCallback)
+                  spot: spot,
+                  onDelete: deleteCallback,
+                  onUpdate: updateCallback,
+                  onNetworkChange: widget.onNetworkChange,
+                )
               ),
             ),
           ),

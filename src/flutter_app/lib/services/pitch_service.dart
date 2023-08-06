@@ -54,9 +54,7 @@ class PitchService {
     try {
       if(online){
         final Response pitchIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/pitchUpdated/ids', data: pitchIds);
-        if (pitchIdsUpdatedResponse.statusCode != 200) {
-          throw Exception("Error during request of pitch ids updated");
-        }
+        if (pitchIdsUpdatedResponse.statusCode != 200) throw Exception("Error during request of pitch ids updated");
         List<Pitch> pitches = [];
         List<String> missingPitchIds = [];
         Box box = Hive.box('pitches');
@@ -73,9 +71,7 @@ class PitchService {
           return pitches;
         }
         final Response missingPitchesResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/ids', data: missingPitchIds);
-        if (missingPitchesResponse.statusCode != 200) {
-          throw Exception("Error during request of missing pitches");
-        }
+        if (missingPitchesResponse.statusCode != 200) throw Exception("Error during request of missing pitches");
         missingPitchesResponse.data.forEach((s) {
           Pitch pitch = Pitch.fromJson(s);
           if (!box.containsKey(pitch.id)) {
@@ -102,9 +98,7 @@ class PitchService {
     try {
       if(online){
         final Response pitchIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/pitchUpdated');
-        if (pitchIdsResponse.statusCode != 200) {
-          throw Exception("Error during request of pitch ids");
-        }
+        if (pitchIdsResponse.statusCode != 200) throw Exception("Error during request of pitch ids");
         List<Pitch> pitches = [];
         List<String> missingPitchIds = [];
         Box box = Hive.box('pitches');
@@ -121,14 +115,10 @@ class PitchService {
           return pitches;
         }
         final Response missingPitchesResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/ids', data: missingPitchIds);
-        if (missingPitchesResponse.statusCode != 200) {
-          throw Exception("Error during request of missing pitches");
-        }
+        if (missingPitchesResponse.statusCode != 200) throw Exception("Error during request of missing pitches");
         missingPitchesResponse.data.forEach((s) {
           Pitch pitch = Pitch.fromJson(s);
-          if (!box.containsKey(pitch.id)) {
-            box.put(pitch.id, pitch.toJson());
-          }
+          if (!box.containsKey(pitch.id)) box.put(pitch.id, pitch.toJson());
           pitches.add(pitch);
         });
         return pitches;
@@ -146,41 +136,19 @@ class PitchService {
     return [];
   }
 
-  Future<List<Pitch>> getPitchesByName(String name) async {
-    try {
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/pitch');
-
-      if (response.statusCode == 200) {
-        // If the server did return a 200 OK response, then parse the JSON.
-        List<Pitch> pitches = [];
-        response.data.forEach((s) {
-          Pitch pitch = Pitch.fromJson(s);
-          if (pitch.name.contains(name)) {
-            pitches.add(pitch);
-          }
-        });
-        return pitches;
-      }
-    } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
-    }
-    return [];
+  Future<List<Pitch>> getPitchesByName(String name, bool online) async {
+    List<Pitch> pitches = await getPitches(online);
+    if (name.isEmpty) return pitches;
+    return pitches.where((pitch) => pitch.name.contains(name)).toList();
   }
 
   Future<Pitch?> editPitch(UpdatePitch pitch) async {
     try {
       final Response response = await netWorkLocator.dio
           .put('$climbingApiHost/pitch/${pitch.id}', data: pitch.toJson());
-      if (response.statusCode == 200) {
-        // TODO deletePitchFromEditQueue(pitch.hashCode);
-        return Pitch.fromJson(response.data);
-      } else {
-        throw Exception('Failed to edit pitch');
-      }
+      if (response.statusCode != 200) throw Exception('Failed to edit pitch');
+      // TODO deletePitchFromEditQueue(pitch.hashCode);
+      return Pitch.fromJson(response.data);
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
@@ -201,9 +169,7 @@ class PitchService {
       for (var id in pitch.mediaIds) {
         final Response mediaResponse =
         await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-        if (mediaResponse.statusCode != 204) {
-          throw Exception('Failed to delete medium');
-        }
+        if (mediaResponse.statusCode != 204) throw Exception('Failed to delete medium');
       }
 
       final Response pitchResponse =

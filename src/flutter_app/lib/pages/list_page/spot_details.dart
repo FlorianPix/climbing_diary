@@ -4,18 +4,23 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../components/add/add_image.dart';
+import '../../components/comment.dart';
 import '../../components/detail/media_details.dart';
 import '../../components/grade_distribution.dart';
 import '../../components/my_skeleton.dart';
+import '../../components/my_text_styles.dart';
+import '../../components/rating.dart';
+import '../../components/transport.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/spot/update_spot.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
 
 class SpotDetails extends StatefulWidget {
-  const SpotDetails({super.key, required this.spot});
+  const SpotDetails({super.key, required this.spot, required this.onNetworkChange});
 
   final Spot spot;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => _SpotDetailsState();
@@ -74,93 +79,28 @@ class _SpotDetailsState extends State<SpotDetails>{
   Widget build(BuildContext context) {
     List<Widget> elements = [];
 
-    // general info
-    elements.addAll([
-      Text(
-        widget.spot.name,
-        style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600
-        ),
-      ),
-      Text(
-        '${round(widget.spot.coordinates[0], decimals: 8)}, ${round(widget.spot.coordinates[1], decimals: 8)}',
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400
-        ),
-      ),
-      Text(
-        widget.spot.location,
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400
-        ),
-      )]);
-    // rating
-    List<Widget> ratingRowElements = [];
-
-    for (var i = 0; i < 5; i++){
-      if (widget.spot.rating > i) {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
-      } else {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
-      }
-    }
-
-    elements.add(Center(child: Padding(
-        padding: const EdgeInsets.all(10),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: ratingRowElements,
-        )
-    )));
-
-    if (widget.spot.singlePitchRouteIds.isNotEmpty || widget.spot.multiPitchRouteIds.isNotEmpty){
+    elements.add(Text(widget.spot.name, style: MyTextStyles.title));
+    elements.add(Text(
+      '${round(widget.spot.coordinates[0], decimals: 8)}, ${round(widget.spot.coordinates[1], decimals: 8)}',
+      style: MyTextStyles.description,
+    ));
+    elements.add(Text(widget.spot.location, style: MyTextStyles.description));
+    elements.add(Rating(rating: widget.spot.rating));
+    if (widget.spot.singlePitchRouteIds.isNotEmpty || widget.spot.multiPitchRouteIds.isNotEmpty) {
       elements.add(GradeDistribution(
-          singlePitchRouteIds: widget.spot.singlePitchRouteIds,
-          multiPitchRouteIds: widget.spot.multiPitchRouteIds)
+        singlePitchRouteIds: widget.spot.singlePitchRouteIds,
+        multiPitchRouteIds: widget.spot.multiPitchRouteIds,
+        onNetworkChange: widget.onNetworkChange,
+      ));
+    }
+    if (widget.spot.distancePublicTransport != 0 || widget.spot.distanceParking != 0){
+      elements.add(Transport(
+        distancePublicTransport: widget.spot.distancePublicTransport,
+        distanceParking: widget.spot.distanceParking)
       );
     }
-
-    // time to walk transport
-    elements.add(Center(child: Padding(
-        padding: const EdgeInsets.all(5),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            const Icon(Icons.train, size: 30.0, color: Colors.green),
-            Text(
-              '${widget.spot.distancePublicTransport} min',
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400
-              ),
-            ),
-            const Icon(Icons.directions_car, size: 30.0, color: Colors.red),
-            Text(
-              '${widget.spot.distanceParking} min',
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400
-              ),
-            )
-          ],
-        )
-    )));
-
     if (widget.spot.comment.isNotEmpty) {
-      elements.add(Container(
-          margin: const EdgeInsets.all(15.0),
-          padding: const EdgeInsets.all(5.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.blueAccent),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            widget.spot.comment,
-          )
-      ));
+      elements.add(Comment(comment: widget.spot.comment));
     }
     // images
     if (widget.spot.mediaIds.isNotEmpty) {

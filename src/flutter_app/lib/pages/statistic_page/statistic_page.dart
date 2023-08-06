@@ -3,6 +3,7 @@ import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,7 +18,8 @@ import '../../services/route_service.dart';
 import '../../interfaces/detailed_grade.dart';
 
 class StatisticPage extends StatefulWidget {
-  const StatisticPage({super.key});
+  const StatisticPage({super.key, required this.onNetworkChange});
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => StatisticPageState();
@@ -31,14 +33,14 @@ class StatisticPageState extends State<StatisticPage> {
   List<Color> gradientColors = [
     Colors.pink,
     Colors.blue,
-    Colors.cyan,
+    Colors.cyan
   ];
 
-  Future<List<DetailedGrade>> fetchDetailedGrade() async {
+  Future<List<DetailedGrade>> fetchDetailedGrade(bool online) async {
     List<DetailedGrade> detailedGrades = [];
-    List<Pitch> pitches = await pitchService.getPitches(true);
+    List<Pitch> pitches = await pitchService.getPitches(online);
     for (Pitch pitch in pitches) {
-      List<Ascent> ascents = await ascentService.getAscentsOfIds(true, pitch.ascentIds);
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(online, pitch.ascentIds);
       for (Ascent ascent in ascents){
         if (ascent.type != AscentType.bail.index){
           DetailedGrade detailedGrade = DetailedGrade(
@@ -51,9 +53,9 @@ class StatisticPageState extends State<StatisticPage> {
         }
       }
     }
-    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutes(true);
+    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutes(online);
     for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
-      List<Ascent> ascents = await ascentService.getAscentsOfIds(true, singlePitchRoute.ascentIds);
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(online, singlePitchRoute.ascentIds);
       for (Ascent ascent in ascents){
         if (ascent.type != AscentType.bail.index){
           DetailedGrade detailedGrade = DetailedGrade(
@@ -75,9 +77,7 @@ class StatisticPageState extends State<StatisticPage> {
   fetchGradingSystemPreference() async {
     prefs = await SharedPreferences.getInstance();
     int? fetchedGradingSystem = prefs.getInt('gradingSystem');
-    if (fetchedGradingSystem != null) {
-      gradingSystem = GradingSystem.values[fetchedGradingSystem];
-    }
+    if (fetchedGradingSystem != null) gradingSystem = GradingSystem.values[fetchedGradingSystem];
     setState(() {});
   }
 
@@ -93,17 +93,27 @@ class StatisticPageState extends State<StatisticPage> {
   bool switchRedPoint = true;
   bool switchTick = false;
 
+  bool online = false;
+
+  void checkConnection() async {
+    await InternetConnectionChecker().hasConnection.then((value) {
+      widget.onNetworkChange.call(value);
+      setState(() => online = value);
+    });
+  }
+
 
   @override
   void initState(){
     super.initState();
     fetchGradingSystemPreference();
+    checkConnection();
   }
 
   @override
   Widget build(BuildContext context) {
     var heatMapBuilder = FutureBuilder<List<Ascent>>(
-      future: ascentService.getAscents(true), // TODO check if online
+      future: ascentService.getAscents(online),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<Ascent> ascents = snapshot.data!;
@@ -221,7 +231,7 @@ class StatisticPageState extends State<StatisticPage> {
     ));
 
     Widget gradeLineChart = FutureBuilder<List<DetailedGrade>>(
-        future: fetchDetailedGrade(),
+        future: fetchDetailedGrade(online),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List<DetailedGrade> gradeSpots = snapshot.data!;

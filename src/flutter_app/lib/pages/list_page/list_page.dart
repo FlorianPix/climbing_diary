@@ -4,6 +4,7 @@ import 'package:climbing_diary/pages/list_page/spot_list.dart';
 import 'package:climbing_diary/pages/list_page/route_list.dart';
 import 'package:climbing_diary/services/pitch_service.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/spot/spot.dart';
@@ -11,7 +12,8 @@ import '../../services/route_service.dart';
 import '../../services/spot_service.dart';
 
 class ListPage extends StatefulWidget {
-  const ListPage({super.key});
+  const ListPage({super.key, required this.onNetworkChange});
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => ListPageState();
@@ -20,14 +22,20 @@ class ListPage extends StatefulWidget {
 class ListPageState extends State<ListPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController controllerSearch = TextEditingController();
-
   final SpotService spotService = SpotService();
   final RouteService routeService = RouteService();
   final PitchService pitchService = PitchService();
-
   bool searchSpots = true;
   bool searchRoutes = false;
   bool searchPitches = false;
+  bool online = false;
+
+  void checkConnection() async {
+    await InternetConnectionChecker().hasConnection.then((value) {
+      widget.onNetworkChange.call(value);
+      setState(() => online = value);
+    });
+  }
 
   @override
   void initState(){
@@ -35,133 +43,93 @@ class ListPageState extends State<ListPage> {
     searchSpots = true;
     searchRoutes = false;
     searchPitches = false;
+    checkConnection();
   }
 
   @override
   Widget build(BuildContext context) {
     Widget search = Form(
       key: _formKey,
-      child:
-      Padding(
+      child: Padding(
         padding: const EdgeInsets.all(20),
         child: TextFormField(
-            controller: controllerSearch,
-            decoration: const InputDecoration(
-                icon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                  borderSide: BorderSide(color: Colors.blue),
-                ),
-                hintText: "name",
-                labelText: "name"
+          controller: controllerSearch,
+          decoration: const InputDecoration(
+            icon: Icon(Icons.search),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(25.0)),
+              borderSide: BorderSide(color: Colors.blue),
             ),
-            onChanged: (String s) {
-              setState(() {});
-            }
+            hintText: "name",
+            labelText: "name"
+          ),
+          onChanged: (String s) => setState(() {})
         ),
       ),
     );
 
     Widget switches = Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          const Text("spots"),
-          Switch(
-              value: searchSpots,
-              onChanged: (bool value) {
-                setState(() {
-                  searchSpots = value;
-                });
-              }
-          ),
-          const Text("routes"),
-          Switch(
-              value: searchRoutes,
-              onChanged: (bool value) {
-                setState(() {
-                  searchRoutes = value;
-                });
-              }
-          ),
-          const Text("pitches"),
-          Switch(
-              value: searchPitches,
-              onChanged: (bool value) {
-                setState(() {
-                  searchPitches = value;
-                });
-              }
-          ),
-        ]
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        const Text("spots"),
+        Switch(value: searchSpots, onChanged: (bool value) => setState(() => searchSpots = value)),
+        const Text("routes"),
+        Switch(value: searchRoutes, onChanged: (bool value) => setState(() => searchRoutes = value)),
+        const Text("pitches"),
+        Switch(value: searchPitches, onChanged: (bool value) => setState(() => searchPitches = value)),
+      ]
     );
 
     Widget spotList = FutureBuilder<List<Spot>>(
-        future: spotService.getSpotsByName(controllerSearch.text, true), // TODO check if online
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List<Spot> spots = snapshot.data!;
-            return SpotList(
-              spots: spots
-            );
-          } else {
-            return const CircularProgressIndicator();
-          }
-        }
+      future: spotService.getSpotsByName(controllerSearch.text, online),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) return Text(snapshot.error.toString());
+        if (!snapshot.hasData) return const CircularProgressIndicator();
+        List<Spot> spots = snapshot.data!;
+        return SpotList(
+          spots: spots,
+          onNetworkChange: widget.onNetworkChange,
+        );
+      }
     );
 
     Widget routeList = FutureBuilder<List<MultiPitchRoute>>(
-        future: routeService.getMultiPitchRoutesByName(controllerSearch.text, true), // TODO check if online
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List<MultiPitchRoute> multiPitchRoutes = snapshot.data!;
-            return FutureBuilder<List<SinglePitchRoute>>(
-                future: routeService.getSinglePitchRoutesByName(controllerSearch.text),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    List<SinglePitchRoute> singlePitchRoutes = snapshot.data!;
-                    return RouteList(
-                      singlePitchRoutes: singlePitchRoutes,
-                      multiPitchRoutes: multiPitchRoutes,
-                    );
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
-                }
+      future: routeService.getMultiPitchRoutesByName(controllerSearch.text, online),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) return Text(snapshot.error.toString());
+        if (!snapshot.hasData) return const CircularProgressIndicator();
+        List<MultiPitchRoute> multiPitchRoutes = snapshot.data!;
+        return FutureBuilder<List<SinglePitchRoute>>(
+          future: routeService.getSinglePitchRoutesByName(controllerSearch.text, online),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) return Text(snapshot.error.toString());
+            if (!snapshot.hasData) return const CircularProgressIndicator();
+            List<SinglePitchRoute> singlePitchRoutes = snapshot.data!;
+            return RouteList(
+              singlePitchRoutes: singlePitchRoutes,
+              multiPitchRoutes: multiPitchRoutes,
             );
-          } else {
-            return const CircularProgressIndicator();
           }
-        }
+        );
+      }
     );
 
     Widget pitchList = FutureBuilder<List<Pitch>>(
-        future: pitchService.getPitchesByName(controllerSearch.text),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            List<Pitch> pitches = snapshot.data!;
-            return PitchList(
-                pitches: pitches
-            );
-          } else {
-            return const CircularProgressIndicator();
-          }
-        }
+      future: pitchService.getPitchesByName(controllerSearch.text, online),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) return Text(snapshot.error.toString());
+        if (!snapshot.hasData) return const CircularProgressIndicator();
+        List<Pitch> pitches = snapshot.data!;
+        return PitchList(pitches: pitches);
+      }
     );
 
     List<Widget> elements = [];
 
-    if (searchSpots){
-      elements.add(spotList);
-    }
-    if(searchRoutes){
-      elements.add(routeList);
-    }
-    if(searchPitches){
-      elements.add(pitchList);
-    }
+    if (searchSpots) elements.add(spotList);
+    if (searchRoutes) elements.add(routeList);
+    if (searchPitches) elements.add(pitchList);
 
-    return Scaffold(
-      body: Column(children: [search, switches, Expanded(child: ListView(children: elements))])
-    );
+    return Scaffold(body: Column(children: [search, switches, Expanded(child: ListView(children: elements))]));
   }
 }

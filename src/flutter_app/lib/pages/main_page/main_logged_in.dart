@@ -32,11 +32,8 @@ class _MainLoggedInState extends State<MainLoggedIn>{
         actions: <Widget>[
           IconButton(
             onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const Settings(),
-                  )
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const Settings())
               );
             },
             icon: const Icon(
@@ -47,9 +44,7 @@ class _MainLoggedInState extends State<MainLoggedIn>{
             ),
           ),
           IconButton(
-            onPressed: () {
-              widget.logout.call();
-            },
+            onPressed: () => widget.logout.call(),
             icon: const Icon(
               Icons.logout,
               color: Colors.black,
@@ -65,27 +60,13 @@ class _MainLoggedInState extends State<MainLoggedIn>{
         currentIndex: pageIndex,
         onTap: (index) {
           widget.onIndexChanged.call(index);
-          setState(() {
-            pageIndex = index;
-          });
+          setState(() => pageIndex = index);
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Map',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Diary',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'List',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.graphic_eq),
-            label: 'Statistic',
-          )
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Diary'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'List'),
+          BottomNavigationBarItem(icon: Icon(Icons.graphic_eq), label: 'Statistic')
         ],
       ),
     );

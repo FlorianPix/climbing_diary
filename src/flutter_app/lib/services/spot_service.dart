@@ -29,23 +29,37 @@ class SpotService {
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<Spot> getSpot(String spotId) async {
-    final Response response =
-    await netWorkLocator.dio.get('$climbingApiHost/spot/$spotId');
-    if (response.statusCode == 200) {
-      return Spot.fromJson(response.data);
-    } else {
-      throw Exception('Failed to load spot');
+  Future<Spot?> getSpot(String spotId, bool online) async {
+    try {
+      Box box = Hive.box('spots');
+      if (online) {
+        final Response spotIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/spotUpdated/$spotId');
+        if (spotIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot id updated");
+        String id = spotIdUpdatedResponse.data['_id'];
+        String serverUpdated = spotIdUpdatedResponse.data['updated'];
+        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          final Response missingSpotResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/$spotId');
+          if (missingSpotResponse.statusCode != 200) throw Exception("Error during request of missing spot");
+        } else {
+          return Spot.fromCache(box.get(id));
+        }
+      }
+      return Spot.fromCache(box.get(spotId));
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
+        }
+      }
     }
+    return null;
   }
 
   Future<List<Spot>> getSpotsOfIds(bool online, List<String> spotIds) async {
     try {
       if(online){
         final Response spotIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/spotUpdated/ids', data: spotIds);
-        if (spotIdsUpdatedResponse.statusCode != 200) {
-          throw Exception("Error during request of spot ids updated");
-        }
+        if (spotIdsUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot ids updated");
         List<Spot> spots = [];
         List<String> missingSpotIds = [];
         Box box = Hive.box('spots');
@@ -58,26 +72,22 @@ class SpotService {
             spots.add(Spot.fromCache(box.get(id)));
           }
         });
-        if (missingSpotIds.isEmpty){
-          return spots;
-        }
+        if (missingSpotIds.isEmpty) return spots;
         final Response missingSpotsResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/ids', data: missingSpotIds);
-        if (missingSpotsResponse.statusCode != 200) {
-          throw Exception("Error during request of missing spots");
-        }
+        if (missingSpotsResponse.statusCode != 200) throw Exception("Error during request of missing spots");
         missingSpotsResponse.data.forEach((s) {
           Spot spot = Spot.fromJson(s);
-          if (!box.containsKey(spot.id)) {
-            box.put(spot.id, spot.toJson());
-          }
+          if (!box.containsKey(spot.id)) box.put(spot.id, spot.toJson());
           spots.add(spot);
         });
         return spots;
       } else {
         // offline
-        return cacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
+        List<Spot> spots = cacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
+        return spots.where((element) => spotIds.contains(element.id)).toList();
       }
     } catch (e) {
+      print(e);
       if (e is DioError) {
         if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
           MyNotifications.showNegativeNotification('Couldn\'t connect to API');
@@ -137,19 +147,18 @@ class SpotService {
 
   Future<List<Spot>> getSpotsByName(String name, bool online) async {
     List<Spot> spots = await getSpots(online);
-    if (name.isEmpty){
-      return spots;
-    }
+    if (name.isEmpty) return spots;
     return spots.where((spot) => spot.name.contains(name)).toList();
   }
 
-  Future<Spot?> getSpotIfWithinDateRange(String spotId, DateTime startDate, DateTime endDate) async {
-    Spot spot = await getSpot(spotId);
-    List<MultiPitchRoute> multiPitchRoutes = await routeService.getMultiPitchRoutesOfIds(true, spot.multiPitchRouteIds); // TODO check if online
+  Future<Spot?> getSpotIfWithinDateRange(String spotId, DateTime startDate, DateTime endDate, bool online) async {
+    Spot? spot = await getSpot(spotId, online);
+    if (spot == null) return null;
+    List<MultiPitchRoute> multiPitchRoutes = await routeService.getMultiPitchRoutesOfIds(online, spot.multiPitchRouteIds);
     for (MultiPitchRoute multiPitchRoute in multiPitchRoutes) {
-      List<Pitch> pitches = await pitchService.getPitchesOfIds(true, multiPitchRoute.pitchIds); // TODO check if online
+      List<Pitch> pitches = await pitchService.getPitchesOfIds(online, multiPitchRoute.pitchIds);
       for (Pitch pitch in pitches){
-        List<Ascent> ascents = await ascentService.getAscentsOfIds(true, pitch.ascentIds); // TODO check if online
+        List<Ascent> ascents = await ascentService.getAscentsOfIds(online, pitch.ascentIds);
         for (Ascent ascent in ascents){
           DateTime dateOfAscent = DateTime.parse(ascent.date);
           if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
@@ -158,9 +167,9 @@ class SpotService {
         }
       }
     }
-    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutesOfIds(true, spot.singlePitchRouteIds); // TODO check if online
+    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutesOfIds(online, spot.singlePitchRouteIds);
     for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
-      List<Ascent> ascents = await ascentService.getAscentsOfIds(true, singlePitchRoute.ascentIds); // TODO check if online
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(online, singlePitchRoute.ascentIds);
       for (Ascent ascent in ascents){
         DateTime dateOfAscent = DateTime.parse(ascent.date);
         if ((dateOfAscent.isAfter(startDate) &&

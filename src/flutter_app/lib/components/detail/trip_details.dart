@@ -16,11 +16,12 @@ import '../edit/edit_trip.dart';
 import '../rating.dart';
 
 class TripDetails extends StatefulWidget {
-  const TripDetails({super.key, required this.trip, required this.onTripDelete, required this.onTripUpdate, required this.onSpotAdd });
+  const TripDetails({super.key, required this.trip, required this.onTripDelete, required this.onTripUpdate, required this.onSpotAdd, required this.onNetworkChange });
 
   final Trip trip;
   final ValueSetter<Trip> onTripDelete, onTripUpdate;
   final ValueSetter<Spot> onSpotAdd;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => _TripDetailsState();
@@ -229,7 +230,8 @@ class _TripDetailsState extends State<TripDetails>{
             trip: trip,
             spotIds: trip.spotIds,
             startDate: DateTime.parse(trip.startDate),
-            endDate: DateTime.parse(trip.endDate)
+            endDate: DateTime.parse(trip.endDate),
+            onNetworkChange: widget.onNetworkChange,
         ));
     }
 

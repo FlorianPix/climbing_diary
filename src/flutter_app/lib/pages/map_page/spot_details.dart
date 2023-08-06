@@ -20,11 +20,12 @@ import '../../services/spot_service.dart';
 import 'route_list.dart';
 
 class SpotDetails extends StatefulWidget {
-  const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate });
+  const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate, required this.onNetworkChange });
 
   final Trip? trip;
   final Spot spot;
   final ValueSetter<Spot> onDelete, onUpdate;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => _SpotDetailsState();
@@ -83,9 +84,10 @@ class _SpotDetailsState extends State<SpotDetails>{
     elements.add(Rating(rating: widget.spot.rating));
     if (widget.spot.singlePitchRouteIds.isNotEmpty || widget.spot.multiPitchRouteIds.isNotEmpty) {
       elements.add(GradeDistribution(
-          singlePitchRouteIds: widget.spot.singlePitchRouteIds,
-          multiPitchRouteIds: widget.spot.multiPitchRouteIds)
-      );
+        singlePitchRouteIds: widget.spot.singlePitchRouteIds,
+        multiPitchRouteIds: widget.spot.multiPitchRouteIds,
+        onNetworkChange: widget.onNetworkChange,
+      ));
     }
     if (widget.spot.distancePublicTransport != 0 || widget.spot.distanceParking != 0){
       elements.add(Transport(
@@ -188,6 +190,7 @@ class _SpotDetailsState extends State<SpotDetails>{
             spot: widget.spot,
             singlePitchRouteIds: widget.spot.singlePitchRouteIds,
             multiPitchRouteIds: widget.spot.multiPitchRouteIds,
+            onNetworkChange: widget.onNetworkChange,
           )
       );
     }
