@@ -349,7 +349,7 @@ class RouteService {
 
   Future<SinglePitchRoute?> getSinglePitchRoute(String routeId, bool online) async {
     try {
-      Box box = Hive.box('spots');
+      Box box = Hive.box('single_pitch_routes');
       if (online) {
         final Response singlePitchRouteIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_routeUpdated/$routeId');
         if (singlePitchRouteIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot id updated");
