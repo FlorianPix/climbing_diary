@@ -32,19 +32,17 @@ class SpotService {
   Future<Spot?> getSpot(String spotId, bool online) async {
     try {
       Box box = Hive.box('spots');
-      if (online) {
-        final Response spotIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/spotUpdated/$spotId');
-        if (spotIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot id updated");
-        String id = spotIdUpdatedResponse.data['_id'];
-        String serverUpdated = spotIdUpdatedResponse.data['updated'];
-        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
-          final Response missingSpotResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/$spotId');
-          if (missingSpotResponse.statusCode != 200) throw Exception("Error during request of missing spot");
-        } else {
-          return Spot.fromCache(box.get(id));
-        }
+      if (!online) return Spot.fromCache(box.get(spotId));
+      final Response spotIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/spotUpdated/$spotId');
+      if (spotIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot id updated");
+      String id = spotIdUpdatedResponse.data['_id'];
+      String serverUpdated = spotIdUpdatedResponse.data['updated'];
+      if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+        final Response missingSpotResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/$spotId');
+        if (missingSpotResponse.statusCode != 200) throw Exception("Error during request of missing spot");
+      } else {
+        return Spot.fromCache(box.get(id));
       }
-      return Spot.fromCache(box.get(spotId));
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
@@ -57,35 +55,33 @@ class SpotService {
 
   Future<List<Spot>> getSpotsOfIds(bool online, List<String> spotIds) async {
     try {
-      if(online){
-        final Response spotIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/spotUpdated/ids', data: spotIds);
-        if (spotIdsUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot ids updated");
-        List<Spot> spots = [];
-        List<String> missingSpotIds = [];
-        Box box = Hive.box('spots');
-        spotIdsUpdatedResponse.data.forEach((idWithDatetime) {
-          String id = idWithDatetime['_id'];
-          String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
-            missingSpotIds.add(id);
-          } else {
-            spots.add(Spot.fromCache(box.get(id)));
-          }
-        });
-        if (missingSpotIds.isEmpty) return spots;
-        final Response missingSpotsResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/ids', data: missingSpotIds);
-        if (missingSpotsResponse.statusCode != 200) throw Exception("Error during request of missing spots");
-        missingSpotsResponse.data.forEach((s) {
-          Spot spot = Spot.fromJson(s);
-          if (!box.containsKey(spot.id)) box.put(spot.id, spot.toJson());
-          spots.add(spot);
-        });
-        return spots;
-      } else {
-        // offline
+      if(!online) {
         List<Spot> spots = cacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
-        return spots.where((element) => spotIds.contains(element.id)).toList();
+        return spots.where((spot) => spotIds.contains(spot.id)).toList();
       }
+      final Response spotIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/spotUpdated/ids', data: spotIds);
+      if (spotIdsUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot ids updated");
+      List<Spot> spots = [];
+      List<String> missingSpotIds = [];
+      Box box = Hive.box('spots');
+      spotIdsUpdatedResponse.data.forEach((idWithDatetime) {
+        String id = idWithDatetime['_id'];
+        String serverUpdated = idWithDatetime['updated'];
+        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          missingSpotIds.add(id);
+        } else {
+          spots.add(Spot.fromCache(box.get(id)));
+        }
+      });
+      if (missingSpotIds.isEmpty) return spots;
+      final Response missingSpotsResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/ids', data: missingSpotIds);
+      if (missingSpotsResponse.statusCode != 200) throw Exception("Error during request of missing spots");
+      missingSpotsResponse.data.forEach((s) {
+        Spot spot = Spot.fromJson(s);
+        if (!box.containsKey(spot.id)) box.put(spot.id, spot.toJson());
+        spots.add(spot);
+      });
+      return spots;
     } catch (e) {
       print(e);
       if (e is DioError) {
@@ -99,42 +95,30 @@ class SpotService {
 
   Future<List<Spot>> getSpots(bool online) async {
     try {
-      if(online){
-        final Response spotIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/spotUpdated');
-        if (spotIdsResponse.statusCode != 200) {
-          throw Exception("Error during request of spot ids");
+      if(!online) return cacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
+      final Response spotIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/spotUpdated');
+      if (spotIdsResponse.statusCode != 200) throw Exception("Error during request of spot ids");
+      List<Spot> spots = [];
+      List<String> missingSpotIds = [];
+      Box box = Hive.box('spots');
+      spotIdsResponse.data.forEach((idWithDatetime) {
+        String id = idWithDatetime['_id'];
+        String serverUpdated = idWithDatetime['updated'];
+        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          missingSpotIds.add(id);
+        } else {
+          spots.add(Spot.fromCache(box.get(id)));
         }
-        List<Spot> spots = [];
-        List<String> missingSpotIds = [];
-        Box box = Hive.box('spots');
-        spotIdsResponse.data.forEach((idWithDatetime) {
-          String id = idWithDatetime['_id'];
-          String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
-            missingSpotIds.add(id);
-          } else {
-            spots.add(Spot.fromCache(box.get(id)));
-          }
-        });
-        if (missingSpotIds.isEmpty){
-          return spots;
-        }
-        final Response missingSpotsResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/ids', data: missingSpotIds);
-        if (missingSpotsResponse.statusCode != 200) {
-          throw Exception("Error during request of missing spots");
-        }
-        missingSpotsResponse.data.forEach((s) {
-          Spot spot = Spot.fromJson(s);
-          if (!box.containsKey(spot.id)) {
-            box.put(spot.id, spot.toJson());
-          }
-          spots.add(spot);
-        });
-        return spots;
-      } else {
-        // offline
-        return cacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
-      }
+      });
+      if (missingSpotIds.isEmpty) return spots;
+      final Response missingSpotsResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/ids', data: missingSpotIds);
+      if (missingSpotsResponse.statusCode != 200) throw Exception("Error during request of missing spots");
+      missingSpotsResponse.data.forEach((s) {
+        Spot spot = Spot.fromJson(s);
+        if (!box.containsKey(spot.id)) box.put(spot.id, spot.toJson());
+        spots.add(spot);
+      });
+      return spots;
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
@@ -191,11 +175,11 @@ class SpotService {
       rating: createSpot.rating,
       comment: (createSpot.comment != null) ? createSpot.comment! : "",
       distanceParking: (createSpot.distanceParking != null)
-          ? createSpot.distanceParking!
-          : 0,
+        ? createSpot.distanceParking!
+        : 0,
       distancePublicTransport: (createSpot.distancePublicTransport != null)
-          ? createSpot.distancePublicTransport!
-          : 0,
+        ? createSpot.distancePublicTransport!
+        : 0,
     );
     if (hasConnection) {
       var data = spot.toJson();
@@ -238,16 +222,12 @@ class SpotService {
       for (var id in spot.mediaIds) {
         final Response mediaResponse =
         await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-        if (mediaResponse.statusCode != 204) {
-          throw Exception('Failed to delete medium');
-        }
+        if (mediaResponse.statusCode != 204) throw Exception('Failed to delete medium');
       }
 
       final Response spotResponse =
       await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
-      if (spotResponse.statusCode != 200) {
-        throw Exception('Failed to delete spot');
-      }
+      if (spotResponse.statusCode != 200) throw Exception('Failed to delete spot');
       MyNotifications.showPositiveNotification('Spot was deleted: ${spotResponse.data['name']}');
       // TODO deleteSpotFromDeleteQueue(spot.toJson().hashCode);
       return spotResponse.data;
@@ -267,14 +247,10 @@ class SpotService {
 
   Future<Spot?> uploadSpot(Map data) async {
     try {
-      final Response response = await netWorkLocator.dio
-          .post('$climbingApiHost/spot', data: data);
-      if (response.statusCode == 201) {
-        MyNotifications.showPositiveNotification('Created new spot: ${response.data['name']}');
-        return Spot.fromJson(response.data);
-      } else {
-        throw Exception('Failed to create spot');
-      }
+      final Response response = await netWorkLocator.dio.post('$climbingApiHost/spot', data: data);
+      if (response.statusCode != 201) throw Exception('Failed to create spot');
+      MyNotifications.showPositiveNotification('Created new spot: ${response.data['name']}');
+      return Spot.fromJson(response.data);
     } catch (e) {
       if (e is DioError) {
         final response = e.response;

@@ -16,6 +16,7 @@ import '../../../interfaces/trip/trip.dart';
 import '../../../services/pitch_service.dart';
 import '../../../services/route_service.dart';
 import '../image_list_view.dart';
+import 'ascent_timeline.dart';
 
 class RouteTimeline extends StatefulWidget {
   const RouteTimeline({super.key, this.trip, required this.spot, required this.singlePitchRouteIds, required this.multiPitchRouteIds, required this.startDate, required this.endDate, required this.onNetworkChange});
@@ -62,12 +63,8 @@ class RouteTimelineState extends State<RouteTimeline> {
         return FutureBuilder<List<SinglePitchRoute?>>(
           future: Future.wait(singlePitchRouteIds.map((routeId) => routeService.getSinglePitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate, online))),
           builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Text(snapshot.error.toString());
-            }
-            if (!snapshot.hasData) {
-              return const CircularProgressIndicator();
-            }
+            if (snapshot.hasError) return Text(snapshot.error.toString());
+            if (!snapshot.hasData) return const CircularProgressIndicator();
             List<SinglePitchRoute> singlePitchRoutes = snapshot.data!.whereType<SinglePitchRoute>().toList();
 
             updateMultiPitchRouteCallback(MultiPitchRoute route) {
@@ -119,7 +116,8 @@ class RouteTimelineState extends State<RouteTimeline> {
                           trip: widget.trip,
                           spot: widget.spot,
                           route: multiPitchRoute,
-                          pitchIds: multiPitchRoute.pitchIds
+                          pitchIds: multiPitchRoute.pitchIds,
+                          onNetworkChange: widget.onNetworkChange,
                         ));
                       }
                       return InkWell(
@@ -131,7 +129,8 @@ class RouteTimelineState extends State<RouteTimeline> {
                               route: multiPitchRoute,
                               onDelete: deleteMultiPitchRouteCallback,
                               onUpdate: updateMultiPitchRouteCallback,
-                              spotId: widget.spot.id
+                              spotId: widget.spot.id,
+                              onNetworkChange: widget.onNetworkChange,
                             )
                           )
                         ),
@@ -173,7 +172,36 @@ class RouteTimelineState extends State<RouteTimeline> {
                           children: [ImageListView(mediaIds: singlePitchRoute.mediaIds)]
                         ));
                       }
-
+                      if (singlePitchRoute.ascentIds.isNotEmpty) {
+                        DateTime startDate = DateTime(1923);
+                        DateTime endDate = DateTime(2123);
+                        if (widget.trip != null) {
+                          DateTime.parse(widget.trip!.startDate);
+                          DateTime.parse(widget.trip!.endDate);
+                        }
+                        elements.add(ExpansionTile(
+                            leading: const Icon(Icons.flag),
+                            title: const Text("ascents"),
+                            children: [AscentTimeline(
+                              trip: widget.trip,
+                              spot: widget.spot,
+                              route: singlePitchRoute,
+                              pitchId: singlePitchRoute.id,
+                              ascentIds: singlePitchRoute.ascentIds,
+                              onUpdate: (ascent) {
+                                // TODO
+                              },
+                              onDelete: (ascent) {
+                                singlePitchRoute.ascentIds.remove(ascent.id);
+                                setState(() {});
+                              },
+                              startDate: startDate,
+                              endDate: endDate,
+                              ofMultiPitch: false,
+                              onNetworkChange: widget.onNetworkChange,
+                            )]
+                        ));
+                      }
                       return InkWell(
                         onTap: () => showDialog(context: context,
                           builder: (BuildContext context) => Dialog(
@@ -183,7 +211,8 @@ class RouteTimelineState extends State<RouteTimeline> {
                               route: singlePitchRoute,
                               onDelete: (SinglePitchRoute sPR) => {},
                               onUpdate: (SinglePitchRoute sPR) => {},
-                              spotId: widget.spot.id
+                              spotId: widget.spot.id,
+                              onNetworkChange: widget.onNetworkChange,
                             )
                           )),
                         child: Ink(child: Padding(padding: const EdgeInsets.only(left: 8.0), child: Column(

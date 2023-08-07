@@ -1,4 +1,5 @@
 import 'package:climbing_diary/components/image_list_view.dart';
+import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,6 +12,7 @@ import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../add/add_image.dart';
+import '../comment.dart';
 import '../my_button_styles.dart';
 import '../add/add_pitch.dart';
 import '../edit/edit_multi_pitch_route.dart';
@@ -18,7 +20,7 @@ import '../info/multi_pitch_route_info.dart';
 import '../rating.dart';
 
 class MultiPitchRouteDetails extends StatefulWidget {
-  const MultiPitchRouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId });
+  const MultiPitchRouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId, required this.onNetworkChange });
 
   final Trip? trip;
   final Spot spot;
@@ -26,6 +28,7 @@ class MultiPitchRouteDetails extends StatefulWidget {
   final ValueSetter<MultiPitchRoute> onDelete;
   final ValueSetter<MultiPitchRoute> onUpdate;
   final String spotId;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => _MultiPitchRouteDetailsState();
@@ -69,10 +72,10 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
 
   void addImageDialog() {
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AddImage(onAddImage: getImage);
-        }
+      context: context,
+      builder: (BuildContext context) {
+        return AddImage(onAddImage: getImage);
+      }
     );
   }
 
@@ -81,8 +84,9 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
       context: context,
       builder: (BuildContext context) {
         return EditMultiPitchRoute(
-            route: widget.route,
-            onUpdate: widget.onUpdate);
+          route: widget.route,
+          onUpdate: widget.onUpdate
+        );
       });
   }
 
@@ -95,51 +99,17 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
   Widget build(BuildContext context) {
     List<Widget> elements = [];
     MultiPitchRoute route = widget.route;
-
-    // general info
-    elements.add(Text(route.name,
-      style: const TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.w600
-      ),
-    ));
-
-    if (route.pitchIds.isNotEmpty){
-      elements.add(MultiPitchInfo(
-          pitchIds: route.pitchIds
-      ));
-    }
-
-    if (route.location.isNotEmpty) {
-      elements.add(Text(route.location,
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400
-        ),
-      ));
-    }
-
+    elements.add(Text(route.name, style: MyTextStyles.title));
+    if (route.pitchIds.isNotEmpty) elements.add(MultiPitchInfo(pitchIds: route.pitchIds));
+    if (route.location.isNotEmpty) elements.add(Text(route.location, style: MyTextStyles.description));
     elements.add(Rating(rating: route.rating));
-
-    if (route.comment.isNotEmpty) {
-      elements.add(Container(
-          margin: const EdgeInsets.all(15.0),
-          padding: const EdgeInsets.all(5.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.blueAccent),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            route.comment,
-          )
-      ));
-    }
+    if (route.comment.isNotEmpty) elements.add(Comment(comment: route.comment));
 
     void deleteImageCallback(String mediumId) {
       widget.route.mediaIds.remove(mediumId);
       routeService.editMultiPitchRoute(UpdateMultiPitchRoute(
-          id: widget.route.id,
-          mediaIds: widget.route.mediaIds
+        id: widget.route.id,
+        mediaIds: widget.route.mediaIds
       ));
       setState(() {});
     }
@@ -151,70 +121,54 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         getImage: getImage,
       ));
     } else {
-      elements.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
+      elements.add(ElevatedButton.icon(
+        icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+        label: const Text('Add image'),
+        onPressed: () => addImageDialog(),
+        style: MyButtonStyles.rounded
+      ));
     }
     // add pitch
     elements.add(
       ElevatedButton.icon(
           icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
           label: const Text('Add new pitch'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddPitch(route: widget.route,),
-                )
-            );
-          },
+          onPressed: () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => AddPitch(route: widget.route))
+          ),
           style: MyButtonStyles.rounded
       ),
     );
-    elements.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // delete route button
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-                routeService.deleteMultiPitchRoute(route, widget.spotId);
-                widget.onDelete.call(route);
-              },
-              icon: const Icon(Icons.delete),
-            ),
-            IconButton(
-              onPressed: () => editRouteDialog(),
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        )
-    );
-    // pitches
+    elements.add(Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+            routeService.deleteMultiPitchRoute(route, widget.spotId);
+            widget.onDelete.call(route);
+          },
+          icon: const Icon(Icons.delete),
+        ),
+        IconButton(
+          onPressed: () => editRouteDialog(),
+          icon: const Icon(Icons.edit),
+        ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        ),
+      ],
+    ));
     if (route.pitchIds.isNotEmpty){
-      elements.add(
-          PitchTimeline(trip: widget.trip, spot: widget.spot, route: route, pitchIds: route.pitchIds)
-      );
+      elements.add(PitchTimeline(
+        trip: widget.trip,
+        spot: widget.spot,
+        route: route,
+        pitchIds: route.pitchIds,
+        onNetworkChange: widget.onNetworkChange,
+      ));
     }
-    return Stack(
-        children: <Widget>[
-          Padding(
-              padding: const EdgeInsets.all(20),
-              child: ListView(
-                  children: elements
-              )
-          )
-        ]
-    );
+    return Stack(children: [Padding(padding: const EdgeInsets.all(20), child: ListView(children: elements))]);
   }
 }
