@@ -13,4 +13,17 @@ class MyColors{
     800:Color.fromRGBO(255,127,90, .9),
     900:Color.fromRGBO(255,127,90, 1),
   };
+
+  static const Map<int, Color> heatMap = {
+    1:Color.fromRGBO(255,127,90, .1),
+    2:Color.fromRGBO(255,127,90, .2),
+    3:Color.fromRGBO(255,127,90, .3),
+    4:Color.fromRGBO(255,127,90, .4),
+    5:Color.fromRGBO(255,127,90, .5),
+    6:Color.fromRGBO(255,127,90, .6),
+    7:Color.fromRGBO(255,127,90, .7),
+    8:Color.fromRGBO(255,127,90, .8),
+    9:Color.fromRGBO(255,127,90, .9),
+    10:Color.fromRGBO(255,127,90, 1),
+  };
 }

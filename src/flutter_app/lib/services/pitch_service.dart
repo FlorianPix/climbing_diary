@@ -40,14 +40,32 @@ class PitchService {
     return null;
   }
 
-  Future<Pitch> getPitch(String pitchId) async {
-    final Response response =
-    await netWorkLocator.dio.get('$climbingApiHost/pitch/$pitchId');
-    if (response.statusCode == 200) {
-      return Pitch.fromJson(response.data);
-    } else {
-      throw Exception('Failed to load pitch');
+  Future<Pitch?> getPitch(String pitchId, bool online) async {
+    try {
+      Box box = Hive.box('pitches');
+      if (online) {
+        final Response pitchIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/pitchUpdated/$pitchId');
+        if (pitchIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of pitch id updated");
+        String id = pitchIdUpdatedResponse.data['_id'];
+        String serverUpdated = pitchIdUpdatedResponse.data['updated'];
+        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          final Response missingMultiPitchRouteResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/$pitchId');
+          if (missingMultiPitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing pitch");
+          return Pitch.fromJson(missingMultiPitchRouteResponse.data);
+        } else {
+          return Pitch.fromCache(box.get(id));
+        }
+      }
+      return Pitch.fromCache(box.get(pitchId));
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
+        }
+      }
+      print(e);
     }
+    return null;
   }
 
   Future<List<Pitch>> getPitchesOfIds(bool online, List<String> pitchIds) async {

@@ -30,15 +30,15 @@ class RouteService {
 
   Future<MultiPitchRoute?> getMultiPitchRoute(String routeId, bool online) async {
     try {
-      Box box = Hive.box('spots');
+      Box box = Hive.box('multi_pitch_routes');
       if (online) {
         final Response multiPitchRouteIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_routeUpdated/$routeId');
-        if (multiPitchRouteIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot id updated");
+        if (multiPitchRouteIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of multi pitch route id updated");
         String id = multiPitchRouteIdUpdatedResponse.data['_id'];
         String serverUpdated = multiPitchRouteIdUpdatedResponse.data['updated'];
         if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
           final Response missingMultiPitchRouteResponse = await netWorkLocator.dio.post('$climbingApiHost/multi_pitch_route/$routeId');
-          if (missingMultiPitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing spot");
+          if (missingMultiPitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing multi pitch route");
           return MultiPitchRoute.fromJson(missingMultiPitchRouteResponse.data);
         } else {
           return MultiPitchRoute.fromCache(box.get(id));
@@ -51,6 +51,7 @@ class RouteService {
           MyNotifications.showNegativeNotification('Couldn\'t connect to API');
         }
       }
+      print(e);
     }
     return null;
   }
@@ -468,6 +469,7 @@ class RouteService {
           MyNotifications.showNegativeNotification('Couldn\'t connect to API');
         }
       }
+      print(e);
     }
     return [];
   }
