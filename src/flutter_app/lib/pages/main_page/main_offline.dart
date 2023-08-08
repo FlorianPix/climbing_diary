@@ -27,15 +27,10 @@ class _MainOfflineState extends State<MainOffline>{
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        actions: <Widget>[
+        actions: [
           IconButton(
             onPressed: () => widget.continueOffline.call(false),
-            icon: const Icon(
-              Icons.home,
-              color: Colors.black,
-              size: 30.0,
-              semanticLabel: 'home',
-            ),
+            icon: const Icon(Icons.home, color: Colors.black, size: 30.0, semanticLabel: 'home'),
           )
         ],
       ),

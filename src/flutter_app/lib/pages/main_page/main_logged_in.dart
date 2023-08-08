@@ -29,28 +29,14 @@ class _MainLoggedInState extends State<MainLoggedIn>{
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        actions: <Widget>[
+        actions: [
           IconButton(
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const Settings())
-              );
-            },
-            icon: const Icon(
-              Icons.settings,
-              color: Colors.black,
-              size: 30.0,
-              semanticLabel: 'settings',
-            ),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Settings())),
+            icon: const Icon(Icons.settings, color: Colors.black, size: 30.0, semanticLabel: 'settings'),
           ),
           IconButton(
             onPressed: () => widget.logout.call(),
-            icon: const Icon(
-              Icons.logout,
-              color: Colors.black,
-              size: 30.0,
-              semanticLabel: 'logout',
-            ),
+            icon: const Icon(Icons.logout, color: Colors.black, size: 30.0, semanticLabel: 'logout'),
           )
         ],
       ),

@@ -1,4 +1,3 @@
-import 'package:climbing_diary/components/image_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
@@ -12,6 +11,7 @@ import '../../services/spot_service.dart';
 import '../add/add_image.dart';
 import '../comment.dart';
 import '../grade_distribution.dart';
+import '../image_list_view_add.dart';
 import '../my_button_styles.dart';
 import '../add/add_route.dart';
 import '../edit/edit_spot.dart';
@@ -68,19 +68,16 @@ class _SpotDetailsState extends State<SpotDetails>{
 
   void addImageDialog() {
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AddImage(onAddImage: getImage);
-        }
+      context: context,
+      builder: (BuildContext context) => AddImage(onAddImage: getImage)
     );
   }
 
   void editSpotDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return EditSpot(spot: widget.spot, onUpdate: widget.onUpdate);
-      });
+      builder: (BuildContext context) => EditSpot(spot: widget.spot, onUpdate: widget.onUpdate)
+    );
   }
 
   @override
@@ -112,9 +109,7 @@ class _SpotDetailsState extends State<SpotDetails>{
         distanceParking: widget.spot.distanceParking)
       );
     }
-    if (widget.spot.comment.isNotEmpty) {
-      elements.add(Comment(comment: widget.spot.comment));
-    }
+    if (widget.spot.comment.isNotEmpty) elements.add(Comment(comment: widget.spot.comment));
 
     void deleteImageCallback(String mediumId) {
       widget.spot.mediaIds.remove(mediumId);
@@ -126,95 +121,72 @@ class _SpotDetailsState extends State<SpotDetails>{
     }
 
     if (widget.spot.mediaIds.isNotEmpty) {
-      elements.add(ImageListView(
+      elements.add(ImageListViewAdd(
         onDelete: deleteImageCallback,
         mediaIds: widget.spot.mediaIds,
         getImage: getImage,
       ));
     } else {
-      elements.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
+      elements.add(ElevatedButton.icon(
+        icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+        label: const Text('Add image'),
+        onPressed: () => addImageDialog(),
+        style: MyButtonStyles.rounded
+      ));
     }
-    // add route
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add new route'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddRoute(
-                    spot: widget.spot,
-                    onAddMultiPitchRoute: (route) {
-                      widget.spot.multiPitchRouteIds.add(route.id);
-                      setState(() {});
-                    },
-                    onAddSinglePitchRoute: (route) {
-                      widget.spot.singlePitchRouteIds.add(route.id);
-                      setState(() {});
-                    },
-                  ),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
+    elements.add(ElevatedButton.icon(
+      icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+      label: const Text('Add new route'),
+      onPressed: () => Navigator.push(context,
+        MaterialPageRoute(
+          builder: (context) => AddRoute(
+            spot: widget.spot,
+            onAddMultiPitchRoute: (route) {
+              widget.spot.multiPitchRouteIds.add(route.id);
+              setState(() {});
+            },
+            onAddSinglePitchRoute: (route) {
+              widget.spot.singlePitchRouteIds.add(route.id);
+              setState(() {});
+            },
+          ),
+        )
       ),
-    );
+      style: MyButtonStyles.rounded
+    ));
     // delete, edit, close
-    elements.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // delete spot button
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-                spotService.deleteSpot(widget.spot);
-                widget.onDelete.call(widget.spot);
-              },
-              icon: const Icon(Icons.delete),
-            ),
-            IconButton(
-              onPressed: () => editSpotDialog(),
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        )
-    );
-    // routes
+    elements.add(Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+            spotService.deleteSpot(widget.spot);
+            widget.onDelete.call(widget.spot);
+          },
+          icon: const Icon(Icons.delete),
+        ),
+        IconButton(
+          onPressed: () => editSpotDialog(),
+          icon: const Icon(Icons.edit),
+        ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        ),
+      ],
+    ));
     if (widget.spot.multiPitchRouteIds.isNotEmpty || widget.spot.singlePitchRouteIds.isNotEmpty){
-      elements.add(
-        RouteTimeline(
-          trip: widget.trip,
-          spot: widget.spot,
-          singlePitchRouteIds: widget.spot.singlePitchRouteIds,
-          multiPitchRouteIds: widget.spot.multiPitchRouteIds,
-          startDate: DateTime(1923),
-          endDate: DateTime(2123),
-          onNetworkChange: widget.onNetworkChange,
-        )
-      );
+      elements.add(RouteTimeline(
+        trip: widget.trip,
+        spot: widget.spot,
+        singlePitchRouteIds: widget.spot.singlePitchRouteIds,
+        multiPitchRouteIds: widget.spot.multiPitchRouteIds,
+        startDate: DateTime(1923),
+        endDate: DateTime(2123),
+        onNetworkChange: widget.onNetworkChange,
+      ));
     }
-    return Stack(
-        children: <Widget>[
-          Container(
-              padding: const EdgeInsets.all(20),
-              child: ListView(
-                  children: elements
-              )
-          )
-        ]
-    );
+    return Stack(children: [Container(padding: const EdgeInsets.all(20), child: ListView(children: elements))]);
   }
 }

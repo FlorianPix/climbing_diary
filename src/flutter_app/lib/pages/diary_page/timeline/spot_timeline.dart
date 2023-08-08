@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
+import '../../../components/image_list_view.dart';
 import '../../../components/info/spot_info.dart';
 import '../../../components/rating.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/spot_service.dart';
 import '../../../services/trip_service.dart';
-import '../image_list_view.dart';
 import '../spot_details.dart';
 
 class SpotTimeline extends StatefulWidget {
@@ -49,12 +49,8 @@ class SpotTimelineState extends State<SpotTimeline> {
     return FutureBuilder<List<Spot?>>(
       future: spotService.getSpotsOfIds(online, spotIds),
       builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Text(snapshot.error.toString());
-        }
-        if (!snapshot.hasData) {
-          return const CircularProgressIndicator();
-        }
+        if (snapshot.hasError) return Text(snapshot.error.toString());
+        if (!snapshot.hasData) return const CircularProgressIndicator();
         List<Spot> spots = snapshot.data!.whereType<Spot>().toList();
         spots.sort((a, b) => a.name.compareTo(b.name));
 

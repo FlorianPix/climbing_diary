@@ -20,19 +20,14 @@ class _MapPageOfflineState extends State<MapPageOffline> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: const Center(child: Card(child: Padding(padding: EdgeInsets.all(10),
-        child: Text(
-          'Offline Mode',
-          style: MyTextStyles.title,
-        ),
+        child: Text('Offline Mode', style: MyTextStyles.title),
       ))),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          Navigator.push(context,
-            MaterialPageRoute(
-              builder: (context) => SaveLocationNoConnectionPage(onAdd: (Spot value) {})
-            ),
-          );
-        },
+        onPressed: () async => Navigator.push(context,
+          MaterialPageRoute(
+            builder: (context) => SaveLocationNoConnectionPage(onAdd: (Spot value) {})
+          ),
+        ),
         backgroundColor: Colors.green,
         elevation: 5,
         child: const Icon(Icons.add),

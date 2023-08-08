@@ -4,9 +4,7 @@ import '../../interfaces/trip/trip.dart';
 import '../my_text_styles.dart';
 
 class TripInfo extends StatelessWidget {
-  const TripInfo({super.key,
-    required this.trip
-  });
+  const TripInfo({super.key, required this.trip});
 
   final Trip trip;
 
@@ -14,11 +12,7 @@ class TripInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> listInfo = [];
 
-    // name
-    listInfo.add(Text(
-      trip.name,
-      style: MyTextStyles.title,
-    ));
+    listInfo.add(Text(trip.name, style: MyTextStyles.title));
 
     listInfo.add(Text(
       "${trip.startDate} ${trip.endDate}",
@@ -26,10 +20,7 @@ class TripInfo extends StatelessWidget {
     ));
 
     if (trip.comment != ""){
-      listInfo.add(Text(
-        trip.comment,
-        style: MyTextStyles.description,
-      ));
+      listInfo.add(Text(trip.comment, style: MyTextStyles.description));
     }
 
     return Column(

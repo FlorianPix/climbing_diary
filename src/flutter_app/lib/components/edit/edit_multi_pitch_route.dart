@@ -1,10 +1,10 @@
+import 'package:climbing_diary/components/my_validators.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../../services/route_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class EditMultiPitchRoute extends StatefulWidget {
   const EditMultiPitchRoute({super.key, required this.route, required this.onUpdate});
@@ -39,9 +39,7 @@ class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Text('Edit this route'),
       content: SingleChildScrollView(
         child: Form(
@@ -50,14 +48,9 @@ class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                validator: (value) {
-                  return value!.isNotEmpty
-                    ? null
-                    : "Please add a title";
-                },
+                validator: (value) => MyValidators.notEmpty(value, "name"),
                 controller: controllerName,
-                decoration: const InputDecoration(
-                    hintText: "name", labelText: "name"),
+                decoration: const InputDecoration(hintText: "name", labelText: "name"),
               ),
               TextFormField(
                 controller: controllerLocation,
@@ -69,10 +62,7 @@ class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     "Rating",
-                    style: TextStyle(
-                      color: Colors.black.withOpacity(0.6),
-                      fontSize: 16
-                    )
+                    style: TextStyle(color: Colors.black.withOpacity(0.6), fontSize: 16)
                   ),
                 ),
               ),
@@ -81,16 +71,11 @@ class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
                 max: 5,
                 divisions: 5,
                 label: currentSliderValue.round().toString(),
-                onChanged: (value) {
-                  setState(() {
-                    currentSliderValue = value.toInt();
-                  });
-                },
+                onChanged: (value) => setState(() => currentSliderValue = value.toInt()),
               ),
               TextFormField(
                 controller: controllerComment,
-                decoration: const InputDecoration(
-                  hintText: "Description", labelText: "Description"),
+                decoration: const InputDecoration(hintText: "Description", labelText: "Description"),
               ),
             ]
           ),
@@ -99,7 +84,6 @@ class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
       actions: <Widget>[
         IconButton(
           onPressed: () async {
-            bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
               UpdateMultiPitchRoute route = UpdateMultiPitchRoute(
                 id: widget.route.id,
@@ -109,9 +93,7 @@ class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
                 rating: currentSliderValue.toInt(),
               );
               MultiPitchRoute? updatedRoute = await routeService.editMultiPitchRoute(route);
-              if (updatedRoute != null) {
-                widget.onUpdate.call(updatedRoute);
-              }
+              if (updatedRoute != null) widget.onUpdate.call(updatedRoute);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },

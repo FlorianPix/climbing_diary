@@ -8,8 +8,8 @@ class MyTextStyles{
   );
 
   static const TextStyle description = TextStyle(
-      color: Color(0xff989898),
-      fontSize: 14.0,
-      fontWeight: FontWeight.w600
+    color: Color(0xff989898),
+    fontSize: 14.0,
+    fontWeight: FontWeight.w600
   );
 }

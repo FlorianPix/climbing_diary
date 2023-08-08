@@ -153,37 +153,32 @@ class _GradeDistributionState extends State<GradeDistribution> {
       tooltipPadding: EdgeInsets.zero,
       tooltipMargin: 8,
       getTooltipItem: (
-          BarChartGroupData group,
-          int groupIndex,
-          BarChartRodData rod,
-          int rodIndex,
-          ) {
-        return BarTooltipItem(
-          rod.toY.round().toString(),
-          const TextStyle(
-            color: Colors.cyan,
-            fontWeight: FontWeight.bold,
-          ),
-        );
-      },
+        BarChartGroupData group,
+        int groupIndex,
+        BarChartRodData rod,
+        int rodIndex,
+      ) => BarTooltipItem(
+        rod.toY.round().toString(),
+        const TextStyle(color: Colors.cyan, fontWeight: FontWeight.bold),
+      ),
     ),
   );
 
   @override
   Widget build(BuildContext context) {
     return Padding(padding: const EdgeInsets.only(top: 20),
-        child: SizedBox(
-            height: 50 + (widget.singlePitchRouteIds.length + widget.multiPitchRouteIds.length).toDouble(),
-            child: BarChart(BarChartData(
-              barTouchData: barTouchData,
-              titlesData: titlesData,
-              borderData: FlBorderData(show: false),
-              barGroups: barGroups(distribution),
-              gridData: FlGridData(show: false),
-              alignment: BarChartAlignment.center,
-              maxY: (widget.singlePitchRouteIds.length + widget.multiPitchRouteIds.length).toDouble(),
-            ))
-        )
+      child: SizedBox(
+        height: 50 + (widget.singlePitchRouteIds.length + widget.multiPitchRouteIds.length).toDouble(),
+        child: BarChart(BarChartData(
+          barTouchData: barTouchData,
+          titlesData: titlesData,
+          borderData: FlBorderData(show: false),
+          barGroups: barGroups(distribution),
+          gridData: FlGridData(show: false),
+          alignment: BarChartAlignment.center,
+          maxY: (widget.singlePitchRouteIds.length + widget.multiPitchRouteIds.length).toDouble(),
+        ))
+      )
     );
   }
 }

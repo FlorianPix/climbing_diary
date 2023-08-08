@@ -17,11 +17,11 @@ class Rating extends StatelessWidget{
     }
 
     return Center(child: Padding(
-        padding: const EdgeInsets.only(top: 5, bottom: 5),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: ratingRowElements,
-        )
+      padding: const EdgeInsets.only(top: 5, bottom: 5),
+      child:Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: ratingRowElements,
+      )
     ));
   }
 }

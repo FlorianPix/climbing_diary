@@ -11,25 +11,24 @@ class UserPage extends StatelessWidget {
     final pictureUrl = user?.pictureUrl;
     // id, name, email, email verified, updated_at
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      if (pictureUrl != null)
-        Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: CircleAvatar(
-              radius: 56,
-              child: ClipOval(child: Image.network(pictureUrl.toString())),
-            )),
-      Card(
-          child: Column(children: [
-            UserEntryWidget(propertyName: 'Id', propertyValue: user?.sub),
-            UserEntryWidget(propertyName: 'Name', propertyValue: user?.name),
-            UserEntryWidget(propertyName: 'Email', propertyValue: user?.email),
-            UserEntryWidget(
-                propertyName: 'Email Verified?',
-                propertyValue: user?.isEmailVerified.toString()),
-            UserEntryWidget(
-                propertyName: 'Updated at',
-                propertyValue: user?.updatedAt?.toIso8601String()),
-          ]))
+      if (pictureUrl != null) Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: CircleAvatar(
+          radius: 56,
+          child: ClipOval(child: Image.network(pictureUrl.toString())),
+        )
+      ),
+      Card(child: Column(children: [
+        UserEntryWidget(propertyName: 'Id', propertyValue: user?.sub),
+        UserEntryWidget(propertyName: 'Name', propertyValue: user?.name),
+        UserEntryWidget(propertyName: 'Email', propertyValue: user?.email),
+        UserEntryWidget(
+          propertyName: 'Email Verified?',
+          propertyValue: user?.isEmailVerified.toString()),
+        UserEntryWidget(
+          propertyName: 'Updated at',
+          propertyValue: user?.updatedAt?.toIso8601String()),
+      ]))
     ]);
   }
 }
@@ -45,10 +44,10 @@ class UserEntryWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        padding: const EdgeInsets.all(6),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text(propertyName), Text(propertyValue ?? '')],
-        ));
+      padding: const EdgeInsets.all(6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [Text(propertyName), Text(propertyValue ?? '')],
+      ));
   }
 }

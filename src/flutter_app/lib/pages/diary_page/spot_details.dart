@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
@@ -6,10 +5,9 @@ import 'package:latlong2/latlong.dart';
 import '../../components/add/add_image.dart';
 import '../../components/comment.dart';
 import '../../components/grade_distribution.dart';
+import '../../components/image_list_view_add.dart';
 import '../../components/my_button_styles.dart';
-import '../../components/detail/media_details.dart';
 import '../../components/edit/edit_spot.dart';
-import '../../components/my_skeleton.dart';
 import '../../components/my_text_styles.dart';
 import '../../components/rating.dart';
 import '../../components/transport.dart';
@@ -69,19 +67,16 @@ class _SpotDetailsState extends State<SpotDetails>{
 
   void addImageDialog() {
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AddImage(onAddImage: getImage);
-        }
+      context: context,
+      builder: (BuildContext context) => AddImage(onAddImage: getImage)
     );
   }
 
   void editSpotDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return EditSpot(spot: widget.spot, onUpdate: widget.onUpdate);
-      });
+      builder: (BuildContext context) => EditSpot(spot: widget.spot, onUpdate: widget.onUpdate)
+    );
   }
 
   @override
@@ -113,157 +108,64 @@ class _SpotDetailsState extends State<SpotDetails>{
         distanceParking: widget.spot.distanceParking)
       );
     }
-    if (widget.spot.comment.isNotEmpty) {
-      elements.add(Comment(comment: widget.spot.comment));
+    if (widget.spot.comment.isNotEmpty) elements.add(Comment(comment: widget.spot.comment));
+
+    void deleteImageCallback(String mediumId) {
+      widget.spot.mediaIds.remove(mediumId);
+      spotService.editSpot(UpdateSpot(
+        id: widget.spot.id,
+        mediaIds: widget.spot.mediaIds
+      ));
+      setState(() {});
     }
-    // images
+
     if (widget.spot.mediaIds.isNotEmpty) {
-      List<Widget> imageWidgets = [];
-      Future<List<String>> futureMediaUrls = fetchURLs();
-
-      imageWidgets.add(
-        FutureBuilder<List<String>>(
-          future: futureMediaUrls,
-          builder: (context, snapshot) {
-            if (snapshot.data != null){
-              List<String> urls = snapshot.data!;
-
-              deleteMediaCallback(String mediumId) {
-                widget.spot.mediaIds.remove(mediumId);
-                spotService.editSpot(
-                    UpdateSpot(
-                        id: widget.spot.id,
-                        mediaIds: widget.spot.mediaIds
-                    )
-                );
-                setState(() {});
-              }
-
-              List<Widget> images = [];
-              for (var url in urls){
-                images.add(InkWell(
-                  onTap: () =>
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) =>
-                            MediaDetails(
-                              url: url,
-                              onDelete: deleteMediaCallback,
-                            )
-                      ),
-                  child: Ink(
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: CachedNetworkImage(
-                              imageUrl: url,
-                              fit: BoxFit.fitHeight,
-                              placeholder: (context, url) => const MySkeleton(),
-                              errorWidget: (context, url, error) => const Icon(Icons.error),
-                            )
-                        ),
-                      )
-                  ),
-                ));
-              }
-              return Container(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: images
-                  )
-              );
-            }
-            List<Widget> skeletons = [];
-            for (var i = 0; i < widget.spot.mediaIds.length; i++){
-              skeletons.add(const MySkeleton());
-            }
-            return Container(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: skeletons
-                )
-            );
-          }
-        )
-      );
-      imageWidgets.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
-        ),
-      );
-      elements.add(
-        SizedBox(
-          height: 250,
-          child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: imageWidgets
-          )
-        ),
-      );
+      elements.add(ImageListViewAdd(
+        onDelete: deleteImageCallback,
+        mediaIds: widget.spot.mediaIds,
+        getImage: getImage,
+      ));
     } else {
-      elements.add(
-        ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () => addImageDialog(),
-            style: MyButtonStyles.rounded
+      elements.add(ElevatedButton.icon(
+        icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+        label: const Text('Add image'),
+        onPressed: () => addImageDialog(),
+        style: MyButtonStyles.rounded
+      ));
+    }
+    elements.add(Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+            spotService.deleteSpot(widget.spot);
+            widget.onDelete.call(widget.spot);
+          },
+          icon: const Icon(Icons.delete),
         ),
-      );
-    }
-    // delete, edit, close
-    elements.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // delete spot button
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-                spotService.deleteSpot(widget.spot);
-                widget.onDelete.call(widget.spot);
-              },
-              icon: const Icon(Icons.delete),
-            ),
-            IconButton(
-              onPressed: () => editSpotDialog(),
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        )
+        IconButton(
+          onPressed: () => editSpotDialog(),
+          icon: const Icon(Icons.edit),
+        ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        ),
+      ],
+    )
     );
-    // routes
     if (widget.spot.multiPitchRouteIds.isNotEmpty || widget.spot.singlePitchRouteIds.isNotEmpty){
-      elements.add(
-          RouteTimeline(
-              trip: widget.trip,
-              spot: widget.spot,
-              singlePitchRouteIds: widget.spot.singlePitchRouteIds,
-              multiPitchRouteIds: widget.spot.multiPitchRouteIds,
-              startDate: DateTime(1923),
-              endDate: DateTime(2123),
-              onNetworkChange: widget.onNetworkChange,
-          )
-      );
+      elements.add(RouteTimeline(
+        trip: widget.trip,
+        spot: widget.spot,
+        singlePitchRouteIds: widget.spot.singlePitchRouteIds,
+        multiPitchRouteIds: widget.spot.multiPitchRouteIds,
+        startDate: DateTime(1923),
+        endDate: DateTime(2123),
+        onNetworkChange: widget.onNetworkChange,
+      ));
     }
-    return Stack(
-        children: <Widget>[
-          Container(
-              padding: const EdgeInsets.all(20),
-              child: ListView(
-                  children: elements
-              )
-          )
-        ]
-    );
+    return Stack(children: [Container(padding: const EdgeInsets.all(20), child: ListView(children: elements))]);
   }
 }

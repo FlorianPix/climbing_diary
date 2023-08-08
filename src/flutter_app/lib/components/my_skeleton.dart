@@ -7,12 +7,12 @@ class MySkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Padding(
-        padding: EdgeInsets.all(5),
-        child: SkeletonAvatar(
-          style: SkeletonAvatarStyle(
-              shape: BoxShape.rectangle, width: 150, height: 250
-          ),
-        )
+      padding: EdgeInsets.all(5),
+      child: SkeletonAvatar(
+        style: SkeletonAvatarStyle(
+          shape: BoxShape.rectangle, width: 150, height: 250
+        ),
+      )
     );
   }
 }

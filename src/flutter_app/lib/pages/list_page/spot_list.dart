@@ -32,10 +32,15 @@ class SpotListState extends State<SpotList> {
   Widget buildList(Spot spot){
     return ExpansionTile(
       title: Text(spot.name),
-      children: [Padding(padding: const EdgeInsets.only(left: 20, right: 20), child: SpotDetails(
-        spot: spot,
-        onNetworkChange: widget.onNetworkChange,
-      ))]
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20),
+          child: SpotDetails(
+            spot: spot,
+            onNetworkChange: widget.onNetworkChange,
+          )
+        )
+      ]
     );
   }
 }

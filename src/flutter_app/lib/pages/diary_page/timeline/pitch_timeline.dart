@@ -3,6 +3,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
 import '../../../components/detail/pitch_details.dart';
+import '../../../components/image_list_view.dart';
 import '../../../components/info/pitch_info.dart';
 import '../../../components/rating.dart';
 import '../../../interfaces/pitch/pitch.dart';
@@ -10,7 +11,6 @@ import '../../../interfaces/route/route.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/pitch_service.dart';
-import '../image_list_view.dart';
 import 'ascent_timeline.dart';
 
 class PitchTimeline extends StatefulWidget {
@@ -89,7 +89,7 @@ class PitchTimelineState extends State<PitchTimeline> {
                 itemCount: pitches.length,
                 contentsBuilder: (_, index) {
                   List<Widget> elements = [];
-                  elements.add(PitchInfo(pitch: pitches[index]));
+                  elements.add(PitchInfo(pitch: pitches[index], onNetworkChange: widget.onNetworkChange));
                   elements.add(Rating(rating: pitches[index].rating));
                   if (pitches[index].mediaIds.isNotEmpty) {
                     elements.add(ExpansionTile(

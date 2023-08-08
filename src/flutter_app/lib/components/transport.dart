@@ -1,3 +1,4 @@
+import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:flutter/material.dart';
 
 class Transport extends StatelessWidget{
@@ -8,28 +9,22 @@ class Transport extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return Center(child: Padding(
-        padding: const EdgeInsets.all(5),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            const Icon(Icons.train, size: 30.0, color: Colors.green),
-            Text(
-              '$distancePublicTransport min',
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400
-              ),
-            ),
-            const Icon(Icons.directions_car, size: 30.0, color: Colors.red),
-            Text(
-              '$distanceParking min',
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400
-              ),
-            )
-          ],
-        )
+      padding: const EdgeInsets.all(5),
+      child:Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          const Icon(Icons.train, size: 30.0, color: Colors.green),
+          Text(
+            '$distancePublicTransport min',
+            style: MyTextStyles.description,
+          ),
+          const Icon(Icons.directions_car, size: 30.0, color: Colors.red),
+          Text(
+            '$distanceParking min',
+            style: MyTextStyles.description,
+          )
+        ],
+      )
     ));
   }
 

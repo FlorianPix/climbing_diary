@@ -1,10 +1,10 @@
+import 'package:climbing_diary/components/my_validators.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../interfaces/trip/trip.dart';
 import '../../interfaces/trip/update_trip.dart';
 import '../../services/trip_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class EditTrip extends StatefulWidget {
   const EditTrip({super.key, required this.trip, required this.onUpdate});
@@ -41,9 +41,7 @@ class _EditTripState extends State<EditTrip>{
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Text('Edit this trip'),
       content: SingleChildScrollView(
         child: Form(
@@ -52,27 +50,22 @@ class _EditTripState extends State<EditTrip>{
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                validator: (value) {
-                  return value!.isNotEmpty
-                    ? null
-                    : "Please add a name";
-                },
+                validator: (value) => MyValidators.notEmpty(value, "name"),
                 controller: controllerName,
-                decoration: const InputDecoration(
-                    hintText: "name", labelText: "name"),
+                decoration: const InputDecoration(hintText: "name", labelText: "name"),
               ),
               TextFormField(
                 controller: controllerDateRange,
                 decoration: const InputDecoration(
-                    icon: Icon(Icons.calendar_today),
-                    labelText: "enter date range"
+                  icon: Icon(Icons.calendar_today),
+                  labelText: "enter date range"
                 ),
                 readOnly: true,
                 onTap: () async {
                   DateTimeRange? pickedDateRange = await showDateRangePicker(
-                      context: context, initialDateRange: DateTimeRange(start: DateTime.now(), end: DateTime.now()),
-                      firstDate: DateTime(DateTime.now().year - 100),
-                      lastDate: DateTime(DateTime.now().year + 100)
+                    context: context, initialDateRange: DateTimeRange(start: DateTime.now(), end: DateTime.now()),
+                    firstDate: DateTime(DateTime.now().year - 100),
+                    lastDate: DateTime(DateTime.now().year + 100)
                   );
                   if(pickedDateRange != null ){
                     String formattedStartDate = DateFormat('yyyy-MM-dd').format(pickedDateRange.start);
@@ -91,10 +84,7 @@ class _EditTripState extends State<EditTrip>{
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     "Rating",
-                    style: TextStyle(
-                      color: Colors.black.withOpacity(0.6),
-                      fontSize: 16
-                    )
+                    style: TextStyle(color: Colors.black.withOpacity(0.6), fontSize: 16)
                   ),
                 ),
               ),
@@ -103,16 +93,11 @@ class _EditTripState extends State<EditTrip>{
                 max: 5,
                 divisions: 5,
                 label: currentSliderValue.round().toString(),
-                onChanged: (value) {
-                  setState(() {
-                    currentSliderValue = value.toInt();
-                  });
-                },
+                onChanged: (value) => setState(() => currentSliderValue = value.toInt()),
               ),
               TextFormField(
                 controller: controllerComment,
-                decoration: const InputDecoration(
-                  hintText: "comment", labelText: "comment"),
+                decoration: const InputDecoration(hintText: "comment", labelText: "comment"),
               ),
             ],
           ),
@@ -121,7 +106,6 @@ class _EditTripState extends State<EditTrip>{
       actions: <Widget>[
         IconButton(
           onPressed: () async {
-            bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
               UpdateTrip trip = UpdateTrip(
                 id: widget.trip.id,
@@ -132,9 +116,7 @@ class _EditTripState extends State<EditTrip>{
                 startDate: controllerStartDate.text
               );
               Trip? updatedTrip = await tripService.editTrip(trip);
-              if (updatedTrip != null) {
-                widget.onUpdate.call(updatedTrip);
-              }
+              if (updatedTrip != null) widget.onUpdate.call(updatedTrip);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },

@@ -45,10 +45,10 @@ class StatisticPageState extends State<StatisticPage> {
       for (Ascent ascent in ascents){
         if (ascent.type != AscentType.bail.index){
           DetailedGrade detailedGrade = DetailedGrade(
-              date: ascent.date,
-              ascentStyle: AscentStyle.values[ascent.style],
-              ascentType: AscentType.values[ascent.type],
-              grade: pitch.grade
+            date: ascent.date,
+            ascentStyle: AscentStyle.values[ascent.style],
+            ascentType: AscentType.values[ascent.type],
+            grade: pitch.grade
           );
           detailedGrades.add(detailedGrade);
         }
@@ -60,10 +60,10 @@ class StatisticPageState extends State<StatisticPage> {
       for (Ascent ascent in ascents){
         if (ascent.type != AscentType.bail.index){
           DetailedGrade detailedGrade = DetailedGrade(
-              date: ascent.date,
-              ascentStyle: AscentStyle.values[ascent.style],
-              ascentType: AscentType.values[ascent.type],
-              grade: singlePitchRoute.grade
+            date: ascent.date,
+            ascentStyle: AscentStyle.values[ascent.style],
+            ascentType: AscentType.values[ascent.type],
+            grade: singlePitchRoute.grade
           );
           detailedGrades.add(detailedGrade);
         }
@@ -152,37 +152,37 @@ class StatisticPageState extends State<StatisticPage> {
           Column(children: [
             const Text("🪨"),
             Switch(value: switchBoulder,
-                onChanged: (bool value) => setState(() => switchBoulder = value)
+              onChanged: (bool value) => setState(() => switchBoulder = value)
             ),
           ]),
           Column(children: [
             const Text("🔥"),
             Switch(value: switchSolo,
-                onChanged: (bool value) => setState(() => switchSolo = value)
+              onChanged: (bool value) => setState(() => switchSolo = value)
             )
           ]),
           Column(children: [
             const Text("🥇"),
             Switch(value: switchLead,
-                onChanged: (bool value) => setState(() => switchLead = value)
+              onChanged: (bool value) => setState(() => switchLead = value)
             )
           ]),
           Column(children: [
             const Text("🥈️"),
             Switch(value: switchSecond,
-                onChanged: (bool value) => setState(() => switchSecond = value)
+              onChanged: (bool value) => setState(() => switchSecond = value)
             )
           ]),
           Column(children: [
             const Text("🥉"),
             Switch(value: switchTopRope,
-                onChanged: (bool value) => setState(() => switchTopRope = value)
+              onChanged: (bool value) => setState(() => switchTopRope = value)
             )
           ]),
           Column(children: [
             const Text("🩹"),
             Switch(value: switchAid,
-                onChanged: (bool value) => setState(() => switchAid = value)
+              onChanged: (bool value) => setState(() => switchAid = value)
             )
           ]),
         ])
@@ -194,25 +194,25 @@ class StatisticPageState extends State<StatisticPage> {
           Column(children: [
             const Text("👁️"),
             Switch(value: switchOnSight,
-                onChanged: (bool value) => setState(() => switchOnSight = value)
+              onChanged: (bool value) => setState(() => switchOnSight = value)
             )
           ]),
           Column(children: [
             const Text("⚡"),
             Switch(value: switchFlash,
-                onChanged: (bool value) => setState(() => switchFlash = value)
+              onChanged: (bool value) => setState(() => switchFlash = value)
             )
           ]),
           Column(children: [
             const Text("🔴"),
             Switch(value: switchRedPoint,
-                onChanged: (bool value) => setState(() => switchRedPoint = value)
+              onChanged: (bool value) => setState(() => switchRedPoint = value)
             )
           ]),
           Column(children: [
             const Text("✔️"),
             Switch(value: switchTick,
-                onChanged: (bool value) => setState(() => switchTick = value)
+              onChanged: (bool value) => setState(() => switchTick = value)
             )
           ]),
         ])
@@ -283,7 +283,7 @@ class StatisticPageState extends State<StatisticPage> {
           if (valInt >= 0 && valInt <= 38){
             text = Grade.translationTable[gradingSystem.index][valInt];
           } else {
-            return Container();
+            return const SizedBox.shrink();
           }
           return Text(text, style: style, textAlign: TextAlign.left);
         }

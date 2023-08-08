@@ -60,6 +60,7 @@ class UpdateSpot extends UpdateMyBaseInterface{
     );
   }
 
+  @override
   Map toJson() => {
     "media_ids": mediaIds,
     "single_pitch_route_ids": singlePitchRouteIds,

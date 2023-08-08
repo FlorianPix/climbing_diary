@@ -1,4 +1,3 @@
-import 'package:climbing_diary/components/image_list_view.dart';
 import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +12,7 @@ import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../add/add_image.dart';
 import '../comment.dart';
+import '../image_list_view_add.dart';
 import '../my_button_styles.dart';
 import '../add/add_pitch.dart';
 import '../edit/edit_multi_pitch_route.dart';
@@ -73,21 +73,18 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
   void addImageDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AddImage(onAddImage: getImage);
-      }
+      builder: (BuildContext context) => AddImage(onAddImage: getImage)
     );
   }
 
   void editRouteDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return EditMultiPitchRoute(
-          route: widget.route,
-          onUpdate: widget.onUpdate
-        );
-      });
+      builder: (BuildContext context) => EditMultiPitchRoute(
+        route: widget.route,
+        onUpdate: widget.onUpdate
+      )
+    );
   }
 
   @override
@@ -100,7 +97,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
     List<Widget> elements = [];
     MultiPitchRoute route = widget.route;
     elements.add(Text(route.name, style: MyTextStyles.title));
-    if (route.pitchIds.isNotEmpty) elements.add(MultiPitchInfo(pitchIds: route.pitchIds));
+    if (route.pitchIds.isNotEmpty) elements.add(MultiPitchInfo(pitchIds: route.pitchIds, onNetworkChange: widget.onNetworkChange));
     if (route.location.isNotEmpty) elements.add(Text(route.location, style: MyTextStyles.description));
     elements.add(Rating(rating: route.rating));
     if (route.comment.isNotEmpty) elements.add(Comment(comment: route.comment));
@@ -115,7 +112,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
     }
 
     if (route.mediaIds.isNotEmpty) {
-      elements.add(ImageListView(
+      elements.add(ImageListViewAdd(
         onDelete: deleteImageCallback,
         mediaIds: widget.route.mediaIds,
         getImage: getImage,
@@ -128,17 +125,14 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         style: MyButtonStyles.rounded
       ));
     }
-    // add pitch
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add new pitch'),
-          onPressed: () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => AddPitch(route: widget.route))
-          ),
-          style: MyButtonStyles.rounded
+    elements.add(ElevatedButton.icon(
+      icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+      label: const Text('Add new pitch'),
+      onPressed: () => Navigator.push(context,
+        MaterialPageRoute(builder: (context) => AddPitch(route: widget.route))
       ),
-    );
+      style: MyButtonStyles.rounded
+    ));
     elements.add(Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

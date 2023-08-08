@@ -282,14 +282,14 @@ class RouteService {
     return null;
   }
 
-  Future<Ascent?> getBestAscent(MultiPitchRoute route) async {
+  Future<Ascent?> getBestAscent(MultiPitchRoute route, bool online) async {
     List<Ascent> bestPitchAscents = [];
-    List<Pitch> pitches = await pitchService.getPitchesOfIds(true, route.pitchIds); // TODO check if online
+    List<Pitch> pitches = await pitchService.getPitchesOfIds(online, route.pitchIds);
     for (Pitch pitch in pitches){
       int pitchStyle = 6;
       int pitchType = 4;
       Ascent? bestPitchAscent;
-      List<Ascent> ascents = await ascentService.getAscentsOfIds(true, pitch.ascentIds); // TODO check if online
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(online, pitch.ascentIds);
       for (Ascent ascent in ascents) {
         if (ascent.style < pitchStyle){
           bestPitchAscent = ascent;

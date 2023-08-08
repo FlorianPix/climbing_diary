@@ -10,7 +10,7 @@ import '../../components/detail/multi_pitch_route_details.dart';
 import '../../components/info/multi_pitch_route_info.dart';
 import '../../components/info/route_info.dart';
 import '../../components/rating.dart';
-import '../diary_page/image_list_view.dart';
+import '../../components/image_list_view.dart';
 import '../diary_page/timeline/pitch_timeline.dart';
 
 class MultiPitchRouteList extends StatefulWidget {
@@ -84,17 +84,17 @@ class MultiPitchRouteListState extends State<MultiPitchRouteList> {
               contentsBuilder: (_, index) {
                 List<Widget> timeLineElements = [];
                 MultiPitchRoute multiPitchRoute = multiPitchRoutes[index];
-                timeLineElements.add(RouteInfo(route: multiPitchRoute));
+                timeLineElements.add(RouteInfo(route: multiPitchRoute, onNetworkChange: widget.onNetworkChange));
                 timeLineElements.add(Rating(rating: multiPitchRoute.rating));
                 if (multiPitchRoute.mediaIds.isNotEmpty) {
                   timeLineElements.add(ExpansionTile(
-                      leading: const Icon(Icons.image),
-                      title: const Text("images"),
-                      children: [ImageListView(mediaIds: multiPitchRoute.mediaIds)]
+                    leading: const Icon(Icons.image),
+                    title: const Text("images"),
+                    children: [ImageListView(mediaIds: multiPitchRoute.mediaIds)]
                   ));
                 }
                 if (multiPitchRoute.pitchIds.isNotEmpty) {
-                  timeLineElements.add(MultiPitchInfo(pitchIds: multiPitchRoute.pitchIds));
+                  timeLineElements.add(MultiPitchInfo(pitchIds: multiPitchRoute.pitchIds, onNetworkChange: widget.onNetworkChange,));
                   timeLineElements.add(PitchTimeline(
                     trip: widget.trip,
                     spot: widget.spot,
@@ -105,18 +105,18 @@ class MultiPitchRouteListState extends State<MultiPitchRouteList> {
                 }
                 return InkWell(
                   onTap: () => showDialog(
-                      context: context,
-                      builder: (BuildContext context) => Dialog(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          child: MultiPitchRouteDetails(
-                            spot: widget.spot,
-                            route: multiPitchRoute,
-                            onDelete: deleteMultiPitchRouteCallback,
-                            onUpdate: updateMultiPitchRouteCallback,
-                            spotId: widget.spot.id,
-                            onNetworkChange: widget.onNetworkChange,
-                          )
+                    context: context,
+                    builder: (BuildContext context) => Dialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      child: MultiPitchRouteDetails(
+                        spot: widget.spot,
+                        route: multiPitchRoute,
+                        onDelete: deleteMultiPitchRouteCallback,
+                        onUpdate: updateMultiPitchRouteCallback,
+                        spotId: widget.spot.id,
+                        onNetworkChange: widget.onNetworkChange,
                       )
+                    )
                   ),
                   child: Ink(child: Padding(padding: const EdgeInsets.only(left: 8.0), child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

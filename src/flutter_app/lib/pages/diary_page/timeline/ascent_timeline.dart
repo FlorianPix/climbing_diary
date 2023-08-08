@@ -9,7 +9,7 @@ import '../../../interfaces/ascent/ascent.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../services/ascent_service.dart';
-import '../image_list_view.dart';
+import '../../../components/image_list_view.dart';
 
 class AscentTimeline extends StatefulWidget {
   const AscentTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchId, required this.ascentIds, required this.onDelete, required this.onUpdate, required this.startDate, required this.endDate, required this.ofMultiPitch, required this.onNetworkChange});
@@ -57,9 +57,9 @@ class AscentTimelineState extends State<AscentTimeline> {
         List<Ascent> ascents = snapshot.data!;
         ascents.retainWhere((ascent) {
           DateTime dateOfAscent = DateTime.parse(ascent.date);
-          if ((dateOfAscent.isAfter(widget.startDate) && dateOfAscent.isBefore(widget.endDate)) || dateOfAscent.isAtSameMomentAs(widget.startDate) || dateOfAscent.isAtSameMomentAs(widget.endDate)){
-            return true;
-          }
+          if ((dateOfAscent.isAfter(widget.startDate) && dateOfAscent.isBefore(widget.endDate))) return true;
+          if (dateOfAscent.isAtSameMomentAs(widget.startDate)) return true;
+          if (dateOfAscent.isAtSameMomentAs(widget.endDate)) return true;
           return false;
         });
         ascents.sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
@@ -67,9 +67,7 @@ class AscentTimelineState extends State<AscentTimeline> {
         updateAscentCallback(Ascent ascent) {
           var index = -1;
           for (int i = 0; i < ascents.length; i++) {
-            if (ascents[i].id == ascent.id) {
-              index = i;
-            }
+            if (ascents[i].id == ascent.id) index = i;
           }
           ascents.removeAt(index);
           ascents.add(ascent);

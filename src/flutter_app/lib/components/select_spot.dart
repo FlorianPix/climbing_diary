@@ -48,17 +48,17 @@ class _SelectSpotState extends State<SelectSpot>{
       Padding(
         padding: const EdgeInsets.all(20),
         child: TextFormField(
-            controller: controllerSearch,
-            decoration: const InputDecoration(
-              icon: Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(25.0)),
-                borderSide: BorderSide(color: Colors.blue),
-              ),
-              hintText: "name",
-              labelText: "name"
+          controller: controllerSearch,
+          decoration: const InputDecoration(
+            icon: Icon(Icons.search),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(25.0)),
+              borderSide: BorderSide(color: Colors.blue),
             ),
-            onChanged: (String s) => setState(() {})
+            hintText: "name",
+            labelText: "name"
+          ),
+          onChanged: (String s) => setState(() {})
         ),
       ),
     );
@@ -73,19 +73,19 @@ class _SelectSpotState extends State<SelectSpot>{
         for(Spot spot in spots){
           List<String> location = spot.location.split(",");
           elements.add(Padding(padding: const EdgeInsets.all(2), child: TextButton(
-              onPressed: () async {
-                if (!widget.trip.spotIds.contains(spot.id)){
-                  widget.trip.spotIds.add(spot.id);
-                  Trip? updatedTrip = await tripService.editTrip(widget.trip.toUpdateTrip());
-                  widget.onAdd.call(spot);
-                }
-                setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
-              },
-              style: MyButtonStyles.rounded,
-              child: Column(children: [
-                Text(spot.name, style: MyTextStyles.title,),
-                Text(spot.location, style: MyTextStyles.description),
-              ],))
+            onPressed: () async {
+              if (!widget.trip.spotIds.contains(spot.id)){
+                widget.trip.spotIds.add(spot.id);
+                Trip? updatedTrip = await tripService.editTrip(widget.trip.toUpdateTrip());
+                widget.onAdd.call(spot);
+              }
+              setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
+            },
+            style: MyButtonStyles.rounded,
+            child: Column(children: [
+              Text(spot.name, style: MyTextStyles.title,),
+              Text(spot.location, style: MyTextStyles.description),
+            ],))
           ));
         }
         return Expanded(child: ListView(children: elements));
@@ -97,13 +97,13 @@ class _SelectSpotState extends State<SelectSpot>{
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       title: const Text('Please choose a spot'),
       content: SizedBox(
-          width: 500,
-          height: 600,
-          child: Column(
-          children: [
-            search,
-            spotList
-          ]
+        width: 500,
+        height: 600,
+        child: Column(
+        children: [
+          search,
+          spotList
+        ]
       ))
     );
   }

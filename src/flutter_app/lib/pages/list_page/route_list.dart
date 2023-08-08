@@ -7,10 +7,11 @@ import 'multi_pitch_route_details.dart';
 import 'single_pitch_route_details.dart';
 
 class RouteList extends StatefulWidget {
-  const RouteList({super.key, required this.singlePitchRoutes, required this.multiPitchRoutes});
+  const RouteList({super.key, required this.singlePitchRoutes, required this.multiPitchRoutes, required this.onNetworkChange});
 
   final List<SinglePitchRoute> singlePitchRoutes;
   final List<MultiPitchRoute> multiPitchRoutes;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => RouteListState();
@@ -36,36 +37,32 @@ class RouteListState extends State<RouteList> {
     List<Widget> elements = singlePitchRoutes.map((route) => buildSinglePitchRouteList(route)).toList();
     elements += multiPitchRoutes.map((route) => buildMultiPitchRouteList(route)).toList();
 
-    return Column(
-        children: elements,
-    );
+    return Column(children: elements);
   }
 
   Widget buildSinglePitchRouteList(SinglePitchRoute route){
     return ExpansionTile(
-        title: Text(
-          route.name,
-        ),
-        children: [Padding(
-          padding: const EdgeInsets.only(left: 20, right: 20),
-          child: SinglePitchRouteDetails(
-            route: route,
-          )
-        )]
+      title: Text(route.name),
+      children: [Padding(
+        padding: const EdgeInsets.only(left: 20, right: 20),
+        child: SinglePitchRouteDetails(
+          route: route,
+          onNetworkChange: widget.onNetworkChange
+        )
+      )]
     );
   }
 
   Widget buildMultiPitchRouteList(MultiPitchRoute route){
     return ExpansionTile(
-        title: Text(
-          route.name,
-        ),
-        children: [Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20),
-            child: MultiPitchRouteDetails(
-              route: route,
-            )
-        )]
+      title: Text(route.name),
+      children: [Padding(
+        padding: const EdgeInsets.only(left: 20, right: 20),
+        child: MultiPitchRouteDetails(
+          route: route,
+          onNetworkChange: widget.onNetworkChange,
+        )
+      )]
     );
   }
 }

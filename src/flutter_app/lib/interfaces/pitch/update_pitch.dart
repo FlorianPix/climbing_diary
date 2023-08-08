@@ -54,6 +54,7 @@ class UpdatePitch extends UpdateMyBaseInterface{
     );
   }
 
+  @override
   Map toJson() => {
     "ascent_ids": ascentIds,
     "media_ids": mediaIds,

@@ -1,3 +1,4 @@
+import 'package:climbing_diary/components/my_validators.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -6,7 +7,6 @@ import '../../interfaces/grading_system.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/single_pitch_route/update_single_pitch_route.dart';
 import '../../services/route_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class EditSinglePitchRoute extends StatefulWidget {
   const EditSinglePitchRoute({super.key, required this.route, required this.onUpdate});
@@ -47,9 +47,7 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Text('Edit this route'),
       content: SingleChildScrollView(
         child: Form(
@@ -58,53 +56,39 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                validator: (value) {
-                  return value!.isNotEmpty
-                    ? null
-                    : "please add a name";
-                },
+                validator: (value) => MyValidators.notEmpty(value, "name"),
                 controller: controllerName,
-                decoration: const InputDecoration(
-                    hintText: "name of the route", labelText: "name"),
+                decoration: const InputDecoration(hintText: "name", labelText: "name"),
               ),
               DropdownButton<String>(
                 value: grade,
                 items: Grade.translationTable[gradingSystem.index].toSet().map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value)
+                    value: value,
+                    child: Text(value)
                   );
                 }).toList(),
-                onChanged: (String? value) {
-                  setState(() {
-                    grade = value!;
-                  });
-                },
+                onChanged: (String? value) => setState(() => grade = value!),
               ),
               DropdownButton<GradingSystem>(
                 value: gradingSystem,
                 items: GradingSystem.values.map<DropdownMenuItem<GradingSystem>>((GradingSystem value) {
                   return DropdownMenuItem<GradingSystem>(
-                      value: value,
-                      child: Text(value.toShortString())
+                    value: value,
+                    child: Text(value.toShortString())
                   );
                 }).toList(),
-                onChanged: (GradingSystem? value) {
-                  setState(() {
-                    int oldIndex = Grade.translationTable[gradingSystem.index].indexOf(grade);
-                    gradingSystem = value!;
-                    grade = Grade.translationTable[gradingSystem.index][oldIndex];
-                  });
-                },
+                onChanged: (GradingSystem? value) => setState(() {
+                  int oldIndex = Grade.translationTable[gradingSystem.index].indexOf(grade);
+                  gradingSystem = value!;
+                  grade = Grade.translationTable[gradingSystem.index][oldIndex];
+                }),
               ),
               TextFormField(
                 controller: controllerLength,
                 keyboardType: TextInputType.number,
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly
-                ],
-                decoration: const InputDecoration(
-                    hintText: "length of the route", labelText: "length"),
+                inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(hintText: "length of the route", labelText: "length"),
               ),
               TextFormField(
                 controller: controllerLocation,
@@ -112,19 +96,15 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
               ),
               TextFormField(
                 controller: controllerComment,
-                decoration: const InputDecoration(
-                    hintText: "comment", labelText: "comment"),
+                decoration: const InputDecoration(hintText: "comment", labelText: "comment"),
               ),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                      "Rating",
-                      style: TextStyle(
-                          color: Colors.black.withOpacity(0.6),
-                          fontSize: 16
-                      )
+                    "Rating",
+                    style: TextStyle(color: Colors.black.withOpacity(0.6), fontSize: 16)
                   ),
                 ),
               ),
@@ -133,11 +113,7 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
                 max: 5,
                 divisions: 5,
                 label: currentSliderValue.round().toString(),
-                onChanged: (value) {
-                  setState(() {
-                    currentSliderValue = value.toInt();
-                  });
-                },
+                onChanged: (value) => setState(() => currentSliderValue = value.toInt()),
               ),
             ]
           ),
@@ -146,7 +122,6 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
       actions: <Widget>[
         IconButton(
           onPressed: () async {
-            bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
               UpdateSinglePitchRoute route = UpdateSinglePitchRoute(
                 id: widget.route.id,
@@ -158,9 +133,7 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
                 length: int.parse(controllerLength.text)
               );
               SinglePitchRoute? updatedRoute = await routeService.editSinglePitchRoute(route);
-              if (updatedRoute != null) {
-                widget.onUpdate.call(updatedRoute);
-              }
+              if (updatedRoute != null) widget.onUpdate.call(updatedRoute);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },

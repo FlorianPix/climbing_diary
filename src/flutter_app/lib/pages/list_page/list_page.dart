@@ -108,6 +108,7 @@ class ListPageState extends State<ListPage> {
             return RouteList(
               singlePitchRoutes: singlePitchRoutes,
               multiPitchRoutes: multiPitchRoutes,
+              onNetworkChange: widget.onNetworkChange,
             );
           }
         );
@@ -120,7 +121,7 @@ class ListPageState extends State<ListPage> {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();
         List<Pitch> pitches = snapshot.data!;
-        return PitchList(pitches: pitches);
+        return PitchList(pitches: pitches, onNetworkChange: widget.onNetworkChange);
       }
     );
 

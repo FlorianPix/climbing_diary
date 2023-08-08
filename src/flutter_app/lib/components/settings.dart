@@ -24,9 +24,7 @@ class _SettingsState extends State<Settings>{
   fetchGradingSystemPreference() async {
     prefs = await SharedPreferences.getInstance();
     int? fetchedGradingSystem = prefs.getInt('gradingSystem');
-    if (fetchedGradingSystem != null) {
-      gradingSystem = GradingSystem.values[fetchedGradingSystem];
-    }
+    if (fetchedGradingSystem != null) gradingSystem = GradingSystem.values[fetchedGradingSystem];
     setState(() {});
   }
 
@@ -45,32 +43,34 @@ class _SettingsState extends State<Settings>{
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Text('Settings'),
       content: SizedBox(width: 500, height: 500, child: ListView(
         children: [
           Card(child: Column(children: [
-            Padding(padding: const EdgeInsets.only(top: 10), child: Text("Select grading system", style: MyTextStyles.title)),
-            Padding(padding: const EdgeInsets.all(5),
-                child: DropdownButton<GradingSystem>(
-                  value: gradingSystem,
-                  items: GradingSystem.values.map<DropdownMenuItem<GradingSystem>>((GradingSystem value) {
-                    return DropdownMenuItem<GradingSystem>(
-                        value: value,
-                        child: Text(value.toShortString())
-                    );
-                  }).toList(),
-                  onChanged: (GradingSystem? value) {
-                    setState(() {
-                      setGradingSystemPreference(value!.index);
-                    });
-                  },
-                ))
+            const Padding(
+              padding: EdgeInsets.only(top: 10),
+              child: Text("Select grading system", style: MyTextStyles.title)
+            ),
+            Padding(
+              padding: const EdgeInsets.all(5),
+              child: DropdownButton<GradingSystem>(
+                value: gradingSystem,
+                items: GradingSystem.values.map<DropdownMenuItem<GradingSystem>>((GradingSystem value) {
+                  return DropdownMenuItem<GradingSystem>(
+                    value: value,
+                    child: Text(value.toShortString())
+                  );
+                }).toList(),
+                onChanged: (GradingSystem? value) => setState(() => setGradingSystemPreference(value!.index)),
+              )
+            )
           ])),
           Card(child: Column(children: [
-            Padding(padding: const EdgeInsets.only(top: 5), child: Text("Import", style: MyTextStyles.title)),
+            const Padding(
+              padding: EdgeInsets.only(top: 5),
+              child: Text("Import", style: MyTextStyles.title)
+            ),
             ElevatedButton.icon(
               onPressed: () {archiveService.readPicked();},
               icon: const Icon(
@@ -83,7 +83,10 @@ class _SettingsState extends State<Settings>{
             )
           ])),
           Card(child: Column(children: [
-            Padding(padding: const EdgeInsets.only(top: 5), child: Text("Backup", style: MyTextStyles.title)),
+            const Padding(
+              padding: EdgeInsets.only(top: 5),
+              child: Text("Backup", style: MyTextStyles.title)
+            ),
             ElevatedButton.icon(
               onPressed: () {archiveService.readBackup();},
               icon: const Icon(
@@ -105,20 +108,27 @@ class _SettingsState extends State<Settings>{
               label: const Text("save your climbing data\nto this device"),
             )
           ])),
-          Card(child: Column(children: [Padding(padding: const EdgeInsets.only(top: 5), child: Text("Cache", style: MyTextStyles.title)),
-              ElevatedButton.icon(
-                onPressed: () {cacheService.clearCache();},
-                icon: const Icon(
-                  Icons.delete,
-                  color: Colors.black,
-                  size: 30.0,
-                  semanticLabel: 'clear cache',
-                ),
-                label: const Text("clear cache"),
-              )
+          Card(child: Column(children: [
+            const Padding(
+              padding: EdgeInsets.only(top: 5),
+              child: Text("Cache", style: MyTextStyles.title)
+            ),
+            ElevatedButton.icon(
+              onPressed: () {cacheService.clearCache();},
+              icon: const Icon(
+                Icons.delete,
+                color: Colors.black,
+                size: 30.0,
+                semanticLabel: 'clear cache',
+              ),
+              label: const Text("clear cache"),
+            )
           ])),
           Card(child: Column(children: [
-            Padding(padding: const EdgeInsets.only(top: 5), child: Text("Delete", style: MyTextStyles.title)),
+            const Padding(
+              padding: EdgeInsets.only(top: 5),
+              child: Text("Delete", style: MyTextStyles.title)
+            ),
             ElevatedButton.icon(
               onPressed: () {adminService.deleteAll();},
               icon: const Icon(

@@ -48,6 +48,7 @@ class UpdateTrip extends UpdateMyBaseInterface{
     );
   }
 
+  @override
   Map toJson() => {
     "media_ids": mediaIds,
     "spot_ids": spotIds,

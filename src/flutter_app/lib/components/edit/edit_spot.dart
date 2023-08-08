@@ -1,9 +1,9 @@
+import 'package:climbing_diary/components/my_validators.dart';
 import 'package:flutter/material.dart';
 
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/spot/update_spot.dart';
 import '../../services/spot_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class EditSpot extends StatefulWidget {
   const EditSpot({super.key, required this.spot, required this.onUpdate});
@@ -44,9 +44,7 @@ class _EditSpotState extends State<EditSpot>{
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Text('edit this spot'),
       content: SingleChildScrollView(
         child: Form(
@@ -55,26 +53,21 @@ class _EditSpotState extends State<EditSpot>{
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                validator: (value) {
-                  return value!.isNotEmpty
-                    ? null
-                    : "please add a title";
-                },
+                validator: (value) => MyValidators.notEmpty(value, "name"),
                 controller: controllerTitle,
-                decoration: const InputDecoration(
-                    hintText: "name of the spot", labelText: "name"),
+                decoration: const InputDecoration(hintText: "name", labelText: "name"),
               ),
               TextFormField(
                 controller: controllerAddress,
-                decoration: const InputDecoration(labelText: "address"),
+                decoration: const InputDecoration(hintText: "address", labelText: "address"),
               ),
               TextFormField(
                 controller: controllerLat,
-                decoration: const InputDecoration(labelText: "latitude"),
+                decoration: const InputDecoration(hintText: "latitude", labelText: "latitude"),
               ),
               TextFormField(
                 controller: controllerLong,
-                decoration: const InputDecoration(labelText: "longitude"),
+                decoration: const InputDecoration(hintText: "longitude", labelText: "longitude"),
               ),
               Align(
                 alignment: Alignment.centerLeft,
@@ -82,10 +75,7 @@ class _EditSpotState extends State<EditSpot>{
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     "rating",
-                    style: TextStyle(
-                      color: Colors.black.withOpacity(0.6),
-                      fontSize: 16
-                    )
+                    style: TextStyle(color: Colors.black.withOpacity(0.6), fontSize: 16)
                   ),
                 ),
               ),
@@ -94,42 +84,21 @@ class _EditSpotState extends State<EditSpot>{
                 max: 5,
                 divisions: 5,
                 label: currentSliderValue.round().toString(),
-                onChanged: (value) {
-                  setState(() {
-                    currentSliderValue = value.toInt();
-                  });
-                },
+                onChanged: (value) => setState(() => currentSliderValue = value.toInt()),
               ),
               TextFormField(
                 controller: controllerDescription,
-                decoration: const InputDecoration(
-                  hintText: "comment", labelText: "comment"),
+                decoration: const InputDecoration(hintText: "comment", labelText: "comment"),
               ),
               TextFormField(
-                validator: (value) {
-                  if (value != null && value != ""){
-                    var i = int.tryParse(value);
-                    if (i == null) {
-                      return "must be a number";
-                    }
-                  }
-                  return null;
-                },
+                validator: (value) => MyValidators.isInt(value),
                 controller: controllerBus,
                 decoration: const InputDecoration(
                   hintText: "in minutes",
                   labelText: "distance to public transport station"),
               ),
               TextFormField(
-                validator: (value) {
-                  if (value != null && value != ""){
-                    var i = int.tryParse(value);
-                    if (i == null) {
-                      return "must be a number";
-                    }
-                  }
-                  return null;
-                },
+                validator: (value) => MyValidators.isInt(value),
                 controller: controllerCar,
                 decoration: const InputDecoration(
                   hintText: "in minutes",
@@ -142,10 +111,9 @@ class _EditSpotState extends State<EditSpot>{
       actions: <Widget>[
         IconButton(
           onPressed: () async {
-            bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
-              var valDistanceParking = int.tryParse(controllerCar.text);
-              var valDistancePublicTransport = int.tryParse(controllerBus.text);
+              int? valDistanceParking = int.tryParse(controllerCar.text);
+              int? valDistancePublicTransport = int.tryParse(controllerBus.text);
               UpdateSpot spot = UpdateSpot(
                 id: widget.spot.id,
                 name: controllerTitle.text,
@@ -157,9 +125,7 @@ class _EditSpotState extends State<EditSpot>{
                 comment: controllerDescription.text,
               );
               Spot? updatedSpot = await spotService.editSpot(spot);
-              if (updatedSpot != null) {
-                widget.onUpdate.call(updatedSpot);
-              }
+              if (updatedSpot != null) widget.onUpdate.call(updatedSpot);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },

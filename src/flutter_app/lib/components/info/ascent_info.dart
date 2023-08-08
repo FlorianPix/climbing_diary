@@ -6,9 +6,7 @@ import '../../interfaces/ascent/ascent_type.dart';
 import '../my_text_styles.dart';
 
 class AscentInfo extends StatelessWidget {
-  const AscentInfo({super.key,
-    required this.ascent
-  });
+  const AscentInfo({super.key, required this.ascent});
 
   final Ascent ascent;
 

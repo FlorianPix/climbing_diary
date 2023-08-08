@@ -6,12 +6,12 @@ import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/pitch/update_pitch.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
-import '../../components/image_list_view.dart';
 import '../../pages/diary_page/timeline/ascent_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../add/add_image.dart';
 import '../comment.dart';
+import '../image_list_view_add.dart';
 import '../my_button_styles.dart';
 import '../add/add_ascent.dart';
 import '../edit/edit_pitch.dart';
@@ -71,18 +71,14 @@ class _PitchDetailsState extends State<PitchDetails>{
   void addImageDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AddImage(onAddImage: getImage);
-      }
+      builder: (BuildContext context) => AddImage(onAddImage: getImage)
     );
   }
 
   void editPitchDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return EditPitch(pitch: widget.pitch, onUpdate: widget.onUpdate);
-      }
+      builder: (BuildContext context) => EditPitch(pitch: widget.pitch, onUpdate: widget.onUpdate)
     );
   }
 
@@ -95,12 +91,12 @@ class _PitchDetailsState extends State<PitchDetails>{
   Widget build(BuildContext context) {
     Pitch pitch = widget.pitch;
     List<Widget> elements = [];
-    elements.add(PitchInfo(pitch: pitch));
+    elements.add(PitchInfo(pitch: pitch, onNetworkChange: widget.onNetworkChange));
     elements.add(Rating(rating: pitch.rating));
     if (pitch.comment.isNotEmpty) elements.add(Comment(comment: pitch.comment));
 
     void deleteImageCallback(String mediumId) {
-      widget.spot.mediaIds.remove(mediumId);
+      widget.pitch.mediaIds.remove(mediumId);
       pitchService.editPitch(UpdatePitch(
         id: widget.pitch.id,
         mediaIds: widget.pitch.mediaIds
@@ -109,7 +105,7 @@ class _PitchDetailsState extends State<PitchDetails>{
     }
 
     if (pitch.mediaIds.isNotEmpty) {
-      elements.add(ImageListView(
+      elements.add(ImageListViewAdd(
         onDelete: deleteImageCallback,
         mediaIds: pitch.mediaIds,
         getImage: getImage,
@@ -122,23 +118,18 @@ class _PitchDetailsState extends State<PitchDetails>{
         style: MyButtonStyles.rounded
       ));
     }
-    // add ascent
     elements.add(ElevatedButton.icon(
       icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
       label: const Text('Add new ascent'),
-      onPressed: () {
-        Navigator.push(context,
-          MaterialPageRoute(
-            builder: (context) => AddAscent(
-              pitch: widget.pitch,
-              onAdd: (ascent) {
-                widget.pitch.ascentIds.add(ascent.id);
-                setState(() {});
-              },
-            ),
-          )
-        );
-      },
+      onPressed: () => Navigator.push(context, MaterialPageRoute(
+        builder: (context) => AddAscent(
+          pitch: widget.pitch,
+          onAdd: (ascent) {
+            widget.pitch.ascentIds.add(ascent.id);
+            setState(() {});
+          },
+        ),
+      )),
       style: MyButtonStyles.rounded
     ));
     elements.add(Row(
@@ -162,7 +153,6 @@ class _PitchDetailsState extends State<PitchDetails>{
         ),
       ],
     ));
-    // ascents
     if (pitch.ascentIds.isNotEmpty){
       DateTime startDate = DateTime(1923);
       DateTime endDate = DateTime(2123);

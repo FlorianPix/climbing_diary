@@ -9,7 +9,7 @@ import '../../../services/route_service.dart';
 import '../../components/detail/single_pitch_route_details.dart';
 import '../../components/info/single_pitch_route_info.dart';
 import '../../components/rating.dart';
-import '../diary_page/image_list_view.dart';
+import '../../components/image_list_view.dart';
 import '../diary_page/timeline/ascent_timeline.dart';
 
 class SinglePitchRouteList extends StatefulWidget {
@@ -84,13 +84,13 @@ class SinglePitchRouteListState extends State<SinglePitchRouteList> {
               contentsBuilder: (_, index) {
                 List<Widget> elements = [];
                 SinglePitchRoute singlePitchRoute = singlePitchRoutes[index];
-                elements.add(SinglePitchRouteInfo(route: singlePitchRoute));
+                elements.add(SinglePitchRouteInfo(route: singlePitchRoute, onNetworkChange: widget.onNetworkChange));
                 elements.add(Rating(rating: singlePitchRoute.rating));
                 if (singlePitchRoute.mediaIds.isNotEmpty) {
                   elements.add(ExpansionTile(
-                      leading: const Icon(Icons.image),
-                      title: const Text("images"),
-                      children: [ImageListView(mediaIds: singlePitchRoute.mediaIds)]
+                    leading: const Icon(Icons.image),
+                    title: const Text("images"),
+                    children: [ImageListView(mediaIds: singlePitchRoute.mediaIds)]
                   ));
                 }
                 if (singlePitchRoute.ascentIds.isNotEmpty) {
@@ -125,18 +125,18 @@ class SinglePitchRouteListState extends State<SinglePitchRouteList> {
                 }
                 return InkWell(
                   onTap: () => showDialog(
-                      context: context,
-                      builder: (BuildContext context) => Dialog(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                          child: SinglePitchRouteDetails(
-                            spot: widget.spot,
-                            route: singlePitchRoute,
-                            onDelete: (SinglePitchRoute sPR) => deleteSinglePitchRouteCallback(sPR),
-                            onUpdate: (SinglePitchRoute sPR) => updateSinglePitchRouteCallback(sPR),
-                            spotId: widget.spot.id,
-                            onNetworkChange: widget.onNetworkChange,
-                          )
+                    context: context,
+                    builder: (BuildContext context) => Dialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      child: SinglePitchRouteDetails(
+                        spot: widget.spot,
+                        route: singlePitchRoute,
+                        onDelete: (SinglePitchRoute sPR) => deleteSinglePitchRouteCallback(sPR),
+                        onUpdate: (SinglePitchRoute sPR) => updateSinglePitchRouteCallback(sPR),
+                        spotId: widget.spot.id,
+                        onNetworkChange: widget.onNetworkChange,
                       )
+                    )
                   ),
                   child: Ink(child: Padding(padding: const EdgeInsets.only(left: 8.0), child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

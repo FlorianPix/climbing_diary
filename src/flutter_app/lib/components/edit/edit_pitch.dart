@@ -1,3 +1,4 @@
+import 'package:climbing_diary/components/my_validators.dart';
 import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
 
@@ -5,7 +6,6 @@ import '../../interfaces/grade.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/pitch/update_pitch.dart';
 import '../../services/pitch_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class EditPitch extends StatefulWidget {
   const EditPitch({super.key, required this.pitch, required this.onUpdate});
@@ -55,59 +55,45 @@ class _EditPitchState extends State<EditPitch>{
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                validator: (value) {
-                  return value!.isNotEmpty
-                    ? null
-                    : "Please add a title";
-                },
+                validator: (value) => MyValidators.notEmpty(value, "name"),
                 controller: controllerName,
-                decoration: const InputDecoration(
-                    hintText: "name", labelText: "name"),
+                decoration: const InputDecoration(hintText: "name", labelText: "name"),
               ),
               TextFormField(
                 controller: controllerNum,
-                decoration: const InputDecoration(
-                    hintText: "num", labelText: "num"),
+                decoration: const InputDecoration(hintText: "num", labelText: "num"),
               ),
               DropdownButton<String>(
                 value: grade,
                 items: Grade.translationTable[gradingSystem.index].toSet().map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value)
+                    value: value,
+                    child: Text(value)
                   );
                 }).toList(),
-                onChanged: (String? value) {
-                  setState(() {
-                    grade = value!;
-                  });
-                },
+                onChanged: (String? value) => setState(() => grade = value!),
               ),
               DropdownButton<GradingSystem>(
                 value: gradingSystem,
                 items: GradingSystem.values.map<DropdownMenuItem<GradingSystem>>((GradingSystem value) {
                   return DropdownMenuItem<GradingSystem>(
-                      value: value,
-                      child: Text(value.toShortString())
+                    value: value,
+                    child: Text(value.toShortString())
                   );
                 }).toList(),
-                onChanged: (GradingSystem? value) {
-                  setState(() {
-                    int oldIndex = Grade.translationTable[gradingSystem.index].indexOf(grade);
-                    gradingSystem = value!;
-                    grade = Grade.translationTable[gradingSystem.index][oldIndex];
-                  });
-                },
+                onChanged: (GradingSystem? value) => setState(() {
+                  int oldIndex = Grade.translationTable[gradingSystem.index].indexOf(grade);
+                  gradingSystem = value!;
+                  grade = Grade.translationTable[gradingSystem.index][oldIndex];
+                }),
               ),
               TextFormField(
                 controller: controllerLength,
-                decoration: const InputDecoration(
-                    hintText: "length", labelText: "length"),
+                decoration: const InputDecoration(hintText: "length", labelText: "length"),
               ),
               TextFormField(
                 controller: controllerComment,
-                decoration: const InputDecoration(
-                    hintText: "comment", labelText: "comment"),
+                decoration: const InputDecoration(hintText: "comment", labelText: "comment"),
               ),
               Align(
                 alignment: Alignment.centerLeft,
@@ -115,10 +101,7 @@ class _EditPitchState extends State<EditPitch>{
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     "Rating",
-                    style: TextStyle(
-                      color: Colors.black.withOpacity(0.6),
-                      fontSize: 16
-                    )
+                    style: TextStyle(color: Colors.black.withOpacity(0.6), fontSize: 16)
                   ),
                 ),
               ),
@@ -127,11 +110,7 @@ class _EditPitchState extends State<EditPitch>{
                 max: 5,
                 divisions: 5,
                 label: currentSliderValue.round().toString(),
-                onChanged: (value) {
-                  setState(() {
-                    currentSliderValue = value.toInt();
-                  });
-                },
+                onChanged: (value) => setState(() => currentSliderValue = value.toInt()),
               ),
             ]
           ),
@@ -140,7 +119,6 @@ class _EditPitchState extends State<EditPitch>{
       actions: <Widget>[
         IconButton(
           onPressed: () async {
-            bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
               UpdatePitch pitch = UpdatePitch(
                 id: widget.pitch.id,
@@ -152,9 +130,7 @@ class _EditPitchState extends State<EditPitch>{
                 rating: currentSliderValue.toInt(),
               );
               Pitch? updatedPitch = await pitchService.editPitch(pitch);
-              if (updatedPitch != null) {
-                widget.onUpdate.call(updatedPitch);
-              }
+              if (updatedPitch != null) widget.onUpdate.call(updatedPitch);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },

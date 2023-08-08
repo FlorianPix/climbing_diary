@@ -1,5 +1,4 @@
 import 'package:climbing_diary/components/grade_distribution.dart';
-import 'package:climbing_diary/components/image_list_view.dart';
 import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:climbing_diary/components/transport.dart';
 import 'package:climbing_diary/interfaces/spot/update_spot.dart';
@@ -9,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../components/add/add_image.dart';
 import '../../components/comment.dart';
+import '../../components/image_list_view_add.dart';
 import '../../components/my_button_styles.dart';
 import '../../components/add/add_route.dart';
 import '../../components/edit/edit_spot.dart';
@@ -109,7 +109,7 @@ class _SpotDetailsState extends State<SpotDetails>{
     }
 
     if (widget.spot.mediaIds.isNotEmpty) {
-      elements.add(ImageListView(
+      elements.add(ImageListViewAdd(
         onDelete: deleteImageCallback,
         mediaIds: widget.spot.mediaIds,
         getImage: getImage,
@@ -117,52 +117,39 @@ class _SpotDetailsState extends State<SpotDetails>{
     } else {
       elements.add(
         ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddImage(onAddImage: getImage)
-                )
-              );
-            },
-            style: MyButtonStyles.rounded
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add image'),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(
+            builder: (context) => AddImage(onAddImage: getImage)
+          )),
+          style: MyButtonStyles.rounded
         ),
       );
     }
-    // add route
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add new route'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddRoute(
-                    spot: widget.spot,
-                    onAddMultiPitchRoute: (route) {
-                      widget.spot.multiPitchRouteIds.add(route.id);
-                      setState(() {});
-                    },
-                    onAddSinglePitchRoute: (route) {
-                      widget.spot.singlePitchRouteIds.add(route.id);
-                      setState(() {});
-                    },
-                  ),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
+    elements.add(ElevatedButton.icon(
+      icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+      label: const Text('Add new route'),
+      onPressed: () => Navigator.push(context,
+        MaterialPageRoute(
+          builder: (context) => AddRoute(
+            spot: widget.spot,
+            onAddMultiPitchRoute: (route) {
+              widget.spot.multiPitchRouteIds.add(route.id);
+              setState(() {});
+            },
+            onAddSinglePitchRoute: (route) {
+              widget.spot.singlePitchRouteIds.add(route.id);
+              setState(() {});
+            },
+          ),
+        )
       ),
-    );
-    // delete, edit, close
+      style: MyButtonStyles.rounded
+    ));
     elements.add(
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // delete spot button
             IconButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -182,27 +169,15 @@ class _SpotDetailsState extends State<SpotDetails>{
           ],
         )
     );
-    // routes
     if (widget.spot.multiPitchRouteIds.isNotEmpty || widget.spot.singlePitchRouteIds.isNotEmpty){
-      elements.add(
-          RouteList(
-            trip: widget.trip,
-            spot: widget.spot,
-            singlePitchRouteIds: widget.spot.singlePitchRouteIds,
-            multiPitchRouteIds: widget.spot.multiPitchRouteIds,
-            onNetworkChange: widget.onNetworkChange,
-          )
-      );
+      elements.add(RouteList(
+        trip: widget.trip,
+        spot: widget.spot,
+        singlePitchRouteIds: widget.spot.singlePitchRouteIds,
+        multiPitchRouteIds: widget.spot.multiPitchRouteIds,
+        onNetworkChange: widget.onNetworkChange,
+      ));
     }
-    return Stack(
-        children: <Widget>[
-          Container(
-              padding: const EdgeInsets.all(20),
-              child: ListView(
-                  children: elements
-              )
-          )
-        ]
-    );
+    return Stack(children: [Container(padding: const EdgeInsets.all(20), child: ListView(children: elements))]);
   }
 }

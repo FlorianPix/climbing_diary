@@ -4,7 +4,5 @@ enum GradingSystem {
 }
 
 extension ToString on GradingSystem {
-  String toShortString() {
-    return toString().split('.').last;
-  }
+  String toShortString() => toString().split('.').last;
 }

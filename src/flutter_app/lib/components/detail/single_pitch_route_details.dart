@@ -1,5 +1,4 @@
 import 'package:climbing_diary/components/add/add_ascent_to_single_pitch_route.dart';
-import 'package:climbing_diary/components/image_list_view.dart';
 import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch_route.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +13,7 @@ import '../../services/pitch_service.dart';
 import '../../services/route_service.dart';
 import '../add/add_image.dart';
 import '../comment.dart';
+import '../image_list_view_add.dart';
 import '../my_button_styles.dart';
 import '../edit/edit_single_pitch_route.dart';
 import '../info/single_pitch_route_info.dart';
@@ -73,20 +73,18 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
   void addImageDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AddImage(onAddImage: getImage);
-      }
+      builder: (BuildContext context) => AddImage(onAddImage: getImage)
     );
   }
 
   void editRouteDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return EditSinglePitchRoute(
-          route: widget.route,
-          onUpdate: widget.onUpdate);
-      });
+      builder: (BuildContext context) => EditSinglePitchRoute(
+        route: widget.route,
+        onUpdate: widget.onUpdate
+      )
+    );
   }
 
   @override
@@ -98,11 +96,8 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
   Widget build(BuildContext context) {
     List<Widget> elements = [];
     SinglePitchRoute route = widget.route;
-
-    elements.add(SinglePitchRouteInfo(route: route));
-    if (route.location.isNotEmpty){
-      elements.add(Text(route.location, style: MyTextStyles.description));
-    }
+    elements.add(SinglePitchRouteInfo(route: route, onNetworkChange: widget.onNetworkChange));
+    if (route.location.isNotEmpty)elements.add(Text(route.location, style: MyTextStyles.description));
     elements.add(Rating(rating: route.rating));
     if (route.comment.isNotEmpty) elements.add(Comment(comment: route.comment));
 
@@ -116,7 +111,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
     }
 
     if (route.mediaIds.isNotEmpty) {
-      elements.add(ImageListView(
+      elements.add(ImageListViewAdd(
         onDelete: deleteImageCallback,
         mediaIds: widget.route.mediaIds,
         getImage: getImage,
@@ -129,26 +124,24 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
         style: MyButtonStyles.rounded
       ));
     }
-    elements.add(
-      ElevatedButton.icon(
-        icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-        label: const Text('Add new ascent'),
-        onPressed: () {
-          Navigator.push(context,
-            MaterialPageRoute(
-              builder: (context) => AddAscentToSinglePitchRoute(
-                singlePitchRoutes: [widget.route],
-                onAdd: (ascent) {
-                  widget.route.ascentIds.add(ascent.id);
-                  setState(() {});
-                },
-              ),
-            )
-          );
-        },
-        style: MyButtonStyles.rounded
-      ),
-    );
+    elements.add(ElevatedButton.icon(
+      icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+      label: const Text('Add new ascent'),
+      onPressed: () {
+        Navigator.push(context,
+          MaterialPageRoute(
+            builder: (context) => AddAscentToSinglePitchRoute(
+              singlePitchRoutes: [widget.route],
+              onAdd: (ascent) {
+                widget.route.ascentIds.add(ascent.id);
+                setState(() {});
+              },
+            ),
+          )
+        );
+      },
+      style: MyButtonStyles.rounded
+    ));
     elements.add(Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

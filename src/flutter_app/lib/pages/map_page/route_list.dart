@@ -27,14 +27,14 @@ class RouteListState extends State<RouteList> {
   Widget build(BuildContext context) {
     return Column(children: [
       MultiPitchRouteList(
-          spot: widget.spot,
-          multiPitchRouteIds: widget.multiPitchRouteIds,
-          onNetworkChange: widget.onNetworkChange
+        spot: widget.spot,
+        multiPitchRouteIds: widget.multiPitchRouteIds,
+        onNetworkChange: widget.onNetworkChange
       ),
       SinglePitchRouteList(
-          spot: widget.spot,
-          singlePitchRouteIds: widget.singlePitchRouteIds,
-          onNetworkChange: widget.onNetworkChange
+        spot: widget.spot,
+        singlePitchRouteIds: widget.singlePitchRouteIds,
+        onNetworkChange: widget.onNetworkChange
       )
     ]);
   }

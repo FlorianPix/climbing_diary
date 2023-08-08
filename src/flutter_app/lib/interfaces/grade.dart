@@ -24,14 +24,10 @@ class Grade{
   ];
 
   Grade translate(GradingSystem gs){
-    if (system == gs){
-      return this;
-    }
+    if (system == gs) return this;
     List<String> col1 = translationTable[system.index];
     int index = col1.indexOf(grade);
-    if (index == -1){
-      return Grade(grade: col1[0], system: gs);
-    }
+    if (index == -1) return Grade(grade: col1[0], system: gs);
     return Grade(grade: translationTable[gs.index][index], system: gs);
   }
 
@@ -67,8 +63,8 @@ class Grade{
 
   factory Grade.fromCache(Map<dynamic, dynamic> cache) {
     return Grade(
-        grade: cache['grade'],
-        system: GradingSystem.values[cache['system']]
+      grade: cache['grade'],
+      system: GradingSystem.values[cache['system']]
     );
   }
 }

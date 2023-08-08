@@ -7,6 +7,7 @@ import 'package:timelines/timelines.dart';
 
 import '../../../components/detail/multi_pitch_route_details.dart';
 import '../../../components/detail/single_pitch_route_details.dart';
+import '../../../components/image_list_view.dart';
 import '../../../components/info/multi_pitch_route_info.dart';
 import '../../../components/info/route_info.dart';
 import '../../../components/info/single_pitch_route_info.dart';
@@ -15,7 +16,6 @@ import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/pitch_service.dart';
 import '../../../services/route_service.dart';
-import '../image_list_view.dart';
 import 'ascent_timeline.dart';
 
 class RouteTimeline extends StatefulWidget {
@@ -101,7 +101,7 @@ class RouteTimelineState extends State<RouteTimeline> {
                     contentsBuilder: (_, index) {
                       List<Widget> elements = [];
                       MultiPitchRoute multiPitchRoute = multiPitchRoutes[index];
-                      elements.add(RouteInfo(route: multiPitchRoute));
+                      elements.add(RouteInfo(route: multiPitchRoute, onNetworkChange: widget.onNetworkChange));
                       elements.add(Rating(rating: multiPitchRoute.rating));
                       if (multiPitchRoute.mediaIds.isNotEmpty) {
                         elements.add(ExpansionTile(
@@ -111,7 +111,10 @@ class RouteTimelineState extends State<RouteTimeline> {
                         ));
                       }
                       if (multiPitchRoute.pitchIds.isNotEmpty) {
-                        elements.add(MultiPitchInfo(pitchIds: multiPitchRoute.pitchIds));
+                        elements.add(MultiPitchInfo(
+                          pitchIds: multiPitchRoute.pitchIds,
+                          onNetworkChange: widget.onNetworkChange,
+                        ));
                         elements.add(PitchTimeline(
                           trip: widget.trip,
                           spot: widget.spot,
@@ -163,7 +166,7 @@ class RouteTimelineState extends State<RouteTimeline> {
                     contentsBuilder: (_, index) {
                       List<Widget> elements = [];
                       SinglePitchRoute singlePitchRoute = singlePitchRoutes[index];
-                      elements.add(SinglePitchRouteInfo(route: singlePitchRoute));
+                      elements.add(SinglePitchRouteInfo(route: singlePitchRoute, onNetworkChange: widget.onNetworkChange));
                       elements.add(Rating(rating: singlePitchRoute.rating));
                       if (singlePitchRoute.mediaIds.isNotEmpty) {
                         elements.add(ExpansionTile(
