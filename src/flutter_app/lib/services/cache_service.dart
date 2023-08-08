@@ -1,19 +1,17 @@
 import 'package:climbing_diary/services/spot_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
-import '../interfaces/spot/spot.dart';
-import '../interfaces/spot/update_spot.dart';
+import '../interfaces/my_base_interface/update_my_base_interface.dart';
 
 final SpotService spotService = SpotService();
 
 class CacheService{
   final List<String> boxNames = [
-    'trips', 'delete_trips', 'update_trips', 'create_trips',
-    'spots', 'delete_spots', 'update_spots', 'create_spots',
-    'single_pitch_routes', 'delete_single_pitch_routes', 'update_single_pitch_routes', 'create_single_pitch_routes',
-    'multi_pitch_routes', 'delete_multi_pitch_routes', 'update_multi_pitch_routes', 'create_multi_pitch_routes',
-    'pitches', 'delete_pitches', 'update_pitches', 'create_pitches',
-    'ascents', 'delete_ascents', 'update_ascents', 'create_ascents',
+    'trips', 'delete_trips', 'edit_trips', 'create_trips',
+    'spots', 'delete_spots', 'edit_spots', 'create_spots',
+    'single_pitch_routes', 'delete_single_pitch_routes', 'edit_single_pitch_routes', 'create_single_pitch_routes',
+    'multi_pitch_routes', 'delete_multi_pitch_routes', 'edit_multi_pitch_routes', 'create_multi_pitch_routes',
+    'pitches', 'delete_pitches', 'edit_pitches', 'create_pitches',
+    'ascents', 'delete_ascents', 'edit_ascents', 'create_ascents',
   ];
 
   Future<void> initCache(String path) async {
@@ -49,7 +47,7 @@ class CacheService{
     return ts;
   }
 
-  void uploadQueuedTs(String boxName) {
+  void createQueuedTs<T>(String boxName, Future<T?> Function(Map) uploadT) {
     Box box = Hive.box(boxName);
     var data = [];
     for(var i = 0; i < box.length; i++){
@@ -57,57 +55,44 @@ class CacheService{
     }
     if (data.isEmpty) return;
     for(var i = data.length-1; i >= 0; i--){
-      spotService.uploadSpot(data[i]);
+      uploadT(data[i]);
     }
   }
 
-  void deleteQueuedSpots() {
-    Box box = Hive.box('delete_later_spots');
+  void deleteQueuedTs<T>(String boxName, Future<void> Function(Map) deleteT) {
+    Box box = Hive.box(boxName);
     var data = [];
     for(var i = 0; i < box.length; i++){
       data.add(box.getAt(i));
     }
     if (data.isEmpty) return;
     for(var i = data.length-1; i >= 0; i--){
-      spotService.deleteSpot(Spot.fromCache(data[i]));
+      deleteT(data[i]);
     }
   }
 
-  void editQueuedSpots() {
-    Box box = Hive.box('edit_later_spots');
+  void editQueuedTs<T>(String boxName, Future<void> Function(Map) editT) {
+    Box box = Hive.box(boxName);
     var data = [];
     for(var i = 0; i < box.length; i++){
       data.add(box.getAt(i));
     }
     if (data.isEmpty) return;
     for(var i = data.length-1; i >= 0; i--){
-      spotService.editSpot(UpdateSpot.fromCache(data[i]));
+      editT(data[i]);
     }
   }
 
-  void editSpotFromCache(UpdateSpot spot) {
-    Box box = Hive.box('spots');
-    box.put(spot.id, spot.toJson());
+  void editTFromCache<T extends UpdateMyBaseInterface>(String boxName, T t) {
+    Hive.box(boxName).put(t.id, t.toJson());
   }
 
-  void deleteSpotFromCache(String spotId){
-    Box box = Hive.box('spots');
-    box.delete(spotId);
+  void deleteTFromCacheById(String boxName, String tId){
+    Hive.box(boxName).delete(tId);
   }
 
-  void deleteSpotFromEditQueue(int spotHash){
-    Box box = Hive.box('edit_later_spots');
-    box.delete(spotHash);
-  }
-
-  void deleteSpotFromDeleteQueue(int spotHash){
-    Box box = Hive.box('delete_later_spots');
-    box.delete(spotHash);
-  }
-
-  void deleteSpotFromUploadQueue(int spotHash){
-    Box box = Hive.box('upload_later_spots');
-    box.delete(spotHash);
+  void deleteTFromCacheByHash(String boxName, int tHash){
+    Hive.box(boxName).delete(tHash);
   }
 
   bool isStale(Map cache, String serverUpdatedString){
