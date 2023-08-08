@@ -10,6 +10,7 @@ import '../../../interfaces/trip/trip.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../services/ascent_service.dart';
 import '../../../components/image_list_view.dart';
+import 'my_timeline_theme_data.dart';
 
 class AscentTimeline extends StatefulWidget {
   const AscentTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchId, required this.ascentIds, required this.onDelete, required this.onUpdate, required this.startDate, required this.endDate, required this.ofMultiPitch, required this.onNetworkChange});
@@ -83,12 +84,7 @@ class AscentTimelineState extends State<AscentTimeline> {
         }
 
         return Column(children: [FixedTimeline.tileBuilder(
-          theme: TimelineThemeData(
-            nodePosition: 0,
-            color: const Color(0xff989898),
-            indicatorTheme: const IndicatorThemeData(position: 0, size: 20.0),
-            connectorTheme: const ConnectorThemeData(thickness: 2.5),
-          ),
+          theme: MyTimeLineThemeData.defaultTheme,
           builder: TimelineTileBuilder.connected(
             connectionDirection: ConnectionDirection.before,
             itemCount: ascents.length,
@@ -102,20 +98,18 @@ class AscentTimelineState extends State<AscentTimeline> {
                   children: [ImageListView(mediaIds: ascents[index].mediaIds)]
                 ));
               }
-              return InkWell(
-                onTap: () => showDialog(
-                  context: context,
-                  builder: (BuildContext context) => Dialog(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    child: AscentDetails(
-                      pitchId: widget.pitchId,
-                      ascent: ascents[index],
-                      onDelete: deleteAscentCallback,
-                      onUpdate: updateAscentCallback,
-                      ofMultiPitch: widget.ofMultiPitch,
-                    ),
+              return InkWell(onTap: () => showDialog(
+                context: context,
+                builder: (BuildContext context) => Dialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  child: AscentDetails(
+                    pitchId: widget.pitchId,
+                    ascent: ascents[index],
+                    onDelete: deleteAscentCallback,
+                    onUpdate: updateAscentCallback,
+                    ofMultiPitch: widget.ofMultiPitch,
                   ),
-                ),
+                )),
                 child: Ink(child: Padding(padding: const EdgeInsets.only(left: 8.0), child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
@@ -123,8 +117,8 @@ class AscentTimelineState extends State<AscentTimeline> {
                 ))),
               );
             },
-            indicatorBuilder: (_, index) => const OutlinedDotIndicator(borderWidth: 2.5, color: Color(0xff66c97f),),
-            connectorBuilder: (_, index, ___) => const SolidLineConnector(color: Color(0xff66c97f)),
+            indicatorBuilder: (_, __) => const OutlinedDotIndicator(borderWidth: 2.5, color: Colors.green),
+            connectorBuilder: (_, __, ___) => const SolidLineConnector(color: Colors.green),
           ),
         )]);
       }

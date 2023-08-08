@@ -12,6 +12,7 @@ import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/pitch_service.dart';
 import 'ascent_timeline.dart';
+import 'my_timeline_theme_data.dart';
 
 class PitchTimeline extends StatefulWidget {
   const PitchTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchIds, required this.onNetworkChange});
@@ -78,12 +79,7 @@ class PitchTimelineState extends State<PitchTimeline> {
           title: const Text("pitches"),
           children: [
             FixedTimeline.tileBuilder(
-              theme: TimelineThemeData(
-                nodePosition: 0,
-                color: const Color(0xff989898),
-                indicatorTheme: const IndicatorThemeData(position: 0, size: 20.0),
-                connectorTheme: const ConnectorThemeData(thickness: 2.5),
-              ),
+              theme: MyTimeLineThemeData.defaultTheme,
               builder: TimelineTileBuilder.connected(
                 connectionDirection: ConnectionDirection.before,
                 itemCount: pitches.length,

@@ -1,8 +1,6 @@
 import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
 import 'package:flutter/material.dart';
-import '../../../services/pitch_service.dart';
-import '../../../services/route_service.dart';
 import 'multi_pitch_route_details.dart';
 import 'single_pitch_route_details.dart';
 
@@ -18,9 +16,6 @@ class RouteList extends StatefulWidget {
 }
 
 class RouteListState extends State<RouteList> {
-  final RouteService routeService = RouteService();
-  final PitchService pitchService = PitchService();
-
   @override
   void initState(){
     super.initState();

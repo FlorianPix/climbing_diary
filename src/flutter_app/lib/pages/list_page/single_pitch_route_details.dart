@@ -11,7 +11,7 @@ import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/single_pitch_route/update_single_pitch_route.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
+import '../../services/single_pitch_route_service.dart';
 
 class SinglePitchRouteDetails extends StatefulWidget {
   const SinglePitchRouteDetails({super.key, required this.route, required this.onNetworkChange});
@@ -25,7 +25,7 @@ class SinglePitchRouteDetails extends StatefulWidget {
 
 class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
   final MediaService mediaService = MediaService();
-  final RouteService routeService = RouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final PitchService pitchService = PitchService();
 
   Future<List<String>> fetchURLs() {
@@ -46,7 +46,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         SinglePitchRoute singlePitchRoute = widget.route;
         singlePitchRoute.mediaIds.add(mediaId);
-        routeService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
+        singlePitchRouteService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
       }
     } else {
       List<XFile> images = await picker.pickMultiImage();
@@ -54,7 +54,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         SinglePitchRoute singlePitchRoute = widget.route;
         singlePitchRoute.mediaIds.add(mediaId);
-        routeService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
+        singlePitchRouteService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
       }
     }
     setState(() {});
@@ -62,10 +62,8 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
 
   void addImageDialog() {
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AddImage(onAddImage: getImage);
-        }
+      context: context,
+      builder: (BuildContext context) => AddImage(onAddImage: getImage)
     );
   }
 
@@ -85,7 +83,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
 
     void deleteImageCallback(String mediumId) {
       widget.route.mediaIds.remove(mediumId);
-      routeService.editSinglePitchRoute(UpdateSinglePitchRoute(
+      singlePitchRouteService.editSinglePitchRoute(UpdateSinglePitchRoute(
         id: widget.route.id,
         mediaIds: widget.route.mediaIds
       ));

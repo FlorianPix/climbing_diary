@@ -10,7 +10,7 @@ import '../../interfaces/trip/trip.dart';
 import '../../pages/diary_page/timeline/ascent_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
+import '../../services/single_pitch_route_service.dart';
 import '../add/add_image.dart';
 import '../comment.dart';
 import '../image_list_view_add.dart';
@@ -36,7 +36,7 @@ class SinglePitchRouteDetails extends StatefulWidget {
 
 class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
   final MediaService mediaService = MediaService();
-  final RouteService routeService = RouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final PitchService pitchService = PitchService();
 
   Future<List<String>> fetchURLs() {
@@ -56,7 +56,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         SinglePitchRoute singlePitchRoute = widget.route;
         singlePitchRoute.mediaIds.add(mediaId);
-        routeService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
+        singlePitchRouteService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
       }
     } else {
       List<XFile> images = await picker.pickMultiImage();
@@ -64,7 +64,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         SinglePitchRoute singlePitchRoute = widget.route;
         singlePitchRoute.mediaIds.add(mediaId);
-        routeService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
+        singlePitchRouteService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
       }
     }
     setState(() {});
@@ -103,7 +103,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
 
     void deleteImageCallback(String mediumId) {
       widget.route.mediaIds.remove(mediumId);
-      routeService.editSinglePitchRoute(UpdateSinglePitchRoute(
+      singlePitchRouteService.editSinglePitchRoute(UpdateSinglePitchRoute(
         id: widget.route.id,
         mediaIds: widget.route.mediaIds
       ));
@@ -148,7 +148,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
         IconButton(
           onPressed: () {
             Navigator.pop(context);
-            routeService.deleteSinglePitchRoute(route, widget.spotId);
+            singlePitchRouteService.deleteSinglePitchRoute(route, widget.spotId);
             widget.onDelete.call(route);
           },
           icon: const Icon(Icons.delete),

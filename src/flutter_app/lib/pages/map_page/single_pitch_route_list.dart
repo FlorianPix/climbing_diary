@@ -5,11 +5,11 @@ import 'package:timelines/timelines.dart';
 
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
-import '../../../services/route_service.dart';
 import '../../components/detail/single_pitch_route_details.dart';
 import '../../components/info/single_pitch_route_info.dart';
 import '../../components/rating.dart';
 import '../../components/image_list_view.dart';
+import '../../services/single_pitch_route_service.dart';
 import '../diary_page/timeline/ascent_timeline.dart';
 
 class SinglePitchRouteList extends StatefulWidget {
@@ -25,7 +25,7 @@ class SinglePitchRouteList extends StatefulWidget {
 }
 
 class SinglePitchRouteListState extends State<SinglePitchRouteList> {
-  final RouteService routeService = RouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
 
   bool online = false;
 
@@ -47,7 +47,7 @@ class SinglePitchRouteListState extends State<SinglePitchRouteList> {
     List<String> singlePitchRouteIds = widget.singlePitchRouteIds;
 
     return FutureBuilder<List<SinglePitchRoute?>>(
-      future: routeService.getSinglePitchRoutesOfIds(online, singlePitchRouteIds),
+      future: singlePitchRouteService.getSinglePitchRoutesOfIds(online, singlePitchRouteIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();

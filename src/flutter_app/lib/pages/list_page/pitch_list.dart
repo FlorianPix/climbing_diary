@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../services/pitch_service.dart';
-import '../../../services/route_service.dart';
 import '../../interfaces/pitch/pitch.dart';
 import 'pitch_details.dart';
 
@@ -15,7 +14,6 @@ class PitchList extends StatefulWidget {
 }
 
 class PitchListState extends State<PitchList> {
-  final RouteService routeService = RouteService();
   final PitchService pitchService = PitchService();
 
   @override

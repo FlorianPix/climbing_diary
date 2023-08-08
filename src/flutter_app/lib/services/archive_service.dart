@@ -9,7 +9,7 @@ import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.
 import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch_route.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:climbing_diary/services/pitch_service.dart';
-import 'package:climbing_diary/services/route_service.dart';
+import 'package:climbing_diary/services/single_pitch_route_service.dart';
 import 'package:climbing_diary/services/spot_service.dart';
 import 'package:climbing_diary/services/trip_service.dart';
 import 'package:http/http.dart';
@@ -25,11 +25,13 @@ import '../interfaces/spot/update_spot.dart';
 import '../interfaces/trip/trip.dart';
 import 'ascent_service.dart';
 import 'media_service.dart';
+import 'multi_pitch_route_service.dart';
 
 class ArchiveService {
   final TripService tripService = TripService();
   final SpotService spotService = SpotService();
-  final RouteService routeService = RouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final PitchService pitchService = PitchService();
   final AscentService ascentService = AscentService();
   final MediaService mediaService = MediaService();
@@ -96,8 +98,8 @@ class ArchiveService {
   Future<File?> writeBackup() async {
     List<Trip> trips = await tripService.getTrips(true);
     List<Spot> spots = await spotService.getSpots(true);
-    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutes(true);
-    List<MultiPitchRoute> multiPitchRoutes = await routeService.getMultiPitchRoutes(true);
+    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutes(true);
+    List<MultiPitchRoute> multiPitchRoutes = await multiPitchRouteService.getMultiPitchRoutes(true);
     List<Pitch> pitches = await pitchService.getPitches(true);
     List<Ascent> ascents = await ascentService.getAscents(true);
     Map<String, dynamic> json = {
@@ -180,11 +182,11 @@ class ArchiveService {
               if (singlePitchRoute != null && createdSpot != null){
                 await spotService.editSpot(UpdateSpot(id: createdSpot.id, mediaIds: getMediaIds(mediaIdTranslation, spot)));
                 idTranslation[spot.id] = createdSpot.id;
-                SinglePitchRoute? createdSinglePitchRoute = await routeService.uploadSinglePitchRoute(createdSpot.id, singlePitchRoute.toJson());
+                SinglePitchRoute? createdSinglePitchRoute = await singlePitchRouteService.uploadSinglePitchRoute(createdSpot.id, singlePitchRoute.toJson());
                 for (String ascentId in singlePitchRoute.ascentIds){
                   Ascent? ascent = getTById<Ascent>(ascentId, ascents);
                   if (ascent != null && createdSinglePitchRoute != null) {
-                    await routeService.editSinglePitchRoute(UpdateSinglePitchRoute(id: createdSinglePitchRoute.id, mediaIds: getMediaIds(mediaIdTranslation, singlePitchRoute)));
+                    await singlePitchRouteService.editSinglePitchRoute(UpdateSinglePitchRoute(id: createdSinglePitchRoute.id, mediaIds: getMediaIds(mediaIdTranslation, singlePitchRoute)));
                     Ascent? createdAscent = await ascentService.uploadAscentForSinglePitchRoute(createdSinglePitchRoute.id, ascent.toJson());
                     if(createdAscent != null) {
                       await ascentService.editAscent(UpdateAscent(id: createdAscent.id, mediaIds: getMediaIds(mediaIdTranslation, ascent)));
@@ -198,11 +200,11 @@ class ArchiveService {
               if (multiPitchRoute != null && createdSpot != null){
                 await spotService.editSpot(UpdateSpot(id: createdSpot.id, mediaIds: getMediaIds(mediaIdTranslation, spot)));
                 idTranslation[spot.id] = createdSpot.id;
-                MultiPitchRoute? createdMultiPitchRoute = await routeService.uploadMultiPitchRoute(createdSpot.id, multiPitchRoute.toJson());
+                MultiPitchRoute? createdMultiPitchRoute = await multiPitchRouteService.uploadMultiPitchRoute(createdSpot.id, multiPitchRoute.toJson());
                 for (String pitchId in multiPitchRoute.pitchIds){
                   Pitch? pitch = getTById<Pitch>(pitchId, pitches);
                   if (pitch != null && createdMultiPitchRoute != null) {
-                    await routeService.editMultiPitchRoute(UpdateMultiPitchRoute(id: createdMultiPitchRoute.id, mediaIds: getMediaIds(mediaIdTranslation, multiPitchRoute)));
+                    await multiPitchRouteService.editMultiPitchRoute(UpdateMultiPitchRoute(id: createdMultiPitchRoute.id, mediaIds: getMediaIds(mediaIdTranslation, multiPitchRoute)));
                     Pitch? createdPitch = await pitchService.uploadPitch(createdMultiPitchRoute.id, pitch.toJson());
                     for (String ascentId in pitch.ascentIds){
                       Ascent? ascent = getTById<Ascent>(ascentId, ascents);

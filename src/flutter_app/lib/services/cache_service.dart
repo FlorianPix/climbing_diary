@@ -8,12 +8,12 @@ final SpotService spotService = SpotService();
 
 class CacheService{
   final List<String> boxNames = [
-    'trips', 'delete_later_trips', 'edit_later_trips', 'upload_later_trips',
-    'spots', 'delete_later_spots', 'edit_later_spots', 'upload_later_spots',
-    'single_pitch_routes', 'delete_later_single_pitch_routes', 'edit_later_single_pitch_routes', 'upload_later_single_pitch_routes',
-    'multi_pitch_routes', 'delete_later_multi_pitch_routes', 'edit_later_multi_pitch_routes', 'upload_later_multi_pitch_routes',
-    'pitches', 'delete_later_pitches', 'edit_later_pitches', 'upload_later_pitches',
-    'ascents', 'delete_later_ascents', 'edit_later_ascents', 'upload_later_ascents',
+    'trips', 'delete_trips', 'update_trips', 'create_trips',
+    'spots', 'delete_spots', 'update_spots', 'create_spots',
+    'single_pitch_routes', 'delete_single_pitch_routes', 'update_single_pitch_routes', 'create_single_pitch_routes',
+    'multi_pitch_routes', 'delete_multi_pitch_routes', 'update_multi_pitch_routes', 'create_multi_pitch_routes',
+    'pitches', 'delete_pitches', 'update_pitches', 'create_pitches',
+    'ascents', 'delete_ascents', 'update_ascents', 'create_ascents',
   ];
 
   Future<void> initCache(String path) async {
@@ -40,26 +40,24 @@ class CacheService{
     return ts;
   }
 
-  List<Spot> getQueuedSpotsFromCache() {
-    Box box = Hive.box('upload_later_spots');
-    List<Spot> spots = [];
+  List<T> getCreateQueue<T>(String boxName, T Function(Map) fromCacheFactory) {
+    Box box = Hive.box(boxName);
+    List<T> ts = [];
     for(var i = 0; i < box.length; i++){
-      var data = box.getAt(i);
-      spots.add(Spot.fromCache(data));
+      ts.add(fromCacheFactory(box.getAt(i)));
     }
-    return spots;
+    return ts;
   }
 
-  void uploadQueuedSpots() {
-    Box box = Hive.box('upload_later_spots');
+  void uploadQueuedTs(String boxName) {
+    Box box = Hive.box(boxName);
     var data = [];
     for(var i = 0; i < box.length; i++){
       data.add(box.getAt(i));
     }
-    if (data != []) {
-      for(var i = data.length-1; i >= 0; i--){
-        spotService.uploadSpot(data[i]);
-      }
+    if (data.isEmpty) return;
+    for(var i = data.length-1; i >= 0; i--){
+      spotService.uploadSpot(data[i]);
     }
   }
 
@@ -69,10 +67,9 @@ class CacheService{
     for(var i = 0; i < box.length; i++){
       data.add(box.getAt(i));
     }
-    if (data != []) {
-      for(var i = data.length-1; i >= 0; i--){
-        spotService.deleteSpot(Spot.fromCache(data[i]));
-      }
+    if (data.isEmpty) return;
+    for(var i = data.length-1; i >= 0; i--){
+      spotService.deleteSpot(Spot.fromCache(data[i]));
     }
   }
 
@@ -82,10 +79,9 @@ class CacheService{
     for(var i = 0; i < box.length; i++){
       data.add(box.getAt(i));
     }
-    if (data != []) {
-      for(var i = data.length-1; i >= 0; i--){
-        spotService.editSpot(UpdateSpot.fromCache(data[i]));
-      }
+    if (data.isEmpty) return;
+    for(var i = data.length-1; i >= 0; i--){
+      spotService.editSpot(UpdateSpot.fromCache(data[i]));
     }
   }
 

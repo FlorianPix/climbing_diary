@@ -8,9 +8,10 @@ import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../../interfaces/single_pitch_route/create_single_pitch_route.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/spot/spot.dart';
-import '../../services/route_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
+import '../../services/multi_pitch_route_service.dart';
+import '../../services/single_pitch_route_service.dart';
 import '../my_text_styles.dart';
 
 class AddRoute extends StatefulWidget {
@@ -26,7 +27,8 @@ class AddRoute extends StatefulWidget {
 
 class _AddRouteState extends State<AddRoute>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final RouteService routeService = RouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final TextEditingController controllerComment = TextEditingController();
   final TextEditingController controllerLocation = TextEditingController();
   final TextEditingController controllerName = TextEditingController();
@@ -151,7 +153,7 @@ class _AddRouteState extends State<AddRoute>{
                     rating: currentSliderValue.toInt(),
                     comment: controllerComment.text,
                   );
-                  MultiPitchRoute? createdRoute = await routeService.createMultiPitchRoute(route, spot.id, result);
+                  MultiPitchRoute? createdRoute = await multiPitchRouteService.createMultiPitchRoute(route, spot.id, result);
                   widget.onAddMultiPitchRoute?.call(createdRoute!);
                 } else {
                   CreateSinglePitchRoute route = CreateSinglePitchRoute(
@@ -162,7 +164,7 @@ class _AddRouteState extends State<AddRoute>{
                     grade: Grade(grade: grade, system: gradingSystem),
                     length: int.parse(controllerLength.text)
                   );
-                  SinglePitchRoute? createdRoute = await routeService.createSinglePitchRoute(route, spot.id, result);
+                  SinglePitchRoute? createdRoute = await singlePitchRouteService.createSinglePitchRoute(route, spot.id, result);
                   widget.onAddSinglePitchRoute?.call(createdRoute!);
                 }
                 setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));

@@ -9,8 +9,9 @@ import '../interfaces/grading_system.dart';
 import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../interfaces/pitch/pitch.dart';
 import '../interfaces/single_pitch_route/single_pitch_route.dart';
+import '../services/multi_pitch_route_service.dart';
 import '../services/pitch_service.dart';
-import '../services/route_service.dart';
+import '../services/single_pitch_route_service.dart';
 
 class GradeDistribution extends StatefulWidget{
   const GradeDistribution({super.key, required this.multiPitchRouteIds, required this.singlePitchRouteIds, required this.onNetworkChange});
@@ -24,7 +25,8 @@ class GradeDistribution extends StatefulWidget{
 }
 
 class _GradeDistributionState extends State<GradeDistribution> {
-  final RouteService routeService = RouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final PitchService pitchService = PitchService();
   Map<int, double> distribution = {
     0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0,
@@ -51,13 +53,13 @@ class _GradeDistributionState extends State<GradeDistribution> {
       _distribution[i] = 0;
     }
 
-    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutesOfIds(online, widget.singlePitchRouteIds);
+    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutesOfIds(online, widget.singlePitchRouteIds);
     for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
       int gradeIndex = Grade.translationTable[singlePitchRoute.grade.system.index].indexOf(singlePitchRoute.grade.grade);
       _distribution[gradeIndex] = _distribution[gradeIndex]! + 1;
     }
 
-    List<MultiPitchRoute> multiPitchRoutes = await routeService.getMultiPitchRoutesOfIds(online, widget.multiPitchRouteIds);
+    List<MultiPitchRoute> multiPitchRoutes = await multiPitchRouteService.getMultiPitchRoutesOfIds(online, widget.multiPitchRouteIds);
     for (MultiPitchRoute multiPitchRoute in multiPitchRoutes) {
       int maxGradeIndex = -1;
       List<Pitch> pitches = await pitchService.getPitchesOfIds(online, multiPitchRoute.pitchIds);

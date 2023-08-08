@@ -15,8 +15,8 @@ import '../../interfaces/grading_system.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../services/ascent_service.dart';
 import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
 import '../../interfaces/detailed_grade.dart';
+import '../../services/single_pitch_route_service.dart';
 
 class StatisticPage extends StatefulWidget {
   const StatisticPage({super.key, required this.onNetworkChange});
@@ -27,7 +27,7 @@ class StatisticPage extends StatefulWidget {
 }
 
 class StatisticPageState extends State<StatisticPage> {
-  final RouteService routeService = RouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final PitchService pitchService = PitchService();
   final AscentService ascentService = AscentService();
 
@@ -54,7 +54,7 @@ class StatisticPageState extends State<StatisticPage> {
         }
       }
     }
-    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutes(online);
+    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutes(online);
     for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
       List<Ascent> ascents = await ascentService.getAscentsOfIds(online, singlePitchRoute.ascentIds);
       for (Ascent ascent in ascents){

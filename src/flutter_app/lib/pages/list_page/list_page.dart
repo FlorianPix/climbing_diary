@@ -8,7 +8,8 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/spot/spot.dart';
-import '../../services/route_service.dart';
+import '../../services/multi_pitch_route_service.dart';
+import '../../services/single_pitch_route_service.dart';
 import '../../services/spot_service.dart';
 
 class ListPage extends StatefulWidget {
@@ -23,7 +24,8 @@ class ListPageState extends State<ListPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController controllerSearch = TextEditingController();
   final SpotService spotService = SpotService();
-  final RouteService routeService = RouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final PitchService pitchService = PitchService();
   bool searchSpots = true;
   bool searchRoutes = false;
@@ -94,13 +96,13 @@ class ListPageState extends State<ListPage> {
     );
 
     Widget routeList = FutureBuilder<List<MultiPitchRoute>>(
-      future: routeService.getMultiPitchRoutesByName(controllerSearch.text, online),
+      future: multiPitchRouteService.getMultiPitchRoutesByName(controllerSearch.text, online),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();
         List<MultiPitchRoute> multiPitchRoutes = snapshot.data!;
         return FutureBuilder<List<SinglePitchRoute>>(
-          future: routeService.getSinglePitchRoutesByName(controllerSearch.text, online),
+          future: singlePitchRouteService.getSinglePitchRoutesByName(controllerSearch.text, online),
           builder: (context, snapshot) {
             if (snapshot.hasError) return Text(snapshot.error.toString());
             if (!snapshot.hasData) return const CircularProgressIndicator();

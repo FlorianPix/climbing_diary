@@ -5,12 +5,12 @@ import 'package:timelines/timelines.dart';
 
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
-import '../../../services/route_service.dart';
 import '../../components/detail/multi_pitch_route_details.dart';
 import '../../components/info/multi_pitch_route_info.dart';
 import '../../components/info/route_info.dart';
 import '../../components/rating.dart';
 import '../../components/image_list_view.dart';
+import '../../services/multi_pitch_route_service.dart';
 import '../diary_page/timeline/pitch_timeline.dart';
 
 class MultiPitchRouteList extends StatefulWidget {
@@ -26,7 +26,7 @@ class MultiPitchRouteList extends StatefulWidget {
 }
 
 class MultiPitchRouteListState extends State<MultiPitchRouteList> {
-  final RouteService routeService = RouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
 
   bool online = false;
 
@@ -48,7 +48,7 @@ class MultiPitchRouteListState extends State<MultiPitchRouteList> {
     List<String> multiPitchRouteIds = widget.multiPitchRouteIds;
 
     return FutureBuilder<List<MultiPitchRoute?>>(
-      future: routeService.getMultiPitchRoutesOfIds(online, multiPitchRouteIds),
+      future: multiPitchRouteService.getMultiPitchRoutesOfIds(online, multiPitchRouteIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();

@@ -1,5 +1,6 @@
 import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/my_timeline_theme_data.dart';
 import 'package:climbing_diary/pages/diary_page/timeline/pitch_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -14,8 +15,9 @@ import '../../../components/info/single_pitch_route_info.dart';
 import '../../../components/rating.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
+import '../../../services/multi_pitch_route_service.dart';
 import '../../../services/pitch_service.dart';
-import '../../../services/route_service.dart';
+import '../../../services/single_pitch_route_service.dart';
 import 'ascent_timeline.dart';
 
 class RouteTimeline extends StatefulWidget {
@@ -32,7 +34,8 @@ class RouteTimeline extends StatefulWidget {
 }
 
 class RouteTimelineState extends State<RouteTimeline> {
-  final RouteService routeService = RouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final PitchService pitchService = PitchService();
 
   bool online = false;
@@ -55,31 +58,29 @@ class RouteTimelineState extends State<RouteTimeline> {
     List<String> singlePitchRouteIds = widget.singlePitchRouteIds;
     List<String> multiPitchRouteIds = widget.multiPitchRouteIds;
     return FutureBuilder<List<MultiPitchRoute?>>(
-      future: Future.wait(multiPitchRouteIds.map((routeId) => routeService.getMultiPitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate, online))),
+      future: Future.wait(multiPitchRouteIds.map((routeId) => multiPitchRouteService.getMultiPitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate, online))),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();
         List<MultiPitchRoute> multiPitchRoutes = snapshot.data!.whereType<MultiPitchRoute>().toList();
         return FutureBuilder<List<SinglePitchRoute?>>(
-          future: Future.wait(singlePitchRouteIds.map((routeId) => routeService.getSinglePitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate, online))),
+          future: Future.wait(singlePitchRouteIds.map((routeId) => singlePitchRouteService.getSinglePitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate, online))),
           builder: (context, snapshot) {
             if (snapshot.hasError) return Text(snapshot.error.toString());
             if (!snapshot.hasData) return const CircularProgressIndicator();
             List<SinglePitchRoute> singlePitchRoutes = snapshot.data!.whereType<SinglePitchRoute>().toList();
 
-            updateMultiPitchRouteCallback(MultiPitchRoute route) {
+            void updateMultiPitchRouteCallback(MultiPitchRoute route) {
               var index = -1;
               for (int i = 0; i < multiPitchRoutes.length; i++) {
-                if (multiPitchRoutes[i].id == route.id) {
-                  index = i;
-                }
+                if (multiPitchRoutes[i].id == route.id) index = i;
               }
               multiPitchRoutes.removeAt(index);
               multiPitchRoutes.add(route);
               setState(() {});
             }
 
-            deleteMultiPitchRouteCallback(MultiPitchRoute route) {
+            void deleteMultiPitchRouteCallback(MultiPitchRoute route) {
               multiPitchRoutes.remove(route);
               setState(() {});
             }
@@ -89,12 +90,7 @@ class RouteTimelineState extends State<RouteTimeline> {
             if (multiPitchRoutes.isNotEmpty){
               elements.add(
                 FixedTimeline.tileBuilder(
-                  theme: TimelineThemeData(
-                    nodePosition: 0,
-                    color: const Color(0xff989898),
-                    indicatorTheme: const IndicatorThemeData(position: 0, size: 20.0),
-                    connectorTheme: const ConnectorThemeData(thickness: 2.5),
-                  ),
+                  theme: MyTimeLineThemeData.defaultTheme,
                   builder: TimelineTileBuilder.connected(
                     connectionDirection: ConnectionDirection.before,
                     itemCount: multiPitchRoutes.length,
@@ -103,6 +99,12 @@ class RouteTimelineState extends State<RouteTimeline> {
                       MultiPitchRoute multiPitchRoute = multiPitchRoutes[index];
                       elements.add(RouteInfo(route: multiPitchRoute, onNetworkChange: widget.onNetworkChange));
                       elements.add(Rating(rating: multiPitchRoute.rating));
+                      if (multiPitchRoute.pitchIds.isNotEmpty) {
+                        elements.add(MultiPitchInfo(
+                          pitchIds: multiPitchRoute.pitchIds,
+                          onNetworkChange: widget.onNetworkChange,
+                        ));
+                      }
                       if (multiPitchRoute.mediaIds.isNotEmpty) {
                         elements.add(ExpansionTile(
                           leading: const Icon(Icons.image),
@@ -111,10 +113,6 @@ class RouteTimelineState extends State<RouteTimeline> {
                         ));
                       }
                       if (multiPitchRoute.pitchIds.isNotEmpty) {
-                        elements.add(MultiPitchInfo(
-                          pitchIds: multiPitchRoute.pitchIds,
-                          onNetworkChange: widget.onNetworkChange,
-                        ));
                         elements.add(PitchTimeline(
                           trip: widget.trip,
                           spot: widget.spot,
@@ -154,12 +152,7 @@ class RouteTimelineState extends State<RouteTimeline> {
             if (singlePitchRoutes.isNotEmpty){
               elements.add(
                 FixedTimeline.tileBuilder(
-                  theme: TimelineThemeData(
-                    nodePosition: 0,
-                    color: const Color(0xff989898),
-                    indicatorTheme: const IndicatorThemeData(position: 0, size: 20.0),
-                    connectorTheme: const ConnectorThemeData(thickness: 2.5),
-                  ),
+                  theme: MyTimeLineThemeData.defaultTheme,
                   builder: TimelineTileBuilder.connected(
                     connectionDirection: ConnectionDirection.before,
                     itemCount: singlePitchRoutes.length,

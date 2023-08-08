@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../../services/route_service.dart';
+import '../../services/multi_pitch_route_service.dart';
 
 class EditMultiPitchRoute extends StatefulWidget {
   const EditMultiPitchRoute({super.key, required this.route, required this.onUpdate});
@@ -18,7 +18,7 @@ class EditMultiPitchRoute extends StatefulWidget {
 
 class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final RouteService routeService = RouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
   final TextEditingController controllerName = TextEditingController();
   final TextEditingController controllerDate = TextEditingController();
   final TextEditingController controllerLocation = TextEditingController();
@@ -92,7 +92,7 @@ class _EditMultiPitchRouteState extends State<EditMultiPitchRoute>{
                 name: controllerName.text,
                 rating: currentSliderValue.toInt(),
               );
-              MultiPitchRoute? updatedRoute = await routeService.editMultiPitchRoute(route);
+              MultiPitchRoute? updatedRoute = await multiPitchRouteService.editMultiPitchRoute(route);
               if (updatedRoute != null) widget.onUpdate.call(updatedRoute);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }

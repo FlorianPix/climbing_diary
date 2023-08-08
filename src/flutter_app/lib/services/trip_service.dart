@@ -89,10 +89,11 @@ class TripService {
       var data = trip.toJson();
       return uploadTrip(data);
     } else {
+      cacheService.getCreateQueue<Trip>("create_trips", Trip.fromCache);
       // save to cache
-      Box box = Hive.box('upload_later_trips');
-      Map tripJson = trip.toJson();
-      box.put(tripJson.hashCode, tripJson);
+      // Box box = Hive.box('upload_later_trips');
+      // Map tripJson = trip.toJson();
+      // box.put(tripJson.hashCode, tripJson);
     }
     return null;
   }

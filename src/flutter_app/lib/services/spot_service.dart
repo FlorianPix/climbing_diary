@@ -1,5 +1,5 @@
 import 'package:climbing_diary/services/pitch_service.dart';
-import 'package:climbing_diary/services/route_service.dart';
+import 'package:climbing_diary/services/single_pitch_route_service.dart';
 import 'package:hive/hive.dart';
 
 import '../components/my_notifications.dart';
@@ -18,10 +18,12 @@ import '../interfaces/spot/update_spot.dart';
 import 'ascent_service.dart';
 import 'cache_service.dart';
 import 'locator.dart';
+import 'multi_pitch_route_service.dart';
 
 class SpotService {
   final CacheService cacheService = CacheService();
-  final RouteService routeService = RouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final PitchService pitchService = PitchService();
   final AscentService ascentService = AscentService();
   final netWorkLocator = getIt.get<DioClient>();
@@ -138,7 +140,7 @@ class SpotService {
   Future<Spot?> getSpotIfWithinDateRange(String spotId, DateTime startDate, DateTime endDate, bool online) async {
     Spot? spot = await getSpot(spotId, online);
     if (spot == null) return null;
-    List<MultiPitchRoute> multiPitchRoutes = await routeService.getMultiPitchRoutesOfIds(online, spot.multiPitchRouteIds);
+    List<MultiPitchRoute> multiPitchRoutes = await multiPitchRouteService.getMultiPitchRoutesOfIds(online, spot.multiPitchRouteIds);
     for (MultiPitchRoute multiPitchRoute in multiPitchRoutes) {
       List<Pitch> pitches = await pitchService.getPitchesOfIds(online, multiPitchRoute.pitchIds);
       for (Pitch pitch in pitches){
@@ -151,7 +153,7 @@ class SpotService {
         }
       }
     }
-    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutesOfIds(online, spot.singlePitchRouteIds);
+    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutesOfIds(online, spot.singlePitchRouteIds);
     for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
       List<Ascent> ascents = await ascentService.getAscentsOfIds(online, singlePitchRoute.ascentIds);
       for (Ascent ascent in ascents){

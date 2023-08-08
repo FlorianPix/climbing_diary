@@ -1,3 +1,4 @@
+import 'package:climbing_diary/pages/diary_page/timeline/my_timeline_theme_data.dart';
 import 'package:climbing_diary/pages/diary_page/timeline/route_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -77,12 +78,7 @@ class SpotTimelineState extends State<SpotTimeline> {
           title: const Text("spots"),
           children: [
             FixedTimeline.tileBuilder(
-              theme: TimelineThemeData(
-                nodePosition: 0,
-                color: const Color(0xff989898),
-                indicatorTheme: const IndicatorThemeData(position: 0, size: 20.0),
-                connectorTheme: const ConnectorThemeData(thickness: 2.5),
-              ),
+              theme: MyTimeLineThemeData.defaultTheme,
               builder: TimelineTileBuilder.connected(
                 connectionDirection: ConnectionDirection.before,
                 itemCount: spots.length,

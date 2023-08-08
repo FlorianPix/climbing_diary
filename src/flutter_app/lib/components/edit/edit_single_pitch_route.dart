@@ -6,7 +6,7 @@ import '../../interfaces/grade.dart';
 import '../../interfaces/grading_system.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/single_pitch_route/update_single_pitch_route.dart';
-import '../../services/route_service.dart';
+import '../../services/single_pitch_route_service.dart';
 
 class EditSinglePitchRoute extends StatefulWidget {
   const EditSinglePitchRoute({super.key, required this.route, required this.onUpdate});
@@ -20,7 +20,7 @@ class EditSinglePitchRoute extends StatefulWidget {
 
 class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final RouteService routeService = RouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final TextEditingController controllerComment = TextEditingController();
   final TextEditingController controllerLength = TextEditingController();
   final TextEditingController controllerLocation = TextEditingController();
@@ -132,7 +132,7 @@ class _EditSinglePitchRouteState extends State<EditSinglePitchRoute>{
                 grade: Grade(grade: grade, system: gradingSystem),
                 length: int.parse(controllerLength.text)
               );
-              SinglePitchRoute? updatedRoute = await routeService.editSinglePitchRoute(route);
+              SinglePitchRoute? updatedRoute = await singlePitchRouteService.editSinglePitchRoute(route);
               if (updatedRoute != null) widget.onUpdate.call(updatedRoute);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }

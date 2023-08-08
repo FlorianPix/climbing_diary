@@ -10,6 +10,7 @@ import '../../../components/info/trip_info.dart';
 import '../../../components/rating.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/trip_service.dart';
+import 'my_timeline_theme_data.dart';
 
 class TripTimeline extends StatefulWidget {
   const TripTimeline({super.key, required this.onNetworkChange});
@@ -75,12 +76,7 @@ class TripTimelineState extends State<TripTimeline> {
               label: const Text("add a new trip"),
             ),
             FixedTimeline.tileBuilder(
-              theme: TimelineThemeData(
-                nodePosition: 0,
-                color: const Color(0xff989898),
-                indicatorTheme: const IndicatorThemeData(position: 0, size: 20.0),
-                connectorTheme: const ConnectorThemeData(thickness: 2.5),
-              ),
+              theme: MyTimeLineThemeData.defaultTheme,
               builder: TimelineTileBuilder.connected(
                 connectionDirection: ConnectionDirection.before,
                 itemCount: trips.length,

@@ -8,8 +8,8 @@ import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
 import '../../pages/diary_page/timeline/pitch_timeline.dart';
 import '../../services/media_service.dart';
+import '../../services/multi_pitch_route_service.dart';
 import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
 import '../add/add_image.dart';
 import '../comment.dart';
 import '../image_list_view_add.dart';
@@ -36,7 +36,7 @@ class MultiPitchRouteDetails extends StatefulWidget {
 
 class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
   final MediaService mediaService = MediaService();
-  final RouteService routeService = RouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
   final PitchService pitchService = PitchService();
 
   Future<List<String>> fetchURLs() {
@@ -56,7 +56,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         MultiPitchRoute multiPitchRoute = widget.route;
         multiPitchRoute.mediaIds.add(mediaId);
-        routeService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
+        multiPitchRouteService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
       }
     } else {
       List<XFile> images = await picker.pickMultiImage();
@@ -64,7 +64,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         MultiPitchRoute multiPitchRoute = widget.route;
         multiPitchRoute.mediaIds.add(mediaId);
-        routeService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
+        multiPitchRouteService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
       }
     }
     setState(() {});
@@ -104,7 +104,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
 
     void deleteImageCallback(String mediumId) {
       widget.route.mediaIds.remove(mediumId);
-      routeService.editMultiPitchRoute(UpdateMultiPitchRoute(
+      multiPitchRouteService.editMultiPitchRoute(UpdateMultiPitchRoute(
         id: widget.route.id,
         mediaIds: widget.route.mediaIds
       ));
@@ -139,7 +139,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         IconButton(
           onPressed: () {
             Navigator.pop(context);
-            routeService.deleteMultiPitchRoute(route, widget.spotId);
+            multiPitchRouteService.deleteMultiPitchRoute(route, widget.spotId);
             widget.onDelete.call(route);
           },
           icon: const Icon(Icons.delete),
