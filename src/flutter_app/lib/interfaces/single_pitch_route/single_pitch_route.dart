@@ -4,6 +4,9 @@ import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch
 import '../grade.dart';
 
 class SinglePitchRoute extends ClimbingRoute{
+  static const String boxName = 'single_pitch_routes';
+  static const String deleteBoxName = 'delete_single_pitch_routes';
+
   final List<String> ascentIds;
   final Grade grade;
   final int length;

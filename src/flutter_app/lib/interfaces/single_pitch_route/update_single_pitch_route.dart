@@ -3,6 +3,8 @@ import 'package:climbing_diary/interfaces/route/update_route.dart';
 import '../grade.dart';
 
 class UpdateSinglePitchRoute extends UpdateClimbingRoute{
+  static const String boxName = 'edit_single_pitch_routes';
+
   List<String>? ascentIds;
   Grade? grade;
   int? length;

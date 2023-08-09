@@ -26,9 +26,8 @@ Future<void> main() async {
   );
   Environment().initConfig(environment);
   WidgetsFlutterBinding.ensureInitialized();
-  final CacheService cacheService = CacheService();
   final applicationDocumentDir = await getApplicationDocumentsDirectory();
-  await cacheService.initCache(applicationDocumentDir.path);
+  await CacheService.initCache(applicationDocumentDir.path);
   await setup();
   runApp(const OverlaySupport.global(child: MyApp()));
 }
@@ -73,8 +72,8 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> login() async {
     try{
       Credentials credentials = await auth0.webAuthentication(scheme: 'demo').login(
-          audience: 'climbing-diary-API',
-          scopes: {'profile', 'email', 'read:diary', 'write:diary', 'read:media', 'write:media'}
+        audience: 'climbing-diary-API',
+        scopes: {'profile', 'email', 'read:diary', 'write:diary', 'read:media', 'write:media'}
       );
       setState(() {
         _user = credentials.user;

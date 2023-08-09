@@ -13,7 +13,6 @@ import 'cache_service.dart';
 import 'locator.dart';
 
 class PitchService {
-  final CacheService cacheService = CacheService();
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
@@ -48,7 +47,7 @@ class PitchService {
         if (pitchIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of pitch id updated");
         String id = pitchIdUpdatedResponse.data['_id'];
         String serverUpdated = pitchIdUpdatedResponse.data['updated'];
-        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
           final Response missingMultiPitchRouteResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/$pitchId');
           if (missingMultiPitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing pitch");
           return Pitch.fromJson(missingMultiPitchRouteResponse.data);
@@ -79,7 +78,7 @@ class PitchService {
         pitchIdsUpdatedResponse.data.forEach((idWithDatetime) {
           String id = idWithDatetime['_id'];
           String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
             missingPitchIds.add(id);
           } else {
             pitches.add(Pitch.fromCache(box.get(id)));
@@ -100,7 +99,7 @@ class PitchService {
         return pitches;
       } else {
         // offline
-        return cacheService.getTsFromCache<Pitch>('pitches', Pitch.fromCache);
+        return CacheService.getTsFromCache<Pitch>('pitches', Pitch.fromCache);
       }
     } catch (e) {
       if (e is DioError) {
@@ -123,7 +122,7 @@ class PitchService {
         pitchIdsResponse.data.forEach((idWithDatetime) {
           String id = idWithDatetime['_id'];
           String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
             missingPitchIds.add(id);
           } else {
             pitches.add(Pitch.fromCache(box.get(id)));
@@ -142,7 +141,7 @@ class PitchService {
         return pitches;
       } else {
         // offline
-        return cacheService.getTsFromCache<Pitch>('pitches', Pitch.fromCache);
+        return CacheService.getTsFromCache<Pitch>('pitches', Pitch.fromCache);
       }
     } catch (e) {
       if (e is DioError) {

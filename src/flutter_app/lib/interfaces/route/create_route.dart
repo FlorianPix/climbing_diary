@@ -35,4 +35,18 @@ class CreateClimbingRoute {
     "name": name,
     "rating": rating,
   };
+
+  @override
+  int get hashCode {
+    return
+      comment.hashCode ^
+      location.hashCode ^
+      name.hashCode ^
+      rating.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
+  }
 }

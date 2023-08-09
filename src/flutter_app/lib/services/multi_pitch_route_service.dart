@@ -17,7 +17,6 @@ import 'cache_service.dart';
 import 'locator.dart';
 
 class MultiPitchRouteService {
-  final CacheService cacheService = CacheService();
   final PitchService pitchService = PitchService();
   final AscentService ascentService = AscentService();
   final netWorkLocator = getIt.get<DioClient>();
@@ -33,7 +32,7 @@ class MultiPitchRouteService {
         if (multiPitchRouteIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of multi pitch route id updated");
         String id = multiPitchRouteIdUpdatedResponse.data['_id'];
         String serverUpdated = multiPitchRouteIdUpdatedResponse.data['updated'];
-        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
           final Response missingMultiPitchRouteResponse = await netWorkLocator.dio.post('$climbingApiHost/multi_pitch_route/$routeId');
           if (missingMultiPitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing multi pitch route");
           return MultiPitchRoute.fromJson(missingMultiPitchRouteResponse.data);
@@ -66,7 +65,7 @@ class MultiPitchRouteService {
         multiPitchRouteIdsUpdatedResponse.data.forEach((idWithDatetime) {
           String id = idWithDatetime['_id'];
           String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
             missingMultiPitchRouteIds.add(id);
           } else {
             multiPitchRoutes.add(MultiPitchRoute.fromCache(box.get(id)));
@@ -89,7 +88,7 @@ class MultiPitchRouteService {
         return multiPitchRoutes;
       } else {
         // offline
-        List<MultiPitchRoute> multiPitchRoutes = cacheService.getTsFromCache<MultiPitchRoute>('multi_pitch_routes', MultiPitchRoute.fromCache);
+        List<MultiPitchRoute> multiPitchRoutes = CacheService.getTsFromCache<MultiPitchRoute>('multi_pitch_routes', MultiPitchRoute.fromCache);
         return multiPitchRoutes.where((element) => multiPitchRouteIds.contains(element.id)).toList();
       }
     } catch (e) {
@@ -115,7 +114,7 @@ class MultiPitchRouteService {
         multiPitchRouteIdsResponse.data.forEach((idWithDatetime) {
           String id = idWithDatetime['_id'];
           String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
             missingMultiPitchRouteIds.add(id);
           } else {
             multiPitchRoutes.add(MultiPitchRoute.fromCache(box.get(id)));
@@ -138,7 +137,7 @@ class MultiPitchRouteService {
         return multiPitchRoutes;
       } else {
         // offline
-        return cacheService.getTsFromCache<MultiPitchRoute>('multi_pitch_routes', MultiPitchRoute.fromCache);
+        return CacheService.getTsFromCache<MultiPitchRoute>('multi_pitch_routes', MultiPitchRoute.fromCache);
       }
     } catch (e) {
       if (e is DioError) {

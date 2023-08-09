@@ -2,6 +2,9 @@ import 'package:climbing_diary/interfaces/my_base_interface/my_base_interface.da
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 
 class Trip extends MyBaseInterface{
+  static const String boxName = 'trips';
+  static const String deleteBoxName = 'delete_trips';
+
   final List<String> spotIds;
 
   final String comment;

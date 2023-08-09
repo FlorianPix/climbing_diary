@@ -1,4 +1,6 @@
 class CreateAscent {
+  static const String boxName = 'create_ascents';
+
   final String? comment;
   final String date;
   final int style;
@@ -35,4 +37,18 @@ class CreateAscent {
     "style": style,
     "type": type,
   };
+
+  @override
+  int get hashCode {
+    return
+      comment.hashCode ^
+      date.hashCode ^
+      style.hashCode ^
+      type.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
+  }
 }

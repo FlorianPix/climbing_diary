@@ -21,7 +21,6 @@ import 'locator.dart';
 import 'multi_pitch_route_service.dart';
 
 class SpotService {
-  final CacheService cacheService = CacheService();
   final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
   final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final PitchService pitchService = PitchService();
@@ -39,7 +38,7 @@ class SpotService {
       if (spotIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot id updated");
       String id = spotIdUpdatedResponse.data['_id'];
       String serverUpdated = spotIdUpdatedResponse.data['updated'];
-      if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+      if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
         final Response missingSpotResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/$spotId');
         if (missingSpotResponse.statusCode != 200) throw Exception("Error during request of missing spot");
       } else {
@@ -58,7 +57,7 @@ class SpotService {
   Future<List<Spot>> getSpotsOfIds(bool online, List<String> spotIds) async {
     try {
       if(!online) {
-        List<Spot> spots = cacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
+        List<Spot> spots = CacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
         return spots.where((spot) => spotIds.contains(spot.id)).toList();
       }
       final Response spotIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/spotUpdated/ids', data: spotIds);
@@ -69,7 +68,7 @@ class SpotService {
       spotIdsUpdatedResponse.data.forEach((idWithDatetime) {
         String id = idWithDatetime['_id'];
         String serverUpdated = idWithDatetime['updated'];
-        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
           missingSpotIds.add(id);
         } else {
           spots.add(Spot.fromCache(box.get(id)));
@@ -97,7 +96,7 @@ class SpotService {
 
   Future<List<Spot>> getSpots(bool online) async {
     try {
-      if(!online) return cacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
+      if(!online) return CacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
       final Response spotIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/spotUpdated');
       if (spotIdsResponse.statusCode != 200) throw Exception("Error during request of spot ids");
       List<Spot> spots = [];
@@ -106,7 +105,7 @@ class SpotService {
       spotIdsResponse.data.forEach((idWithDatetime) {
         String id = idWithDatetime['_id'];
         String serverUpdated = idWithDatetime['updated'];
-        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
           missingSpotIds.add(id);
         } else {
           spots.add(Spot.fromCache(box.get(id)));

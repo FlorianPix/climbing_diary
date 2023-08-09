@@ -2,6 +2,8 @@ import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_r
 import 'package:climbing_diary/interfaces/route/route.dart';
 
 class MultiPitchRoute extends ClimbingRoute{
+  static const String boxName = 'multi_pitch_routes';
+  static const String deleteBoxName = 'delete_multi_pitch_routes';
   final List<String> pitchIds;
 
   const MultiPitchRoute({

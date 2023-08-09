@@ -13,7 +13,6 @@ import 'cache_service.dart';
 import 'locator.dart';
 
 class AscentService {
-  final CacheService cacheService = CacheService();
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
@@ -27,7 +26,7 @@ class AscentService {
         if (ascentIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of ascent id updated");
         String id = ascentIdUpdatedResponse.data['_id'];
         String serverUpdated = ascentIdUpdatedResponse.data['updated'];
-        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
           final Response missingMultiPitchRouteResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/$ascentId');
           if (missingMultiPitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing ascent");
           return Ascent.fromJson(missingMultiPitchRouteResponse.data);
@@ -60,7 +59,7 @@ class AscentService {
         ascentIdsUpdatedResponse.data.forEach((idWithDatetime) {
           String id = idWithDatetime['_id'];
           String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
             missingAscentIds.add(id);
           } else {
             ascents.add(Ascent.fromCache(box.get(id)));
@@ -83,7 +82,7 @@ class AscentService {
         return ascents;
       } else {
         // offline
-        List<Ascent> ascents = cacheService.getTsFromCache<Ascent>('ascents', Ascent.fromCache);
+        List<Ascent> ascents = CacheService.getTsFromCache<Ascent>('ascents', Ascent.fromCache);
         return ascents.where((element) => ascentIds.contains(element.id)).toList();
       }
     } catch (e) {
@@ -109,7 +108,7 @@ class AscentService {
         ascentIdsResponse.data.forEach((idWithDatetime) {
           String id = idWithDatetime['_id'];
           String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
             missingAscentIds.add(id);
           } else {
             ascents.add(Ascent.fromCache(box.get(id)));
@@ -132,7 +131,7 @@ class AscentService {
         return ascents;
       } else {
         // offline
-        return cacheService.getTsFromCache<Ascent>('ascents', Ascent.fromCache);
+        return CacheService.getTsFromCache<Ascent>('ascents', Ascent.fromCache);
       }
     } catch (e) {
       if (e is DioError) {

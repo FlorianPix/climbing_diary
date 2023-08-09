@@ -3,6 +3,8 @@ import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_inter
 import '../grade.dart';
 
 class UpdatePitch extends UpdateMyBaseInterface{
+  static const String boxName = 'edit_pitches';
+
   List<String>? ascentIds;
   String? comment;
   Grade? grade;

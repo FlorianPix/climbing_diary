@@ -1,6 +1,8 @@
 import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
 
 class UpdateAscent extends UpdateMyBaseInterface{
+  static const String boxName = 'edit_ascents';
+
   String? comment;
   String? date;
   int? style;

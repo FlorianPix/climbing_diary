@@ -15,7 +15,6 @@ import 'cache_service.dart';
 import 'locator.dart';
 
 class SinglePitchRouteService {
-  final CacheService cacheService = CacheService();
   final AscentService ascentService = AscentService();
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
@@ -51,7 +50,7 @@ class SinglePitchRouteService {
         if (singlePitchRouteIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot id updated");
         String id = singlePitchRouteIdUpdatedResponse.data['_id'];
         String serverUpdated = singlePitchRouteIdUpdatedResponse.data['updated'];
-        if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
           final Response missingSinglePitchRouteResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$routeId');
           if (missingSinglePitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing spot");
           return SinglePitchRoute.fromJson(missingSinglePitchRouteResponse.data);
@@ -84,7 +83,7 @@ class SinglePitchRouteService {
         singlePitchRouteIdsUpdatedResponse.data.forEach((idWithDatetime) {
           String id = idWithDatetime['_id'];
           String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
             missingSinglePitchRouteIds.add(id);
           } else {
             singlePitchRoutes.add(SinglePitchRoute.fromCache(box.get(id)));
@@ -107,7 +106,7 @@ class SinglePitchRouteService {
         return singlePitchRoutes;
       } else {
         // offline
-        List<SinglePitchRoute> singlePitchRoutes = cacheService.getTsFromCache<SinglePitchRoute>('single_pitch_routes', SinglePitchRoute.fromCache);
+        List<SinglePitchRoute> singlePitchRoutes = CacheService.getTsFromCache<SinglePitchRoute>('single_pitch_routes', SinglePitchRoute.fromCache);
         return singlePitchRoutes.where((element) => singlePitchRouteIds.contains(element.id)).toList();
       }
     } catch (e) {
@@ -134,7 +133,7 @@ class SinglePitchRouteService {
         singlePitchRouteIdsResponse.data.forEach((idWithDatetime) {
           String id = idWithDatetime['_id'];
           String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
             missingSinglePitchRouteIds.add(id);
           } else {
             singlePitchRoutes.add(SinglePitchRoute.fromCache(box.get(id)));
@@ -157,7 +156,7 @@ class SinglePitchRouteService {
         return singlePitchRoutes;
       } else {
         // offline
-        return cacheService.getTsFromCache<SinglePitchRoute>('single_pitch_routes', SinglePitchRoute.fromCache);
+        return CacheService.getTsFromCache<SinglePitchRoute>('single_pitch_routes', SinglePitchRoute.fromCache);
       }
     } catch (e) {
       if (e is DioError) {

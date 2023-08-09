@@ -1,3 +1,4 @@
+import 'package:climbing_diary/components/my_notifications.dart';
 import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,7 +16,6 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings>{
-  final CacheService cacheService = CacheService();
   final AdminService adminService = AdminService();
   final ArchiveService archiveService = ArchiveService();
   GradingSystem gradingSystem = GradingSystem.french;
@@ -114,7 +114,10 @@ class _SettingsState extends State<Settings>{
               child: Text("Cache", style: MyTextStyles.title)
             ),
             ElevatedButton.icon(
-              onPressed: () {cacheService.clearCache();},
+              onPressed: () {
+                CacheService.clearCache();
+                MyNotifications.showPositiveNotification("cleared cache");
+              },
               icon: const Icon(
                 Icons.delete,
                 color: Colors.black,
