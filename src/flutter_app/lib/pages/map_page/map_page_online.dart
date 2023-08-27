@@ -109,7 +109,10 @@ class _MapPageOnlineState extends State<MapPageOnline> {
           )),
           floatingActionButton: FloatingActionButton(
             onPressed: () => Navigator.push(context, MaterialPageRoute(
-              builder: (context) => AddSpot(onAdd: (spot) => addSpotCallback(spot)),
+              builder: (context) => AddSpot(
+                onAdd: (spot) => addSpotCallback(spot),
+                onNetworkChange: widget.onNetworkChange
+              ),
             )),
             backgroundColor: Colors.green,
             elevation: 5,

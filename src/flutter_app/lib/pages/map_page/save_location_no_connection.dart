@@ -7,9 +7,10 @@ import '../../services/location_service.dart';
 
 
 class SaveLocationNoConnectionPage extends StatefulWidget {
-  const SaveLocationNoConnectionPage({super.key, required this.onAdd});
+  const SaveLocationNoConnectionPage({super.key, required this.onAdd, required this.onNetworkChange});
 
   final ValueSetter<Spot> onAdd;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<SaveLocationNoConnectionPage> createState() => _SaveLocationNoConnectionPage();
@@ -44,7 +45,10 @@ class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> 
           )));
         }
         Position position = snapshot.data!;
-        return Scaffold(body: AddSpot(onAdd: widget.onAdd));
+        return Scaffold(body: AddSpot(
+          onAdd: widget.onAdd,
+          onNetworkChange: widget.onNetworkChange,
+        ));
       }
     );
   }

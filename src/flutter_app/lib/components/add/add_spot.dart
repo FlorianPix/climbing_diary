@@ -13,10 +13,11 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import '../../services/trip_service.dart';
 
 class AddSpot extends StatefulWidget {
-  const AddSpot({super.key, this.trip, required this.onAdd});
+  const AddSpot({super.key, this.trip, required this.onAdd, required this.onNetworkChange});
 
   final ValueSetter<Spot> onAdd;
   final Trip? trip;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => _AddSpotState();
@@ -45,10 +46,20 @@ class _AddSpotState extends State<AddSpot>{
     return null;
   }
 
+  bool online = false;
+
+  void checkConnection() async {
+    await InternetConnectionChecker().hasConnection.then((value) {
+      widget.onNetworkChange.call(value);
+      setState(() => online = value);
+    });
+  }
+
   @override
   void initState(){
-    controllerDate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
     super.initState();
+    controllerDate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    checkConnection();
   }
 
   @override
@@ -161,7 +172,7 @@ class _AddSpotState extends State<AddSpot>{
                   Trip trip = widget.trip!;
                   UpdateTrip editTrip = trip.toUpdateTrip();
                   editTrip.spotIds?.add(createdSpot.id);
-                  Trip? editedTrip = await tripService.editTrip(editTrip);
+                  Trip? editedTrip = await tripService.editTrip(editTrip, online);
                 }
                 widget.onAdd.call(createdSpot);
               }

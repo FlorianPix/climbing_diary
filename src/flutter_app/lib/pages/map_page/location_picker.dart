@@ -47,7 +47,7 @@ class _NavigationScreenPage extends State<LocationPicker> {
             buttonColor: Theme.of(context).colorScheme.primary,
             buttonText: 'Set location',
             onPicked: (pickedData) => setState(() {
-              address = pickedData.address;
+              address = pickedData.addressName;
               widget.onAdd.call([
                 address.toString(),
                 pickedData.latLong.latitude.toString(),

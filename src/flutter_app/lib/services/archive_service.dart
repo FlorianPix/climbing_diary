@@ -233,7 +233,14 @@ class ArchiveService {
             }
             List<String> mediaIds = getMediaIds(mediaIdTranslation, t);
             if (createdTrip != null) {
-              await tripService.editTrip(UpdateTrip(id: createdTrip.id, spotIds: spotIds, mediaIds: mediaIds));
+              await tripService.editTrip(
+                UpdateTrip(
+                  id: createdTrip.id,
+                  spotIds: spotIds,
+                  mediaIds: mediaIds,
+                ),
+                true
+              );
             }
           }
 

@@ -45,7 +45,6 @@ class TripService {
   Future<List<Trip>> getTrips(bool online) async {
     try {
       if(online){
-        CacheService().applyQueued();
         final Response tripIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/tripUpdated');
         if (tripIdsResponse.statusCode != 200) {
           throw Exception("Error during request of trip ids");
@@ -109,23 +108,22 @@ class TripService {
     return null;
   }
 
-  Future<Trip?> editTrip(UpdateTrip trip) async {
+  Future<Trip?> editTrip(UpdateTrip trip, bool online) async {
     try {
-      final Response response = await netWorkLocator.dio.put('$climbingApiHost/trip/${trip.id}', data: trip.toJson());
-      if (response.statusCode == 200) {
-        // TODO deleteTripFromEditQueue(trip.hashCode);
+      if (online) {
+        final Response response = await netWorkLocator.dio.put('$climbingApiHost/trip/${trip.id}', data: trip.toJson());
+        if (response.statusCode != 200) throw Exception('Failed to edit trip');
         return Trip.fromJson(response.data);
-      } else {
-        throw Exception('Failed to edit trip');
       }
+      Box box = Hive.box(UpdateTrip.boxName);
+      Map tripJson = trip.toJson();
+      if (!box.containsKey(trip.hashCode)) box.put(trip.hashCode, tripJson);
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
           // offline
         }
       }
-    } finally {
-      // TODO editTripFromCache(trip);
     }
     return null;
   }

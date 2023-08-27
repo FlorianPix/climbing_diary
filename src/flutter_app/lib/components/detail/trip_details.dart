@@ -3,6 +3,7 @@ import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:climbing_diary/components/select_spot.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
@@ -49,7 +50,7 @@ class _TripDetailsState extends State<TripDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         Trip trip = widget.trip;
         trip.mediaIds.add(mediaId);
-        tripService.editTrip(trip.toUpdateTrip());
+        tripService.editTrip(trip.toUpdateTrip(), online);
       }
     } else {
       List<XFile> images = await picker.pickMultiImage();
@@ -57,7 +58,7 @@ class _TripDetailsState extends State<TripDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         Trip trip = widget.trip;
         trip.mediaIds.add(mediaId);
-        tripService.editTrip(trip.toUpdateTrip());
+        tripService.editTrip(trip.toUpdateTrip(), online);
       }
     }
     setState(() {});
@@ -73,13 +74,23 @@ class _TripDetailsState extends State<TripDetails>{
   void editTripDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) => EditTrip(trip: widget.trip, onUpdate: widget.onTripUpdate)
+      builder: (BuildContext context) => EditTrip(trip: widget.trip, onUpdate: widget.onTripUpdate, onNetworkChange: widget.onNetworkChange)
     );
+  }
+
+  bool online = false;
+
+  void checkConnection() async {
+    await InternetConnectionChecker().hasConnection.then((value) {
+      widget.onNetworkChange.call(value);
+      setState(() => online = value);
+    });
   }
 
   @override
   void initState(){
     super.initState();
+    checkConnection();
   }
 
   @override
@@ -101,10 +112,13 @@ class _TripDetailsState extends State<TripDetails>{
 
     void deleteImageCallback(String mediumId) {
       widget.trip.mediaIds.remove(mediumId);
-      tripService.editTrip(UpdateTrip(
-        id: widget.trip.id,
-        mediaIds: widget.trip.mediaIds
-      ));
+      tripService.editTrip(
+        UpdateTrip(
+          id: widget.trip.id,
+          mediaIds: widget.trip.mediaIds
+        ),
+        online
+      );
       setState(() {});
     }
 
@@ -133,6 +147,7 @@ class _TripDetailsState extends State<TripDetails>{
               setState(() {});
             },
             trip: trip,
+            onNetworkChange: widget.onNetworkChange,
           ),
         )
       ),

@@ -31,6 +31,6 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     if (online) return MapPageOnline(onNetworkChange: (bool value) => setState(() => online = value));
-    return const MapPageOffline();
+    return MapPageOffline(onNetworkChange: (bool value) => setState(() => online = value));
   }
 }

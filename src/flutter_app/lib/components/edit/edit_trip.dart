@@ -1,5 +1,6 @@
 import 'package:climbing_diary/components/my_validators.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 
 import '../../interfaces/trip/trip.dart';
@@ -7,10 +8,11 @@ import '../../interfaces/trip/update_trip.dart';
 import '../../services/trip_service.dart';
 
 class EditTrip extends StatefulWidget {
-  const EditTrip({super.key, required this.trip, required this.onUpdate});
+  const EditTrip({super.key, required this.trip, required this.onUpdate, required this.onNetworkChange});
 
   final Trip trip;
   final ValueSetter<Trip> onUpdate;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => _EditTripState();
@@ -24,18 +26,26 @@ class _EditTripState extends State<EditTrip>{
   final TextEditingController controllerName = TextEditingController();
   final TextEditingController controllerStartDate = TextEditingController();
   final TextEditingController controllerDateRange = TextEditingController();
-
   int currentSliderValue = 0;
+  bool online = false;
+
+  void checkConnection() async {
+    await InternetConnectionChecker().hasConnection.then((value) {
+      widget.onNetworkChange.call(value);
+      setState(() => online = value);
+    });
+  }
 
   @override
   void initState(){
+    super.initState();
     controllerComment.text = widget.trip.comment;
     controllerEndDate.text = widget.trip.endDate;
     controllerName.text = widget.trip.name;
     controllerStartDate.text = widget.trip.startDate;
     controllerDateRange.text = "${widget.trip.startDate} ${widget.trip.endDate}";
     currentSliderValue = widget.trip.rating;
-    super.initState();
+    checkConnection();
   }
 
   @override
@@ -115,7 +125,7 @@ class _EditTripState extends State<EditTrip>{
                 rating: currentSliderValue.toInt(),
                 startDate: controllerStartDate.text
               );
-              Trip? updatedTrip = await tripService.editTrip(trip);
+              Trip? updatedTrip = await tripService.editTrip(trip, online);
               if (updatedTrip != null) widget.onUpdate.call(updatedTrip);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }

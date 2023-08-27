@@ -54,29 +54,32 @@ class CacheService{
   }
 
   void applyQueued() async {
-    Box box = Hive.box(CreateTrip.boxName);
-    for (int i = 0; i < box.length; i++){
-      Map el = box.getAt(i);
+    // create trips from cache
+    Box createTripBox = Hive.box(CreateTrip.boxName);
+    for (int i = 0; i < createTripBox.length; i++){
+      Map el = createTripBox.getAt(i);
       try {
         final Response response = await netWorkLocator.dio.post('$climbingApiHost/trip', data: el);
         if (response.statusCode != 201) throw Exception('Failed to create trip');
-        box.deleteAt(i);
+        createTripBox.deleteAt(i);
         MyNotifications.showPositiveNotification('Created new trip: ${response.data['name']}');
       } catch (e) {
         if (e is DioError) {
           final response = e.response;
           if (response != null) {
             switch (response.statusCode) {
-              case 409:
-                MyNotifications.showNegativeNotification('This trip already exists!');
-                break;
-              default:
-                throw Exception('Failed to create trip');
+              case 409: MyNotifications.showNegativeNotification('This trip already exists!'); break;
+              default: throw Exception('Failed to create trip');
             }
           }
         }
       }
-      return null;
+    }
+    // edit trips from cache
+    Box updateTripBox = Hive.box(UpdateTrip.boxName);
+    for (int i = 0; i < updateTripBox.length; i++) {
+      Map el = updateTripBox.getAt(i);
+      print(el);
     }
   }
 

@@ -51,7 +51,7 @@ dependencies:
   shared_preferences: ^2.0.16
   dio: ^4.0.6
   skeletons: ^0.0.3
-  open_street_map_search_and_pick: ^0.0.15
+  open_street_map_search_and_pick: ^0.1.0
   image_picker: ^0.8.6
   permission_handler: ^10.2.0
   geolocator: ^9.0.2
