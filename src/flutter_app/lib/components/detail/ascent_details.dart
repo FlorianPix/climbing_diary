@@ -93,7 +93,7 @@ class _AscentDetailsState extends State<AscentDetails>{
           onPressed: () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => AddImage(onAddImage: getImage))
           ),
-          style: MyButtonStyles.rounded
+          style: ButtonStyle(shape: MyButtonStyles.rounded)
         ),
       );
     }

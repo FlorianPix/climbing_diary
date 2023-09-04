@@ -122,7 +122,7 @@ class _SpotDetailsState extends State<SpotDetails>{
           onPressed: () => Navigator.push(context, MaterialPageRoute(
             builder: (context) => AddImage(onAddImage: getImage)
           )),
-          style: MyButtonStyles.rounded
+          style: ButtonStyle(shape: MyButtonStyles.rounded)
         ),
       );
     }
@@ -144,7 +144,7 @@ class _SpotDetailsState extends State<SpotDetails>{
           ),
         )
       ),
-      style: MyButtonStyles.rounded
+      style: ButtonStyle(shape: MyButtonStyles.rounded)
     ));
     elements.add(
         Row(

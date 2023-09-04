@@ -39,12 +39,22 @@ class _MainLoggedOutState extends State<MainLoggedOut>{
                     child: Column(children: [
                       ElevatedButton(
                         onPressed: () => widget.login.call(),
-                        style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.green)),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.green),
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0)
+                          ))
+                        ),
                         child: const Text('login'),
                       ),
                       ElevatedButton(
                         onPressed: () => widget.continueOffline.call(true),
-                        style: ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.grey)),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(Colors.grey),
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18.0)
+                          ))
+                        ),
                         child: const Text('continue offline'),
                       ),
                     ])),

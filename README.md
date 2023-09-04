@@ -1,3 +1,1 @@
-# climbing diary
-
-This is the repo for the climbing diary flutter app and the APIs that it is using.
+<a href="url"><img src="promo/promo.svg" style="border-radius:40px"></a>

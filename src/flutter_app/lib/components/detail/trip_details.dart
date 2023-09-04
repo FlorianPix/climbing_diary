@@ -133,7 +133,7 @@ class _TripDetailsState extends State<TripDetails>{
         icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
         label: const Text('Add image'),
         onPressed: () => addImageDialog(),
-        style: MyButtonStyles.rounded
+        style: ButtonStyle(shape: MyButtonStyles.rounded)
       ));
     }
     elements.add(ElevatedButton.icon(
@@ -151,7 +151,7 @@ class _TripDetailsState extends State<TripDetails>{
           ),
         )
       ),
-      style: MyButtonStyles.rounded
+      style: ButtonStyle(shape: MyButtonStyles.rounded)
     ));
     elements.add(ElevatedButton.icon(
       icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
@@ -165,7 +165,7 @@ class _TripDetailsState extends State<TripDetails>{
           ),
         )
       ),
-      style: MyButtonStyles.rounded
+      style: ButtonStyle(shape: MyButtonStyles.rounded)
     ));
     elements.add(Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

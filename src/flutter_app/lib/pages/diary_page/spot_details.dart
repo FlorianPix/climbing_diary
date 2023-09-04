@@ -130,7 +130,7 @@ class _SpotDetailsState extends State<SpotDetails>{
         icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
         label: const Text('Add image'),
         onPressed: () => addImageDialog(),
-        style: MyButtonStyles.rounded
+        style: ButtonStyle(shape: MyButtonStyles.rounded)
       ));
     }
     elements.add(Row(

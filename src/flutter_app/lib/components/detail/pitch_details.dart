@@ -115,7 +115,7 @@ class _PitchDetailsState extends State<PitchDetails>{
         icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
         label: const Text('Add image'),
         onPressed: () => addImageDialog(),
-        style: MyButtonStyles.rounded
+          style: ButtonStyle(shape: MyButtonStyles.rounded)
       ));
     }
     elements.add(ElevatedButton.icon(
@@ -130,7 +130,7 @@ class _PitchDetailsState extends State<PitchDetails>{
           },
         ),
       )),
-      style: MyButtonStyles.rounded
+        style: ButtonStyle(shape: MyButtonStyles.rounded)
     ));
     elements.add(Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

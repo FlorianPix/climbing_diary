@@ -91,7 +91,7 @@ class _ImageListViewAddState extends State<ImageListViewAdd>{
       onPressed: () => Navigator.push(context,
         MaterialPageRoute(builder: (context) => AddImage(onAddImage: widget.getImage))
       ),
-      style: MyButtonStyles.rounded
+      style: ButtonStyle(shape: MyButtonStyles.rounded)
     ));
     return SizedBox(
       height: 250,

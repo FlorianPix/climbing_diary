@@ -39,11 +39,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Climbing diary',
-      theme: ThemeData(
-        primarySwatch: const MaterialColor(0xffff7f50, MyColors.main),
-      ),
+      theme: ThemeData(primarySwatch: const MaterialColor(0xffff7f50, MyColors.main)),
       initialRoute: '/',
       routes: {'/': (context) => const MyHomePage(title: 'Climbing diary')},
+      debugShowCheckedModeBanner: false,
     );
   }
 }

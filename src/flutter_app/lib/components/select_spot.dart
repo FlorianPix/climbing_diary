@@ -81,7 +81,7 @@ class _SelectSpotState extends State<SelectSpot>{
               }
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             },
-            style: MyButtonStyles.rounded,
+            style: ButtonStyle(shape: MyButtonStyles.rounded),
             child: Column(children: [
               Text(spot.name, style: MyTextStyles.title,),
               Text(spot.location, style: MyTextStyles.description),
