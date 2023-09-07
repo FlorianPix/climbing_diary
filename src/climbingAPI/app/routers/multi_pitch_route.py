@@ -30,11 +30,15 @@ async def create_route(spot_id: str, route: CreateMultiPitchRouteModel = Body(..
     db = await get_db()
     spot = await db["spot"].find_one({"_id": ObjectId(spot_id), "user_id": user.id})
     if spot is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Spot {spot_id} not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spot {spot_id} not found")
     # spot was found
-    if await db["multi_pitch_route"].find({"user_id": user.id, "name": route["name"]}).to_list(None):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Route already exists")
+    existing_routes = []
+    for route_id in spot['multi_pitch_route_ids']:
+        if (existing_route := await db["multi_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})) is not None:
+            existing_routes.append(existing_route)
+    for existing_route in existing_routes:
+        if existing_route['name'] == route['name']:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Route already exists")
     # route does not already exist
     new_route = await db["multi_pitch_route"].insert_one(route)
     # created route
