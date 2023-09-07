@@ -3,6 +3,7 @@ import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:climbing_diary/components/transport.dart';
 import 'package:climbing_diary/interfaces/spot/update_spot.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -61,9 +62,8 @@ class _SpotDetailsState extends State<SpotDetails>{
   void editSpotDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return EditSpot(spot: widget.spot, onUpdate: widget.onUpdate);
-      });
+      builder: (BuildContext context) => EditSpot(spot: widget.spot, onUpdate: widget.onUpdate)
+    );
   }
 
   @override
@@ -76,10 +76,17 @@ class _SpotDetailsState extends State<SpotDetails>{
     List<Widget> elements = [];
 
     elements.add(Text(widget.spot.name, style: MyTextStyles.title));
-    elements.add(Text(
-      '${round(widget.spot.coordinates[0], decimals: 8)}, ${round(widget.spot.coordinates[1], decimals: 8)}',
-      style: MyTextStyles.description,
-    ));
+    elements.add(Row(children: [
+      Text(
+        '${round(widget.spot.coordinates[0], decimals: 8)}, ${round(widget.spot.coordinates[1], decimals: 8)}',
+        style: MyTextStyles.description,
+      ),
+      IconButton(
+        iconSize: 16,
+        color: const Color(0xff989898),
+        onPressed: () async => await Clipboard.setData(ClipboardData(text: "${widget.spot.coordinates[0]},${widget.spot.coordinates[1]}")),
+        icon: const Icon(Icons.content_copy))
+    ]));
     elements.add(Text(widget.spot.location, style: MyTextStyles.description));
     elements.add(Rating(rating: widget.spot.rating));
     if (widget.spot.singlePitchRouteIds.isNotEmpty || widget.spot.multiPitchRouteIds.isNotEmpty) {
@@ -95,9 +102,7 @@ class _SpotDetailsState extends State<SpotDetails>{
         distanceParking: widget.spot.distanceParking)
       );
     }
-    if (widget.spot.comment.isNotEmpty) {
-      elements.add(Comment(comment: widget.spot.comment));
-    }
+    if (widget.spot.comment.isNotEmpty) elements.add(Comment(comment: widget.spot.comment));
 
     void deleteImageCallback(String mediumId) {
       widget.spot.mediaIds.remove(mediumId);
@@ -146,29 +151,27 @@ class _SpotDetailsState extends State<SpotDetails>{
       ),
       style: ButtonStyle(shape: MyButtonStyles.rounded)
     ));
-    elements.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-                spotService.deleteSpot(widget.spot);
-                widget.onDelete.call(widget.spot);
-              },
-              icon: const Icon(Icons.delete),
-            ),
-            IconButton(
-              onPressed: () => editSpotDialog(),
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        )
-    );
+    elements.add(Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+            spotService.deleteSpot(widget.spot);
+            widget.onDelete.call(widget.spot);
+          },
+          icon: const Icon(Icons.delete),
+        ),
+        IconButton(
+          onPressed: () => editSpotDialog(),
+          icon: const Icon(Icons.edit),
+        ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        ),
+      ],
+    ));
     if (widget.spot.multiPitchRouteIds.isNotEmpty || widget.spot.singlePitchRouteIds.isNotEmpty){
       elements.add(RouteList(
         trip: widget.trip,
