@@ -2,6 +2,9 @@ import 'package:climbing_diary/interfaces/ascent/update_ascent.dart';
 import 'package:climbing_diary/interfaces/my_base_interface/my_base_interface.dart';
 
 class Ascent extends MyBaseInterface {
+  static const String boxName = 'ascents';
+  static const String deleteBoxName = 'delete_ascents';
+
   final String comment;
   final String date;
   final int style;

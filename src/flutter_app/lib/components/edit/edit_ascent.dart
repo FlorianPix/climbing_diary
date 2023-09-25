@@ -6,7 +6,6 @@ import '../../interfaces/ascent/ascent_style.dart';
 import '../../interfaces/ascent/ascent_type.dart';
 import '../../interfaces/ascent/update_ascent.dart';
 import '../../services/ascent_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class EditAscent extends StatefulWidget {
   const EditAscent({super.key, required this.ascent, required this.onUpdate});
@@ -39,9 +38,7 @@ class _EditAscentState extends State<EditAscent>{
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),),
       title: const Text('Edit this ascent'),
       content: SingleChildScrollView(
         child: Form(
@@ -51,59 +48,48 @@ class _EditAscentState extends State<EditAscent>{
             children: [
               TextFormField(
                 controller: controllerComment,
-                decoration: const InputDecoration(
-                    hintText: "comment", labelText: "comment"),
+                decoration: const InputDecoration(hintText: "comment", labelText: "comment"),
               ),
               TextFormField(
                 controller: controllerDate,
                 decoration: const InputDecoration(
-                    icon: Icon(Icons.calendar_today),
-                    labelText: "Enter Date"
+                  icon: Icon(Icons.calendar_today),
+                  labelText: "Enter Date"
                 ),
                 readOnly: true,
                 onTap: () async {
                   DateTime? pickedDate = await showDatePicker(
-                      context: context, initialDate: DateTime.now(),
-                      firstDate: DateTime(1923),
-                      lastDate: DateTime(2123)
+                    context: context, initialDate: DateTime.now(),
+                    firstDate: DateTime(1923),
+                    lastDate: DateTime(2123)
                   );
                   if(pickedDate != null ){
                     String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-                    setState(() {
-                      controllerDate.text = formattedDate; //set output date to TextField value.
-                    });
+                    setState(() => controllerDate.text = formattedDate);
                   }
                 },
               ),
               // ascentStyle
               DropdownButton<AscentStyle>(
-                  value: ascentStyleValue,
-                  items: AscentStyle.values.map<DropdownMenuItem<AscentStyle>>((AscentStyle ascentStyle) {
-                    return DropdownMenuItem<AscentStyle>(
-                      value: ascentStyle,
-                      child: Text("${ascentStyle.toEmoji()} ${ascentStyle.name}"),
-                    );
-                  }).toList(),
-                  onChanged: (AscentStyle? ascentStyle) {
-                    setState(() {
-                      ascentStyleValue = ascentStyle!;
-                    });
-                  }
+                value: ascentStyleValue,
+                items: AscentStyle.values.map<DropdownMenuItem<AscentStyle>>((AscentStyle ascentStyle) {
+                  return DropdownMenuItem<AscentStyle>(
+                    value: ascentStyle,
+                    child: Text("${ascentStyle.toEmoji()} ${ascentStyle.name}"),
+                  );
+                }).toList(),
+                onChanged: (AscentStyle? ascentStyle) => setState(() => ascentStyleValue = ascentStyle!)
               ),
               // ascentType
               DropdownButton<AscentType>(
-                  value: ascentTypeValue,
-                  items: AscentType.values.map<DropdownMenuItem<AscentType>>((AscentType ascentType) {
-                    return DropdownMenuItem<AscentType>(
-                      value: ascentType,
-                      child: Text("${ascentType.toEmoji()} ${ascentType.name}"),
-                    );
-                  }).toList(),
-                  onChanged: (AscentType? ascentType) {
-                    setState(() {
-                      ascentTypeValue = ascentType!;
-                    });
-                  }
+                value: ascentTypeValue,
+                items: AscentType.values.map<DropdownMenuItem<AscentType>>((AscentType ascentType) {
+                  return DropdownMenuItem<AscentType>(
+                    value: ascentType,
+                    child: Text("${ascentType.toEmoji()} ${ascentType.name}"),
+                  );
+                }).toList(),
+                onChanged: (AscentType? ascentType) => setState(() => ascentTypeValue = ascentType!)
               ),
             ]
           ),
@@ -112,7 +98,6 @@ class _EditAscentState extends State<EditAscent>{
       actions: <Widget>[
         IconButton(
           onPressed: () async {
-            bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
               final int? ascentStyleIndex = ascentStyleValue?.index;
               final int? ascentTypeIndex = ascentTypeValue?.index;
@@ -125,9 +110,7 @@ class _EditAscentState extends State<EditAscent>{
                   type: ascentTypeIndex
                 );
                 Ascent? updatedAscent = await ascentService.editAscent(ascent);
-                if (updatedAscent != null) {
-                  widget.onUpdate.call(updatedAscent);
-                }
+                if (updatedAscent != null) widget.onUpdate.call(updatedAscent);
                 setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
               }
             }

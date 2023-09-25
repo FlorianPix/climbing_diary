@@ -1,4 +1,6 @@
 class CreateTrip {
+  static const String boxName = 'create_trips';
+
   final String? comment;
   final String endDate;
   final String name;
@@ -40,4 +42,19 @@ class CreateTrip {
     "rating": rating,
     "start_date": startDate,
   };
+
+  @override
+  int get hashCode {
+    return
+      comment.hashCode ^
+      endDate.hashCode ^
+      name.hashCode ^
+      rating.hashCode ^
+      startDate.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
+  }
 }

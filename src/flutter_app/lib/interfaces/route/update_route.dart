@@ -40,6 +40,7 @@ class UpdateClimbingRoute extends UpdateMyBaseInterface{
     );
   }
 
+  @override
   Map toJson() => {
     "media_ids": mediaIds,
     "_id": id,

@@ -4,8 +4,10 @@ import 'package:climbing_diary/interfaces/pitch/update_pitch.dart';
 import '../grade.dart';
 
 class Pitch extends MyBaseInterface{
-  final List<String> ascentIds;
+  static const String boxName = 'pitches';
+  static const String deleteBoxName = 'delete_pitches';
 
+  final List<String> ascentIds;
   final String comment;
   final Grade grade;
   final int length;

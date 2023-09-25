@@ -24,24 +24,27 @@ class Grade{
   ];
 
   Grade translate(GradingSystem gs){
-    if (system == gs){
-      return this;
-    }
+    if (system == gs) return this;
     List<String> col1 = translationTable[system.index];
     int index = col1.indexOf(grade);
-    if (index == -1){
-      return Grade(grade: col1[0], system: gs);
-    }
+    if (index == -1) return Grade(grade: col1[0], system: gs);
     return Grade(grade: translationTable[gs.index][index], system: gs);
   }
 
-  Grade operator +(Grade other){
+  bool operator >(Grade other){
     List<String> col1 = translationTable[system.index];
     int index = col1.indexOf(grade);
     List<String> col2 = translationTable[other.system.index];
     int otherIndex = col2.indexOf(other.grade);
-    Grade result = index > otherIndex ? this : other;
-    return result.translate(GradingSystem.french);
+    return index > otherIndex;
+  }
+
+  bool operator >=(Grade other){
+    List<String> col1 = translationTable[system.index];
+    int index = col1.indexOf(grade);
+    List<String> col2 = translationTable[other.system.index];
+    int otherIndex = col2.indexOf(other.grade);
+    return index >= otherIndex;
   }
 
   factory Grade.fromJson(Map<String, dynamic> json) {
@@ -60,8 +63,8 @@ class Grade{
 
   factory Grade.fromCache(Map<dynamic, dynamic> cache) {
     return Grade(
-        grade: cache['grade'],
-        system: GradingSystem.values[cache['system']]
+      grade: cache['grade'],
+      system: GradingSystem.values[cache['system']]
     );
   }
 }

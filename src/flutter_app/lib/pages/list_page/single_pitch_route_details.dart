@@ -1,26 +1,31 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:climbing_diary/components/info/single_pitch_route_info.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../components/add/add_image.dart';
-import '../../components/my_skeleton.dart';
+import '../../components/comment.dart';
+import '../../components/image_list_view_add.dart';
+import '../../components/my_button_styles.dart';
+import '../../components/rating.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
+import '../../interfaces/single_pitch_route/update_single_pitch_route.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
+import '../../services/single_pitch_route_service.dart';
 
 class SinglePitchRouteDetails extends StatefulWidget {
-  const SinglePitchRouteDetails({super.key, required this.route});
+  const SinglePitchRouteDetails({super.key, required this.route, required this.onNetworkChange});
 
   final SinglePitchRoute route;
+  final ValueSetter<bool> onNetworkChange;
+
   @override
   State<StatefulWidget> createState() => _SinglePitchRouteDetailsState();
 }
 
 class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
   final MediaService mediaService = MediaService();
-  final RouteService routeService = RouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final PitchService pitchService = PitchService();
 
   Future<List<String>> fetchURLs() {
@@ -34,26 +39,31 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
   XFile? image;
   final ImagePicker picker = ImagePicker();
 
-  Future getImage(ImageSource media) async {
-    var img = await picker.pickImage(source: media);
-    if (img != null){
-      var mediaId = await mediaService.uploadMedia(img);
-      SinglePitchRoute route = widget.route;
-      route.mediaIds.add(mediaId);
-      routeService.editSinglePitchRoute(route.toUpdateSinglePitchRoute());
+  Future<void> getImage(ImageSource media) async {
+    if (media == ImageSource.camera) {
+      var img = await picker.pickImage(source: media);
+      if (img != null) {
+        var mediaId = await mediaService.uploadMedia(img);
+        SinglePitchRoute singlePitchRoute = widget.route;
+        singlePitchRoute.mediaIds.add(mediaId);
+        singlePitchRouteService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
+      }
+    } else {
+      List<XFile> images = await picker.pickMultiImage();
+      for (XFile img in images){
+        var mediaId = await mediaService.uploadMedia(img);
+        SinglePitchRoute singlePitchRoute = widget.route;
+        singlePitchRoute.mediaIds.add(mediaId);
+        singlePitchRouteService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
+      }
     }
-
-    setState(() {
-      image = img;
-    });
+    setState(() {});
   }
 
   void addImageDialog() {
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AddImage(onAddImage: getImage);
-        }
+      context: context,
+      builder: (BuildContext context) => AddImage(onAddImage: getImage)
     );
   }
 
@@ -67,105 +77,34 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
     List<Widget> elements = [];
     SinglePitchRoute route = widget.route;
 
-    // general info
-    elements.add(SinglePitchRouteInfo(
-      route: route,
-    ));
-    // rating
-    List<Widget> ratingRowElements = [];
+    elements.add(SinglePitchRouteInfo(route: route, onNetworkChange: widget.onNetworkChange));
+    elements.add(Rating(rating: route.rating));
+    if (route.comment.isNotEmpty) elements.add(Comment(comment: route.comment));
 
-    for (var i = 0; i < 5; i++){
-      if (route.rating > i) {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
-      } else {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
-      }
+    void deleteImageCallback(String mediumId) {
+      widget.route.mediaIds.remove(mediumId);
+      singlePitchRouteService.editSinglePitchRoute(UpdateSinglePitchRoute(
+        id: widget.route.id,
+        mediaIds: widget.route.mediaIds
+      ));
+      setState(() {});
     }
 
-    elements.add(Center(child: Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: ratingRowElements,
-        )
-    )));
-
-    if (route.comment.isNotEmpty) {
-      elements.add(Container(
-          margin: const EdgeInsets.all(15.0),
-          padding: const EdgeInsets.all(5.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.blueAccent),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            route.comment,
-          )
+    if (route.mediaIds.isNotEmpty) {
+      elements.add(ImageListViewAdd(
+        onDelete: deleteImageCallback,
+        mediaIds: widget.route.mediaIds,
+        getImage: getImage,
+      ));
+    } else {
+      elements.add(ElevatedButton.icon(
+        icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+        label: const Text('Add image'),
+        onPressed: () => addImageDialog(),
+        style: ButtonStyle(shape: MyButtonStyles.rounded)
       ));
     }
-    // images
-    if (route.mediaIds.isNotEmpty) {
-      List<Widget> imageWidgets = [];
-      Future<List<String>> futureMediaUrls = fetchURLs();
 
-      imageWidgets.add(
-        FutureBuilder<List<String>>(
-          future: futureMediaUrls,
-          builder: (context, snapshot) {
-            if (snapshot.data != null){
-              List<String> urls = snapshot.data!;
-              List<Widget> images = [];
-              for (var url in urls){
-                images.add(
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: CachedNetworkImage(
-                        imageUrl: url,
-                        fit: BoxFit.fitHeight,
-                        placeholder: (context, url) => const MySkeleton(),
-                        errorWidget: (context, url, error) => const Icon(Icons.error),
-                      )
-                    ),
-                  )
-                );
-              }
-              return Container(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: images
-                  )
-              );
-            }
-            List<Widget> skeletons = [];
-            for (var i = 0; i < route.mediaIds.length; i++){
-              skeletons.add(const MySkeleton());
-            }
-            return Container(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: skeletons
-                )
-            );
-          }
-        )
-      );
-      elements.add(
-        SizedBox(
-          height: 250,
-          child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: imageWidgets
-          )
-        ),
-      );
-    }
-
-    return Column(
-        children: elements
-    );
+    return Column(children: elements);
   }
 }

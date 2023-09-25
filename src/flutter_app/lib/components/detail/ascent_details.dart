@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../interfaces/ascent/ascent.dart';
-import '../../components/image_list_view.dart';
 import '../../interfaces/ascent/update_ascent.dart';
 import '../../services/media_service.dart';
 import '../../services/ascent_service.dart';
 import '../add/add_image.dart';
+import '../comment.dart';
+import '../image_list_view_add.dart';
 import '../my_button_styles.dart';
 import '../edit/edit_ascent.dart';
 
@@ -26,7 +27,6 @@ class AscentDetails extends StatefulWidget {
 class _AscentDetailsState extends State<AscentDetails>{
   final MediaService mediaService = MediaService();
   final AscentService ascentService = AscentService();
-
   final ImagePicker picker = ImagePicker();
 
   Future<void> getImage(ImageSource media) async {
@@ -67,37 +67,20 @@ class _AscentDetailsState extends State<AscentDetails>{
   Widget build(BuildContext context) {
     Ascent ascent = widget.ascent;
     List<Widget> elements = [];
-
-    // general info
-    elements.addAll([
-      AscentInfo(ascent: ascent),
-    ]);
-
-    if (ascent.comment.isNotEmpty) {
-      elements.add(Container(
-          margin: const EdgeInsets.all(15.0),
-          padding: const EdgeInsets.all(5.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.blueAccent),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            ascent.comment,
-          )
-      ));
-    }
+    elements.add(AscentInfo(ascent: ascent));
+    if (ascent.comment.isNotEmpty) elements.add(Comment(comment: ascent.comment));
 
     void deleteImageCallback(String mediumId) {
       widget.ascent.mediaIds.remove(mediumId);
       ascentService.editAscent(UpdateAscent(
-          id: widget.ascent.id,
-          mediaIds: widget.ascent.mediaIds
+        id: widget.ascent.id,
+        mediaIds: widget.ascent.mediaIds
       ));
       setState(() {});
     }
 
     if (ascent.mediaIds.isNotEmpty) {
-      elements.add(ImageListView(
+      elements.add(ImageListViewAdd(
         onDelete: deleteImageCallback,
         mediaIds: widget.ascent.mediaIds,
         getImage: getImage,
@@ -105,54 +88,37 @@ class _AscentDetailsState extends State<AscentDetails>{
     } else {
       elements.add(
         ElevatedButton.icon(
-            icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-            label: const Text('Add image'),
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => AddImage(onAddImage: getImage)
-                  )
-              );
-            },
-            style: MyButtonStyles.rounded
+          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+          label: const Text('Add image'),
+          onPressed: () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => AddImage(onAddImage: getImage))
+          ),
+          style: ButtonStyle(shape: MyButtonStyles.rounded)
         ),
       );
     }
-    elements.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // delete ascent button
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ascentService.deleteAscent(ascent, widget.pitchId, widget.ofMultiPitch);
-                widget.onDelete.call(ascent);
-              },
-              icon: const Icon(Icons.delete),
-            ),
-            IconButton(
-              onPressed: () => editAscentDialog(),
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        )
-    );
+    elements.add(Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+            ascentService.deleteAscent(ascent, widget.pitchId, widget.ofMultiPitch);
+            widget.onDelete.call(ascent);
+          },
+          icon: const Icon(Icons.delete),
+        ),
+        IconButton(
+          onPressed: () => editAscentDialog(),
+          icon: const Icon(Icons.edit),
+        ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        ),
+      ],
+    ));
 
-    return Stack(
-        children: <Widget>[
-          Container(
-              padding: const EdgeInsets.all(20),
-              child: ListView(
-                  children: elements
-              )
-          )
-        ]
-    );
+    return Stack(children: [Container(padding: const EdgeInsets.all(20), child: ListView(children: elements))]);
   }
 }

@@ -27,14 +27,12 @@ class _AddAscentToSinglePitchRouteState extends State<AddAscentToSinglePitchRout
   final TextEditingController controllerDate = TextEditingController();
 
   SinglePitchRoute? singlePitchRouteValue;
-  AscentStyle? ascentStyleValue;
-  AscentType? ascentTypeValue;
+  AscentStyle ascentStyleValue = AscentStyle.lead;
+  AscentType ascentTypeValue = AscentType.redPoint;
 
   @override
   void initState(){
     singlePitchRouteValue = widget.singlePitchRoutes[0];
-    ascentStyleValue = AscentStyle.lead;
-    ascentTypeValue = AscentType.redPoint;
     controllerDate.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
     super.initState();
   }
@@ -42,9 +40,7 @@ class _AddAscentToSinglePitchRouteState extends State<AddAscentToSinglePitchRout
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Text('Add a new ascent'),
       content: SingleChildScrollView(
         child: Form(
@@ -53,23 +49,18 @@ class _AddAscentToSinglePitchRouteState extends State<AddAscentToSinglePitchRout
             mainAxisSize: MainAxisSize.min,
             children: [
               DropdownButton<SinglePitchRoute>(
-                  value: singlePitchRouteValue,
-                  items: widget.singlePitchRoutes.map<DropdownMenuItem<SinglePitchRoute>>((SinglePitchRoute singlePitchRoute) {
-                    return DropdownMenuItem<SinglePitchRoute>(
-                      value: singlePitchRoute,
-                      child: Text(singlePitchRoute.name),
-                    );
-                  }).toList(),
-                  onChanged: (SinglePitchRoute? singlePitchRoute) {
-                    setState(() {
-                      singlePitchRouteValue = singlePitchRoute!;
-                    });
-                  }
+                value: singlePitchRouteValue,
+                items: widget.singlePitchRoutes.map<DropdownMenuItem<SinglePitchRoute>>((SinglePitchRoute singlePitchRoute) {
+                  return DropdownMenuItem<SinglePitchRoute>(
+                    value: singlePitchRoute,
+                    child: Text(singlePitchRoute.name),
+                  );
+                }).toList(),
+                onChanged: (SinglePitchRoute? singlePitchRoute) => setState(() => singlePitchRouteValue = singlePitchRoute!)
               ),
               TextFormField(
                 controller: controllerComment,
-                decoration: const InputDecoration(
-                    hintText: "comment", labelText: "comment"),
+                decoration: const InputDecoration(hintText: "comment", labelText: "comment"),
               ),
               TextFormField(
                 controller: controllerDate,
@@ -80,47 +71,37 @@ class _AddAscentToSinglePitchRouteState extends State<AddAscentToSinglePitchRout
                 readOnly: true,
                 onTap: () async {
                   DateTime? pickedDate = await showDatePicker(
-                      context: context, initialDate: DateTime.now(),
-                      firstDate: DateTime(1923),
-                      lastDate: DateTime(2123)
+                    context: context, initialDate: DateTime.now(),
+                    firstDate: DateTime(1923),
+                    lastDate: DateTime(2123)
                   );
                   if(pickedDate != null ){
                     String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-                    setState(() {
-                      controllerDate.text = formattedDate; //set output date to TextField value.
-                    });
+                    setState(() => controllerDate.text = formattedDate);
                   }
                 },
               ),
               // ascentStyle
               DropdownButton<AscentStyle>(
-                  value: ascentStyleValue,
-                  items: AscentStyle.values.map<DropdownMenuItem<AscentStyle>>((AscentStyle ascentStyle) {
-                    return DropdownMenuItem<AscentStyle>(
-                      value: ascentStyle,
-                      child: Text("${ascentStyle.toEmoji()} ${ascentStyle.name}"),
-                    );
-                  }).toList(),
-                  onChanged: (AscentStyle? ascentStyle) {
-                    setState(() {
-                      ascentStyleValue = ascentStyle!;
-                    });
-                  }
+                value: ascentStyleValue,
+                items: AscentStyle.values.map<DropdownMenuItem<AscentStyle>>((AscentStyle ascentStyle) {
+                  return DropdownMenuItem<AscentStyle>(
+                    value: ascentStyle,
+                    child: Text("${ascentStyle.toEmoji()} ${ascentStyle.name}"),
+                  );
+                }).toList(),
+                onChanged: (AscentStyle? ascentStyle) => setState(() => ascentStyleValue = ascentStyle!)
               ),
               // ascentType
               DropdownButton<AscentType>(
-                  value: ascentTypeValue,
-                  items: AscentType.values.map<DropdownMenuItem<AscentType>>((AscentType ascentType) {
-                    return DropdownMenuItem<AscentType>(
-                      value: ascentType,
-                      child: Text("${ascentType.toEmoji()} ${ascentType.name}"),
-                    );
-                  }).toList(),
-                  onChanged: (AscentType? ascentType) {
-                    setState(() {
-                      ascentTypeValue = ascentType!;
-                    });
-                  }
+                value: ascentTypeValue,
+                items: AscentType.values.map<DropdownMenuItem<AscentType>>((AscentType ascentType) {
+                  return DropdownMenuItem<AscentType>(
+                    value: ascentType,
+                    child: Text("${ascentType.toEmoji()} ${ascentType.name}"),
+                  );
+                }).toList(),
+                onChanged: (AscentType? ascentType) => setState(() => ascentTypeValue = ascentType!)
               ),
             ],
           ),
@@ -131,22 +112,18 @@ class _AddAscentToSinglePitchRouteState extends State<AddAscentToSinglePitchRout
           onPressed: () async {
             bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
-              final int? ascentStyleIndex = ascentStyleValue?.index;
-              final int? ascentTypeIndex = ascentTypeValue?.index;
-              if (ascentStyleIndex != null && ascentTypeIndex != null) {
-                CreateAscent ascent = CreateAscent(
-                  comment: controllerComment.text,
-                  date: controllerDate.text,
-                  style: ascentStyleIndex,
-                  type: ascentTypeIndex,
-                );
-                final singlePitchRouteValue = this.singlePitchRouteValue;
-                if (singlePitchRouteValue != null) {
-                  Ascent? createdAscent = await ascentService.createAscentForSinglePitchRoute(singlePitchRouteValue.id, ascent, result);
-                  widget.onAdd?.call(createdAscent!);
-                }
-                setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
+              CreateAscent ascent = CreateAscent(
+                comment: controllerComment.text,
+                date: controllerDate.text,
+                style: ascentStyleValue.index,
+                type: ascentTypeValue.index,
+              );
+              final singlePitchRouteValue = this.singlePitchRouteValue;
+              if (singlePitchRouteValue != null) {
+                Ascent? createdAscent = await ascentService.createAscentForSinglePitchRoute(singlePitchRouteValue.id, ascent, result);
+                widget.onAdd?.call(createdAscent!);
               }
+              setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },
           child: const Text("Save"))

@@ -1,6 +1,8 @@
 import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
 
 class UpdateSpot extends UpdateMyBaseInterface{
+  static const String boxName = 'edit_spots';
+
   List<String>? singlePitchRouteIds;
   List<String>? multiPitchRouteIds;
   String? comment;
@@ -60,6 +62,7 @@ class UpdateSpot extends UpdateMyBaseInterface{
     );
   }
 
+  @override
   Map toJson() => {
     "media_ids": mediaIds,
     "single_pitch_route_ids": singlePitchRouteIds,

@@ -1,18 +1,22 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../components/add/add_image.dart';
+import '../../components/comment.dart';
+import '../../components/image_list_view_add.dart';
 import '../../components/info/pitch_info.dart';
-import '../../components/my_skeleton.dart';
+import '../../components/my_button_styles.dart';
+import '../../components/rating.dart';
 import '../../interfaces/pitch/pitch.dart';
+import '../../interfaces/pitch/update_pitch.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 
 class PitchDetails extends StatefulWidget {
-  const PitchDetails({super.key, required this.pitch});
+  const PitchDetails({super.key, required this.pitch, required this.onNetworkChange});
 
   final Pitch pitch;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => _PitchDetailsState();
@@ -72,99 +76,33 @@ class _PitchDetailsState extends State<PitchDetails>{
     Pitch pitch = widget.pitch;
     List<Widget> elements = [];
 
-    // general info
-    elements.add(PitchInfo(pitch: pitch));
-    // rating
-    List<Widget> ratingRowElements = [];
+    elements.add(PitchInfo(pitch: pitch, onNetworkChange: widget.onNetworkChange));
+    elements.add(Rating(rating: pitch.rating));
 
-    for (var i = 0; i < 5; i++){
-      if (pitch.rating > i) {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
-      } else {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
-      }
-    }
+    if (pitch.comment.isNotEmpty) elements.add(Comment(comment: pitch.comment));
 
-    elements.add(Center(child: Padding(
-        padding: const EdgeInsets.all(10),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: ratingRowElements,
-        )
-    )));
-
-    if (pitch.comment.isNotEmpty) {
-      elements.add(Container(
-          margin: const EdgeInsets.all(15.0),
-          padding: const EdgeInsets.all(5.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.blueAccent),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            pitch.comment,
-          )
+    void deleteImageCallback(String mediumId) {
+      widget.pitch.mediaIds.remove(mediumId);
+      pitchService.editPitch(UpdatePitch(
+        id: widget.pitch.id,
+        mediaIds: widget.pitch.mediaIds
       ));
+      setState(() {});
     }
-    // images
-    if (pitch.mediaIds.isNotEmpty) {
-      List<Widget> imageWidgets = [];
-      Future<List<String>> futureMediaUrls = fetchURLs();
 
-      imageWidgets.add(
-        FutureBuilder<List<String>>(
-          future: futureMediaUrls,
-          builder: (context, snapshot) {
-            if (snapshot.data != null){
-              List<String> urls = snapshot.data!;
-              List<Widget> images = [];
-              for (var url in urls){
-                images.add(
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: CachedNetworkImage(
-                        imageUrl: url,
-                        fit: BoxFit.fitHeight,
-                        placeholder: (context, url) => const MySkeleton(),
-                        errorWidget: (context, url, error) => const Icon(Icons.error),
-                      )
-                    ),
-                  )
-                );
-              }
-              return Container(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: images
-                  )
-              );
-            }
-            List<Widget> skeletons = [];
-            for (var i = 0; i < pitch.mediaIds.length; i++){
-              skeletons.add(const MySkeleton());
-            }
-            return Container(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: skeletons
-                )
-            );
-          }
-        )
-      );
-      elements.add(
-        SizedBox(
-          height: 250,
-          child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: imageWidgets
-          )
-        ),
-      );
+    if (pitch.mediaIds.isNotEmpty) {
+      elements.add(ImageListViewAdd(
+        onDelete: deleteImageCallback,
+        mediaIds: pitch.mediaIds,
+        getImage: getImage,
+      ));
+    } else {
+      elements.add(ElevatedButton.icon(
+        icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+        label: const Text('Add image'),
+        onPressed: () => addImageDialog(),
+        style: ButtonStyle(shape: MyButtonStyles.rounded)
+      ));
     }
 
     return Column(

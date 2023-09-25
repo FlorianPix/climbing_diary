@@ -1,6 +1,7 @@
 import 'package:climbing_diary/interfaces/route/update_route.dart';
 
 class UpdateMultiPitchRoute extends UpdateClimbingRoute {
+  static const String boxName = 'edit_multi_pitch_routes';
   List<String>? pitchIds;
 
   UpdateMultiPitchRoute({

@@ -37,9 +37,7 @@ class _AddTripState extends State<AddTrip>{
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Text('Add a new trip'),
       content: SingleChildScrollView(
         child: Form(
@@ -48,14 +46,9 @@ class _AddTripState extends State<AddTrip>{
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
-                validator: (value) {
-                  return value!.isNotEmpty
-                    ? null
-                    : "please add a name";
-                },
+                validator: (value) => value!.isNotEmpty ? null : "please add a name",
                 controller: controllerName,
-                decoration: const InputDecoration(
-                    hintText: "name of the trip", labelText: "name"),
+                decoration: const InputDecoration(hintText: "name of the trip", labelText: "name"),
               ),
               TextFormField(
                 controller: controllerDateRange,
@@ -66,9 +59,9 @@ class _AddTripState extends State<AddTrip>{
                 readOnly: true,
                 onTap: () async {
                   DateTimeRange? pickedDateRange = await showDateRangePicker(
-                      context: context, initialDateRange: DateTimeRange(start: DateTime.now(), end: DateTime.now()),
-                      firstDate: DateTime(DateTime.now().year - 100),
-                      lastDate: DateTime(DateTime.now().year + 100)
+                    context: context, initialDateRange: DateTimeRange(start: DateTime.now(), end: DateTime.now()),
+                    firstDate: DateTime(DateTime.now().year - 100),
+                    lastDate: DateTime(DateTime.now().year + 100)
                   );
                   if(pickedDateRange != null ){
                     String formattedStartDate = DateFormat('yyyy-MM-dd').format(pickedDateRange.start);
@@ -99,16 +92,11 @@ class _AddTripState extends State<AddTrip>{
                 max: 5,
                 divisions: 5,
                 label: currentSliderValue.round().toString(),
-                onChanged: (value) {
-                  setState(() {
-                    currentSliderValue = value;
-                  });
-                },
+                onChanged: (value) => setState(() => currentSliderValue = value),
               ),
               TextFormField(
                 controller: controllerComment,
-                decoration: const InputDecoration(
-                  hintText: "comment", labelText: "comment"),
+                decoration: const InputDecoration(hintText: "comment", labelText: "comment"),
               ),
             ],
           ),
@@ -127,9 +115,7 @@ class _AddTripState extends State<AddTrip>{
                 startDate: controllerStartDate.text,
               );
               Trip? createdTrip = await tripService.createTrip(trip, result);
-              if (createdTrip != null) {
-                widget.onAdd.call(createdTrip);
-              }
+              if (createdTrip != null) widget.onAdd.call(createdTrip);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },

@@ -29,33 +29,14 @@ class _MainLoggedInState extends State<MainLoggedIn>{
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        actions: <Widget>[
+        actions: [
           IconButton(
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const Settings(),
-                  )
-              );
-            },
-            icon: const Icon(
-              Icons.settings,
-              color: Colors.black,
-              size: 30.0,
-              semanticLabel: 'settings',
-            ),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Settings())),
+            icon: const Icon(Icons.settings, color: Colors.black, size: 30.0, semanticLabel: 'settings'),
           ),
           IconButton(
-            onPressed: () {
-              widget.logout.call();
-            },
-            icon: const Icon(
-              Icons.logout,
-              color: Colors.black,
-              size: 30.0,
-              semanticLabel: 'logout',
-            ),
+            onPressed: () => widget.logout.call(),
+            icon: const Icon(Icons.logout, color: Colors.black, size: 30.0, semanticLabel: 'logout'),
           )
         ],
       ),
@@ -65,27 +46,13 @@ class _MainLoggedInState extends State<MainLoggedIn>{
         currentIndex: pageIndex,
         onTap: (index) {
           widget.onIndexChanged.call(index);
-          setState(() {
-            pageIndex = index;
-          });
+          setState(() => pageIndex = index);
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Map',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu_book),
-            label: 'Diary',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'List',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.graphic_eq),
-            label: 'Statistic',
-          )
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Diary'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'List'),
+          BottomNavigationBarItem(icon: Icon(Icons.graphic_eq), label: 'Statistic')
         ],
       ),
     );

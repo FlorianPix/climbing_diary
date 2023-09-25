@@ -7,13 +7,13 @@ import '../../services/location_service.dart';
 
 
 class SaveLocationNoConnectionPage extends StatefulWidget {
-  const SaveLocationNoConnectionPage({super.key, required this.onAdd});
+  const SaveLocationNoConnectionPage({super.key, required this.onAdd, required this.onNetworkChange});
 
   final ValueSetter<Spot> onAdd;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
-  State<SaveLocationNoConnectionPage> createState() =>
-      _SaveLocationNoConnectionPage();
+  State<SaveLocationNoConnectionPage> createState() => _SaveLocationNoConnectionPage();
 }
 
 class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> {
@@ -25,38 +25,31 @@ class _SaveLocationNoConnectionPage extends State<SaveLocationNoConnectionPage> 
   }
 
   @override
-  //Just a test case for "Save spot" - feature
   Widget build(BuildContext context) {
     return FutureBuilder<Position>(
       future: locationService.getPosition(),
       builder: (context, AsyncSnapshot<Position> snapshot) {
-        if (snapshot.hasData) {
-          Position position = snapshot.data!;
-          return Scaffold(
-            body: AddSpot(
-              onAdd: widget.onAdd
+        if (snapshot.hasError) return Text(snapshot.error.toString());
+        if (!snapshot.hasData) {
+          return Scaffold(body: Center(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: const [Padding(
+              padding: EdgeInsets.all(50),
+              child: SizedBox(
+                height: 100.0,
+                width: 100.0,
+                child: CircularProgressIndicator(),
+              ),
             )
-          );
-        } else if (snapshot.hasError) {
-          return Text('${snapshot.error}');
+            ],
+          )));
         }
-        return Scaffold(
-          body: Center (
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: const <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(50),
-                  child: SizedBox(
-                    height: 100.0,
-                    width: 100.0,
-                    child: CircularProgressIndicator(),
-                  ),
-                )
-              ],
-            )
-          ));
-        }
+        Position position = snapshot.data!;
+        return Scaffold(body: AddSpot(
+          onAdd: widget.onAdd,
+          onNetworkChange: widget.onNetworkChange,
+        ));
+      }
     );
   }
 }

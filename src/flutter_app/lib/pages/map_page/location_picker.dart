@@ -27,42 +27,35 @@ class _NavigationScreenPage extends State<LocationPicker> {
     return FutureBuilder<Position>(
         future: locationService.getPosition(),
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            Position position = snapshot.data!;
-            return Scaffold(
-                body: OpenStreetMapSearchAndPick(
-                    center: LatLong(position.latitude, position.longitude),
-                    buttonColor: Theme.of(context).colorScheme.primary,
-                    buttonText: 'Set location',
-                    onPicked: (pickedData) {
-                      setState(() {
-                        address = pickedData.address;
-                        widget.onAdd.call([address.toString(), pickedData.latLong.latitude.toString(), pickedData.latLong.longitude.toString()]);
-                        Navigator.pop(context);
-                      });
-                    }
-                )
-            );
-          } else if (snapshot.hasError) {
-            return Text('${snapshot.error}');
+          if (snapshot.hasError) return Text(snapshot.error.toString());
+          if (!snapshot.hasData) {
+            return Scaffold(body: Center (child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: const [Padding(
+                padding: EdgeInsets.all(50),
+                child: SizedBox(
+                  height: 100.0,
+                  width: 100.0,
+                  child: CircularProgressIndicator(),
+                ),
+              )],
+            )));
           }
-          return Scaffold(
-              body: Center (
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: const <Widget>[
-                      Padding(
-                        padding: EdgeInsets.all(50),
-                        child: SizedBox(
-                          height: 100.0,
-                          width: 100.0,
-                          child: CircularProgressIndicator(),
-                        ),
-                      )
-                    ],
-                  )
-              )
-          );
+          Position position = snapshot.data!;
+          return Scaffold(body: OpenStreetMapSearchAndPick(
+            center: LatLong(position.latitude, position.longitude),
+            buttonColor: Theme.of(context).colorScheme.primary,
+            buttonText: 'Set location',
+            onPicked: (pickedData) => setState(() {
+              address = pickedData.addressName;
+              widget.onAdd.call([
+                address.toString(),
+                pickedData.latLong.latitude.toString(),
+                pickedData.latLong.longitude.toString()
+              ]);
+              Navigator.pop(context);
+            })
+          ));
         }
     );
   }

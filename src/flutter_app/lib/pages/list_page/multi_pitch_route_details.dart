@@ -1,19 +1,24 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:climbing_diary/components/my_text_styles.dart';
+import 'package:climbing_diary/components/rating.dart';
+import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../components/add/add_image.dart';
+import '../../components/comment.dart';
+import '../../components/image_list_view_add.dart';
 import '../../components/info/multi_pitch_route_info.dart';
-import '../../components/my_skeleton.dart';
+import '../../components/my_button_styles.dart';
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../../services/media_service.dart';
+import '../../services/multi_pitch_route_service.dart';
 import '../../services/pitch_service.dart';
-import '../../services/route_service.dart';
 
 class MultiPitchRouteDetails extends StatefulWidget {
-  const MultiPitchRouteDetails({super.key, required this.route});
+  const MultiPitchRouteDetails({super.key, required this.route, required this.onNetworkChange});
 
   final MultiPitchRoute route;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => _MultiPitchRouteDetailsState();
@@ -21,7 +26,7 @@ class MultiPitchRouteDetails extends StatefulWidget {
 
 class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
   final MediaService mediaService = MediaService();
-  final RouteService routeService = RouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
   final PitchService pitchService = PitchService();
 
   Future<List<String>> fetchURLs() {
@@ -41,7 +46,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         MultiPitchRoute multiPitchRoute = widget.route;
         multiPitchRoute.mediaIds.add(mediaId);
-        routeService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
+        multiPitchRouteService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
       }
     } else {
       List<XFile> images = await picker.pickMultiImage();
@@ -49,7 +54,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         MultiPitchRoute multiPitchRoute = widget.route;
         multiPitchRoute.mediaIds.add(mediaId);
-        routeService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
+        multiPitchRouteService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
       }
     }
     setState(() {});
@@ -58,9 +63,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
   void addImageDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AddImage(onAddImage: getImage);
-      }
+      builder: (BuildContext context) => AddImage(onAddImage: getImage)
     );
   }
 
@@ -74,119 +77,40 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
     List<Widget> elements = [];
     MultiPitchRoute route = widget.route;
 
-    // general info
     elements.addAll([
-      Text(
-        route.name,
-        style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600
-        ),
-      ),
+      Text(route.name, style: MyTextStyles.title),
       MultiPitchInfo(
-          pitchIds: route.pitchIds
+        pitchIds: route.pitchIds,
+        onNetworkChange: widget.onNetworkChange,
       ),
-      Text(
-        route.location,
-        style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400
-        ),
-      )]);
-    // rating
-    List<Widget> ratingRowElements = [];
+      Text(route.location, style: MyTextStyles.description),
+      Rating(rating: route.rating)
+    ]);
+    if (route.comment.isNotEmpty) Comment(comment: route.comment);
 
-    for (var i = 0; i < 5; i++){
-      if (route.rating > i) {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.pink));
-      } else {
-        ratingRowElements.add(const Icon(Icons.favorite, size: 30.0, color: Colors.grey));
-      }
+    void deleteImageCallback(String mediumId) {
+      widget.route.mediaIds.remove(mediumId);
+      multiPitchRouteService.editMultiPitchRoute(UpdateMultiPitchRoute(
+        id: widget.route.id,
+        mediaIds: widget.route.mediaIds
+      ));
+      setState(() {});
     }
 
-    elements.add(Center(child: Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child:Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: ratingRowElements,
-        )
-    )));
-
-    if (route.comment.isNotEmpty) {
-      elements.add(Container(
-          margin: const EdgeInsets.all(15.0),
-          padding: const EdgeInsets.all(5.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.blueAccent),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            route.comment,
-          )
+    if (route.mediaIds.isNotEmpty) {
+      elements.add(ImageListViewAdd(
+        onDelete: deleteImageCallback,
+        mediaIds: route.mediaIds,
+        getImage: getImage
+      ));
+    } else {
+      elements.add(ElevatedButton.icon(
+        icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+        label: const Text('Add image'),
+        onPressed: () => addImageDialog(),
+        style: ButtonStyle(shape: MyButtonStyles.rounded)
       ));
     }
-    // images
-    if (route.mediaIds.isNotEmpty) {
-      List<Widget> imageWidgets = [];
-      Future<List<String>> futureMediaUrls = fetchURLs();
-
-      imageWidgets.add(
-        FutureBuilder<List<String>>(
-          future: futureMediaUrls,
-          builder: (context, snapshot) {
-            if (snapshot.data != null){
-              List<String> urls = snapshot.data!;
-              List<Widget> images = [];
-              for (var url in urls){
-                images.add(
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: CachedNetworkImage(
-                        imageUrl: url,
-                        fit: BoxFit.fitHeight,
-                        placeholder: (context, url) => const MySkeleton(),
-                        errorWidget: (context, url, error) => const Icon(Icons.error),
-                      )
-                    ),
-                  )
-                );
-              }
-              return Container(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: images
-                  )
-              );
-            }
-            List<Widget> skeletons = [];
-            for (var i = 0; i < route.mediaIds.length; i++){
-              skeletons.add(const MySkeleton());
-            }
-            return Container(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: skeletons
-                )
-            );
-          }
-        )
-      );
-      elements.add(
-        SizedBox(
-          height: 250,
-          child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: imageWidgets
-          )
-        ),
-      );
-    }
-    return Column(
-        children: elements
-    );
+    return Column(children: elements);
   }
 }

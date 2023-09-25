@@ -1,6 +1,8 @@
 import '../grade.dart';
 
 class CreatePitch {
+  static const String boxName = 'create_pitches';
+
   final String? comment;
   final Grade grade;
   final int length;
@@ -47,4 +49,20 @@ class CreatePitch {
     "num": num,
     "rating": rating,
   };
+
+  @override
+  int get hashCode {
+    return
+      comment.hashCode ^
+      grade.hashCode ^
+      length.hashCode ^
+      name.hashCode ^
+      num.hashCode ^
+      rating.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
+  }
 }

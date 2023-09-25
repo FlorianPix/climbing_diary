@@ -8,6 +8,7 @@ import 'package:climbing_diary/pages/map_page/map_page.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'components/my_notifications.dart';
 import 'config/environment.dart';
 import 'pages/diary_page/diary_page.dart';
 import 'pages/statistic_page/statistic_page.dart';
@@ -25,9 +26,8 @@ Future<void> main() async {
   );
   Environment().initConfig(environment);
   WidgetsFlutterBinding.ensureInitialized();
-  final CacheService cacheService = CacheService();
   final applicationDocumentDir = await getApplicationDocumentsDirectory();
-  await cacheService.initCache(applicationDocumentDir.path);
+  await CacheService.initCache(applicationDocumentDir.path);
   await setup();
   runApp(const OverlaySupport.global(child: MyApp()));
 }
@@ -38,12 +38,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: const MaterialColor(0xffff7f50, MyColors.main),
-      ),
+      title: 'Climbing diary',
+      theme: ThemeData(primarySwatch: const MaterialColor(0xffff7f50, MyColors.main)),
       initialRoute: '/',
       routes: {'/': (context) => const MyHomePage(title: 'Climbing diary')},
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -64,94 +63,87 @@ class _MyHomePageState extends State<MyHomePage> {
   final _prefsLocator = getIt.get<SharedPreferenceHelper>();
 
   late Auth0 auth0;
-  late bool online = true;
   late SharedPreferences prefs;
-
+  bool online = false;
+  bool continueOffline = false;
   int currentIndex = 0;
-  final screens = [
-    const MapPage(),
-    const DiaryPage(),
-    const ListPage(),
-    const StatisticPage()
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    auth0 = Auth0(
-        'climbing-diary.eu.auth0.com', 'FnK5PkMpjuoH5uJ64X70dlNBuBzPVynE');
-    checkConnection();
-  }
 
   Future<void> login() async {
-    var credentials = await auth0.webAuthentication(scheme: 'demo').login(
+    try{
+      Credentials credentials = await auth0.webAuthentication(scheme: 'demo').login(
         audience: 'climbing-diary-API',
         scopes: {'profile', 'email', 'read:diary', 'write:diary', 'read:media', 'write:media'}
-    );
-
-    setState(() {
-      _user = credentials.user;
-      _credentials = credentials;
-      _prefsLocator.setUserToken(userToken: 'Bearer ${credentials.accessToken}');
-    });
+      );
+      setState(() {
+        _user = credentials.user;
+        _credentials = credentials;
+        _prefsLocator.setUserToken(userToken: 'Bearer ${credentials.accessToken}');
+      });
+    } catch (e) {
+      if (e is WebAuthenticationException){
+        MyNotifications.showNegativeNotification('Login was cancelled');
+      }
+    }
   }
 
   Future<void> logout() async {
     await auth0.webAuthentication(scheme: 'demo').logout();
-
     setState(() {_user = null;});
   }
 
   void onIndexChanged(int index){
-    setState(() {
-      currentIndex = index;
-    });
+    setState(() => currentIndex = index);
   }
 
-  Future<bool> checkConnection() async {
-    return await InternetConnectionChecker().hasConnection;
+  void onNetworkChange(bool online){
+    setState(() => this.online = online);
+  }
+
+  void checkConnection() async {
+    await InternetConnectionChecker().hasConnection.then((value) => setState(() => online = value));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    auth0 = Auth0('climbing-diary.eu.auth0.com', 'FnK5PkMpjuoH5uJ64X70dlNBuBzPVynE');
+    checkConnection();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: checkConnection(),
-      builder: (context, AsyncSnapshot<bool> snapshot) {
-        if (snapshot.hasData) {
-          var online = snapshot.data!;
-          if (online) {
-            // online
-            if (_user != null) {
-              // logged in
-              return MainLoggedIn(
-                title: widget.title,
-                pages: screens,
-                pageIndex: currentIndex,
-                logout: logout,
-                onIndexChanged: onIndexChanged,
-              );
-            } else {
-              // not logged in
-              return MainLoggedOut(
-                title: widget.title,
-                login: login,
-              );
-            }
-          }
-          else {
-            // offline
-            return MainOffline(
-              title: widget.title,
-              pages: screens,
-              pageIndex: currentIndex,
-              onIndexChanged: onIndexChanged,
-            );
-          }
-        } else if (snapshot.hasError) {
-          return Text('${snapshot.error}');
-        }
-        return const CircularProgressIndicator();
-      }
+    List<Widget> pages = [
+      MapPage(onNetworkChange: onNetworkChange),
+      DiaryPage(onNetworkChange: onNetworkChange),
+      ListPage(onNetworkChange: onNetworkChange),
+      StatisticPage(onNetworkChange: onNetworkChange)
+    ];
+    if (!online || continueOffline) {
+      // offline
+      return MainOffline(
+        title: widget.title,
+        pages: pages,
+        pageIndex: currentIndex,
+        onIndexChanged: onIndexChanged,
+        continueOffline: (value) => setState(() => continueOffline = value),
+      );
+    }
+    // online
+    if (_user == null) {
+      // not logged in
+      return MainLoggedOut(
+          title: widget.title,
+          login: login,
+          continueOffline: (value) => setState(() => continueOffline = value),
+      );
+    }
+    // logged in
+    return MainLoggedIn(
+      title: widget.title,
+      pages: pages,
+      pageIndex: currentIndex,
+      logout: logout,
+      onIndexChanged: onIndexChanged,
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 
@@ -8,21 +9,24 @@ import '../interfaces/grading_system.dart';
 import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../interfaces/pitch/pitch.dart';
 import '../interfaces/single_pitch_route/single_pitch_route.dart';
+import '../services/multi_pitch_route_service.dart';
 import '../services/pitch_service.dart';
-import '../services/route_service.dart';
+import '../services/single_pitch_route_service.dart';
 
 class GradeDistribution extends StatefulWidget{
-  const GradeDistribution({super.key, required this.multiPitchRouteIds, required this.singlePitchRouteIds});
+  const GradeDistribution({super.key, required this.multiPitchRouteIds, required this.singlePitchRouteIds, required this.onNetworkChange});
 
   final List<String> multiPitchRouteIds;
   final List<String> singlePitchRouteIds;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => _GradeDistributionState();
 }
 
 class _GradeDistributionState extends State<GradeDistribution> {
-  final RouteService routeService = RouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final PitchService pitchService = PitchService();
   Map<int, double> distribution = {
     0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0,
@@ -49,33 +53,38 @@ class _GradeDistributionState extends State<GradeDistribution> {
       _distribution[i] = 0;
     }
 
-    List<SinglePitchRoute> singlePitchRoutes = await routeService.getSinglePitchRoutesOfIds(true, widget.singlePitchRouteIds);
+    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutesOfIds(online, widget.singlePitchRouteIds);
     for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
       int gradeIndex = Grade.translationTable[singlePitchRoute.grade.system.index].indexOf(singlePitchRoute.grade.grade);
       _distribution[gradeIndex] = _distribution[gradeIndex]! + 1;
     }
 
-    List<MultiPitchRoute> multiPitchRoutes = await routeService.getMultiPitchRoutesOfIds(true, widget.multiPitchRouteIds);
+    List<MultiPitchRoute> multiPitchRoutes = await multiPitchRouteService.getMultiPitchRoutesOfIds(online, widget.multiPitchRouteIds);
     for (MultiPitchRoute multiPitchRoute in multiPitchRoutes) {
       int maxGradeIndex = -1;
-      List<Pitch> pitches = await pitchService.getPitchesOfIds(true, multiPitchRoute.pitchIds);
+      List<Pitch> pitches = await pitchService.getPitchesOfIds(online, multiPitchRoute.pitchIds);
       for (Pitch pitch in pitches) {
         int gradeIndex = Grade.translationTable[pitch.grade.system.index].indexOf(pitch.grade.grade);
         maxGradeIndex = math.max(maxGradeIndex, gradeIndex);
       }
-      if (maxGradeIndex >= 0) {
-        _distribution[maxGradeIndex] = _distribution[maxGradeIndex]! + 1;
-      }
+      if (maxGradeIndex >= 0) _distribution[maxGradeIndex] = _distribution[maxGradeIndex]! + 1;
     }
+    setState(() => distribution = _distribution);
+  }
 
-    setState(() {
-      distribution = _distribution;
+  bool online = false;
+
+  void checkConnection() async {
+    await InternetConnectionChecker().hasConnection.then((value) {
+      widget.onNetworkChange.call(value);
+      setState(() => online = value);
     });
   }
 
   @override
   void initState(){
     super.initState();
+    checkConnection();
     fetchDistribution();
     fetchGradingSystemPreference();
   }
@@ -146,37 +155,32 @@ class _GradeDistributionState extends State<GradeDistribution> {
       tooltipPadding: EdgeInsets.zero,
       tooltipMargin: 8,
       getTooltipItem: (
-          BarChartGroupData group,
-          int groupIndex,
-          BarChartRodData rod,
-          int rodIndex,
-          ) {
-        return BarTooltipItem(
-          rod.toY.round().toString(),
-          const TextStyle(
-            color: Colors.cyan,
-            fontWeight: FontWeight.bold,
-          ),
-        );
-      },
+        BarChartGroupData group,
+        int groupIndex,
+        BarChartRodData rod,
+        int rodIndex,
+      ) => BarTooltipItem(
+        rod.toY.round().toString(),
+        const TextStyle(color: Colors.cyan, fontWeight: FontWeight.bold),
+      ),
     ),
   );
 
   @override
   Widget build(BuildContext context) {
     return Padding(padding: const EdgeInsets.only(top: 20),
-        child: SizedBox(
-            height: 50 + (widget.singlePitchRouteIds.length + widget.multiPitchRouteIds.length).toDouble(),
-            child: BarChart(BarChartData(
-              barTouchData: barTouchData,
-              titlesData: titlesData,
-              borderData: FlBorderData(show: false),
-              barGroups: barGroups(distribution),
-              gridData: FlGridData(show: false),
-              alignment: BarChartAlignment.center,
-              maxY: (widget.singlePitchRouteIds.length + widget.multiPitchRouteIds.length).toDouble(),
-            ))
-        )
+      child: SizedBox(
+        height: 50 + (widget.singlePitchRouteIds.length + widget.multiPitchRouteIds.length).toDouble(),
+        child: BarChart(BarChartData(
+          barTouchData: barTouchData,
+          titlesData: titlesData,
+          borderData: FlBorderData(show: false),
+          barGroups: barGroups(distribution),
+          gridData: FlGridData(show: false),
+          alignment: BarChartAlignment.center,
+          maxY: (widget.singlePitchRouteIds.length + widget.multiPitchRouteIds.length).toDouble(),
+        ))
+      )
     );
   }
 }

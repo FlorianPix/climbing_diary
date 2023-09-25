@@ -4,9 +4,7 @@ import 'base_config.dart';
 import 'dev_config.dart';
 
 class Environment {
-  factory Environment() {
-    return _singleton;
-  }
+  factory Environment() => _singleton;
 
   Environment._internal();
 

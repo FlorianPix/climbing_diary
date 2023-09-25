@@ -25,7 +25,6 @@ class AdminService {
       }
       // TODO delete from cache
       MyNotifications.showPositiveNotification('All your images were deleted');
-      // TODO delete from cache;
     } catch (e) {
       if (e is DioError) {
         if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){

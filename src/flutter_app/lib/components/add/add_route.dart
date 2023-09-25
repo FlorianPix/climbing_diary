@@ -8,9 +8,10 @@ import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../../interfaces/single_pitch_route/create_single_pitch_route.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/spot/spot.dart';
-import '../../services/route_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
+import '../../services/multi_pitch_route_service.dart';
+import '../../services/single_pitch_route_service.dart';
 import '../my_text_styles.dart';
 
 class AddRoute extends StatefulWidget {
@@ -26,7 +27,8 @@ class AddRoute extends StatefulWidget {
 
 class _AddRouteState extends State<AddRoute>{
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final RouteService routeService = RouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   final TextEditingController controllerComment = TextEditingController();
   final TextEditingController controllerLocation = TextEditingController();
   final TextEditingController controllerName = TextEditingController();
@@ -47,37 +49,24 @@ class _AddRouteState extends State<AddRoute>{
   Widget build(BuildContext context) {
     Spot spot = widget.spot;
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Text('Add a new route'),
-      content: SingleChildScrollView(
-        child: Form(
+      content: SingleChildScrollView(child: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                spot.name,
-                style: MyTextStyles.title,
-              ),
+              Text(spot.name, style: MyTextStyles.title),
               TextFormField(
-                validator: (value) {
-                  return value!.isNotEmpty ? null : "please add a name";
-                },
+                validator: (value) => value!.isNotEmpty ? null : "please add a name",
                 controller: controllerName,
-                decoration: const InputDecoration(
-                    hintText: "name of the route", labelText: "name"),
+                decoration: const InputDecoration(hintText: "name of the route", labelText: "name"),
               ),
               Row(children: [
                 const Text("Multi-pitch"),
                 Switch(
                   value: isMultiPitch,
-                  onChanged: (bool value) {
-                    setState(() {
-                      isMultiPitch = value;
-                    });
-                  }
+                  onChanged: (bool value) => setState(() => isMultiPitch = value)
                 )]
               ),
               Visibility(
@@ -86,15 +75,11 @@ class _AddRouteState extends State<AddRoute>{
                   value: grade,
                   items: Grade.translationTable[gradingSystem.index].toSet().map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value)
+                      value: value,
+                      child: Text(value)
                     );
                   }).toList(),
-                  onChanged: (String? value) {
-                    setState(() {
-                      grade = value!;
-                    });
-                  },
+                  onChanged: (String? value) => setState(() => grade = value!),
                 ),
               ),
               Visibility(
@@ -103,54 +88,45 @@ class _AddRouteState extends State<AddRoute>{
                   value: gradingSystem,
                   items: GradingSystem.values.map<DropdownMenuItem<GradingSystem>>((GradingSystem value) {
                     return DropdownMenuItem<GradingSystem>(
-                        value: value,
-                        child: Text(value.toShortString())
+                      value: value,
+                      child: Text(value.toShortString())
                     );
                   }).toList(),
-                  onChanged: (GradingSystem? value) {
-                    setState(() {
-                      int oldIndex = Grade.translationTable[gradingSystem.index].indexOf(grade);
-                      gradingSystem = value!;
-                      grade = Grade.translationTable[gradingSystem.index][oldIndex];
-                    });
-                  },
+                  onChanged: (GradingSystem? value) => setState(() {
+                    int oldIndex = Grade.translationTable[gradingSystem.index].indexOf(grade);
+                    gradingSystem = value!;
+                    grade = Grade.translationTable[gradingSystem.index][oldIndex];
+                  }),
                 )
               ),
               Visibility(
                 visible: !isMultiPitch,
                 child:TextFormField(
-                  validator: (value) {
-                    return value!.isNotEmpty ? null : "please add the length";
-                  },
+                  validator: (value) => value!.isNotEmpty ? null : "please add the length",
                   controller: controllerLength,
                   keyboardType: TextInputType.number,
-                  inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly
-                  ],
-                  decoration: const InputDecoration(
-                      hintText: "length of the route", labelText: "length"),
+                  inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
+                  decoration: const InputDecoration(hintText: "length", labelText: "length"),
                 ),
               ),
               TextFormField(
                 controller: controllerLocation,
-                decoration: const InputDecoration(
-                    hintText: "location of the route", labelText: "location"),
+                decoration: const InputDecoration(hintText: "location", labelText: "location"),
               ),
               TextFormField(
                 controller: controllerComment,
-                decoration: const InputDecoration(
-                    hintText: "comment about the route", labelText: "comment"),
+                decoration: const InputDecoration(hintText: "comment", labelText: "comment"),
               ),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                      "Rating",
-                      style: TextStyle(
-                          color: Colors.black.withOpacity(0.6),
-                          fontSize: 16
-                      )
+                    "Rating",
+                    style: TextStyle(
+                        color: Colors.black.withOpacity(0.6),
+                        fontSize: 16
+                    )
                   ),
                 ),
               ),
@@ -159,11 +135,7 @@ class _AddRouteState extends State<AddRoute>{
                 max: 5,
                 divisions: 5,
                 label: currentSliderValue.round().toString(),
-                onChanged: (value) {
-                  setState(() {
-                    currentSliderValue = value;
-                  });
-                },
+                onChanged: (value) => setState(() => currentSliderValue = value),
               ),
             ],
           ),
@@ -181,7 +153,7 @@ class _AddRouteState extends State<AddRoute>{
                     rating: currentSliderValue.toInt(),
                     comment: controllerComment.text,
                   );
-                  MultiPitchRoute? createdRoute = await routeService.createMultiPitchRoute(route, spot.id, result);
+                  MultiPitchRoute? createdRoute = await multiPitchRouteService.createMultiPitchRoute(route, spot.id, result);
                   widget.onAddMultiPitchRoute?.call(createdRoute!);
                 } else {
                   CreateSinglePitchRoute route = CreateSinglePitchRoute(
@@ -192,7 +164,7 @@ class _AddRouteState extends State<AddRoute>{
                     grade: Grade(grade: grade, system: gradingSystem),
                     length: int.parse(controllerLength.text)
                   );
-                  SinglePitchRoute? createdRoute = await routeService.createSinglePitchRoute(route, spot.id, result);
+                  SinglePitchRoute? createdRoute = await singlePitchRouteService.createSinglePitchRoute(route, spot.id, result);
                   widget.onAddSinglePitchRoute?.call(createdRoute!);
                 }
                 setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));

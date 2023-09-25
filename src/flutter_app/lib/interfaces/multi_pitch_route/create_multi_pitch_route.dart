@@ -1,6 +1,7 @@
 import 'package:climbing_diary/interfaces/route/create_route.dart';
 
 class CreateMultiPitchRoute extends CreateClimbingRoute {
+  static const String boxName = 'create_multi_pitch_routes';
 
   const CreateMultiPitchRoute({
     super.comment,
@@ -25,5 +26,19 @@ class CreateMultiPitchRoute extends CreateClimbingRoute {
       name: cache['name'],
       rating: cache['rating'],
     );
+  }
+
+  @override
+  int get hashCode {
+    return
+      comment.hashCode ^
+      location.hashCode ^
+      name.hashCode ^
+      rating.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
   }
 }

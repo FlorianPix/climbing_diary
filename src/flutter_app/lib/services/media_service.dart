@@ -16,58 +16,30 @@ class MediaService {
 
   Future<List<Media>> getMedia() async {
     final Response response = await netWorkLocator.dio.get('$mediaApiHost/media');
-
-    if (response.statusCode == 200) {
-      List<Media> media = [];
-      response.data.forEach((s) =>
-      {
-        media.add(Media.fromJson(s))
-      });
-      return media;
-    } else {
-      throw Exception('Failed to load media');
-    }
+    if (response.statusCode != 200) throw Exception('Failed to load media');
+    List<Media> media = [];
+    response.data.forEach((s) => media.add(Media.fromJson(s)));
+    return media;
   }
 
   Future<String> getMediumUrl(String mediaId) async {
     final Response response = await netWorkLocator.dio.get('$mediaApiHost/media/$mediaId/access-url');
-
-    if (response.statusCode == 200) {
-      return response.data['url'];
-    } else {
-      throw Exception('Failed to load spots');
-    }
+    if (response.statusCode != 200) throw Exception('Failed to load spots');
+    return response.data['url'];
   }
 
   Future<String> uploadMedia(XFile file) async {
-    FormData formData = FormData.fromMap({
-      "file": await MultipartFile.fromFile(file.path),
-    });
-    final Response response = await netWorkLocator.dio.post(
-        '$mediaApiHost/media',
-        data: formData
-    );
-
-    if (response.statusCode == 200) {
-      MyNotifications.showPositiveNotification('Added new image');
-      return response.data['id'];
-    } else {
-      throw Exception('Failed to upload media');
-    }
+    FormData formData = FormData.fromMap({"file": await MultipartFile.fromFile(file.path)});
+    final Response response = await netWorkLocator.dio.post('$mediaApiHost/media', data: formData);
+    if (response.statusCode != 200) throw Exception('Failed to upload media');
+    MyNotifications.showPositiveNotification('Added new image');
+    return response.data['id'];
   }
 
   Future<void> deleteMedium(String mediaId) async {
-    final Response response = await netWorkLocator.dio.delete(
-        '$mediaApiHost/media/$mediaId'
-    );
-
-    if (response.statusCode == 204) {
-      MyNotifications.showPositiveNotification('Image was deleted');
-      return;
-    } else {
-      throw Exception('Failed to load spots');
-    }
+    final Response response = await netWorkLocator.dio.delete('$mediaApiHost/media/$mediaId');
+    if (response.statusCode != 204) throw Exception('Failed to load spots');
+    MyNotifications.showPositiveNotification('Image was deleted');
+    return;
   }
-
-
 }

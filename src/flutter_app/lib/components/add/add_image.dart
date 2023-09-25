@@ -19,15 +19,13 @@ class _AddImageState extends State<AddImage>{
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape:
-      RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       title: const Text('Please choose media to select'),
       content: SizedBox(
         height: MediaQuery.of(context).size.height / 6,
         child: Column(
           children: [
             ElevatedButton(
-              //if user click this button, user can upload image from gallery
               onPressed: () {
                 Navigator.pop(context);
                 widget.onAddImage.call(ImageSource.gallery);
@@ -40,7 +38,6 @@ class _AddImageState extends State<AddImage>{
               ),
             ),
             ElevatedButton(
-              //if user click this button. user can upload image from camera
               onPressed: () {
                 Navigator.pop(context);
                 widget.onAddImage.call(ImageSource.camera);

@@ -1,37 +1,90 @@
-import 'package:climbing_diary/interfaces/spot/update_spot.dart';
-import 'package:climbing_diary/services/spot_service.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/create_single_pitch_route.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch_route.dart';
+import 'package:dio/dio.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
+import '../components/my_notifications.dart';
+import '../config/environment.dart';
+import '../data/network/dio_client.dart';
+import '../data/sharedprefs/shared_preference_helper.dart';
+import '../interfaces/ascent/ascent.dart';
+import '../interfaces/ascent/create_ascent.dart';
+import '../interfaces/ascent/update_ascent.dart';
+import '../interfaces/multi_pitch_route/create_multi_pitch_route.dart';
+import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
+import '../interfaces/multi_pitch_route/update_multi_pitch_route.dart';
+import '../interfaces/my_base_interface/update_my_base_interface.dart';
+import '../interfaces/pitch/create_pitch.dart';
+import '../interfaces/pitch/pitch.dart';
+import '../interfaces/pitch/update_pitch.dart';
+import '../interfaces/single_pitch_route/single_pitch_route.dart';
+import '../interfaces/spot/create_spot.dart';
 import '../interfaces/spot/spot.dart';
-
-final SpotService spotService = SpotService();
+import '../interfaces/spot/update_spot.dart';
+import '../interfaces/trip/create_trip.dart';
+import '../interfaces/trip/trip.dart';
+import '../interfaces/trip/update_trip.dart';
+import 'locator.dart';
 
 class CacheService{
-  final List<String> boxNames = [
-    'trips', 'delete_later_trips', 'edit_later_trips', 'upload_later_trips',
-    'spots', 'delete_later_spots', 'edit_later_spots', 'upload_later_spots',
-    'single_pitch_routes', 'delete_later_single_pitch_routes', 'edit_later_single_pitch_routes', 'upload_later_single_pitch_routes',
-    'multi_pitch_routes', 'delete_later_multi_pitch_routes', 'edit_later_multi_pitch_routes', 'upload_later_multi_pitch_routes',
-    'pitches', 'delete_later_pitches', 'edit_later_pitches', 'upload_later_pitches',
-    'ascents', 'delete_later_ascents', 'edit_later_ascents', 'upload_later_ascents',
+  final netWorkLocator = getIt.get<DioClient>();
+  final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
+  final String climbingApiHost = Environment().config.climbingApiHost;
+  final String mediaApiHost = Environment().config.mediaApiHost;
+
+  static const List<String> boxNames = [
+    Trip.boxName, Trip.deleteBoxName, UpdateTrip.boxName, CreateTrip.boxName,
+    Spot.boxName, Spot.deleteBoxName, UpdateSpot.boxName, CreateSpot.boxName,
+    SinglePitchRoute.boxName, SinglePitchRoute.deleteBoxName, UpdateSinglePitchRoute.boxName, CreateSinglePitchRoute.boxName,
+    MultiPitchRoute.boxName, MultiPitchRoute.deleteBoxName, UpdateMultiPitchRoute.boxName, CreateMultiPitchRoute.boxName,
+    Pitch.boxName, Pitch.deleteBoxName, UpdatePitch.boxName, CreatePitch.boxName,
+    Ascent.boxName, Ascent.deleteBoxName, UpdateAscent.boxName, CreateAscent.boxName
   ];
 
-  Future<void> initCache(String path) async {
+  static Future<void> initCache(String path) async {
     await Hive.initFlutter(path);
     for (String boxName in boxNames){
       await Hive.openBox(boxName);
     }
   }
 
-  void clearCache() {
+  static void clearCache() {
     for (String boxName in boxNames){
-      Box box = Hive.box(boxName);
-      box.clear();
+      Hive.box(boxName).clear();
     }
   }
 
-  List<T> getTsFromCache<T>(String key, T Function(Map) fromCacheFactory) {
-    Box box = Hive.box(key);
+  void applyQueued() async {
+    // create trips from cache
+    Box createTripBox = Hive.box(CreateTrip.boxName);
+    for (int i = 0; i < createTripBox.length; i++){
+      Map el = createTripBox.getAt(i);
+      try {
+        final Response response = await netWorkLocator.dio.post('$climbingApiHost/trip', data: el);
+        if (response.statusCode != 201) throw Exception('Failed to create trip');
+        createTripBox.deleteAt(i);
+        MyNotifications.showPositiveNotification('Created new trip: ${response.data['name']}');
+      } catch (e) {
+        if (e is DioError) {
+          final response = e.response;
+          if (response != null) {
+            switch (response.statusCode) {
+              case 409: MyNotifications.showNegativeNotification('This trip already exists!'); break;
+              default: throw Exception('Failed to create trip');
+            }
+          }
+        }
+      }
+    }
+    // edit trips from cache
+    Box updateTripBox = Hive.box(UpdateTrip.boxName);
+    for (int i = 0; i < updateTripBox.length; i++) {
+      Map el = updateTripBox.getAt(i);
+      print(el);
+    }
+  }
+
+  static List<T> getTsFromCache<T>(String boxName, T Function(Map) fromCacheFactory) {
+    Box box = Hive.box(boxName);
     List<T> ts = [];
     for(var i = 0; i < box.length; i++){
       var data = box.getAt(i);
@@ -40,81 +93,65 @@ class CacheService{
     return ts;
   }
 
-  List<Spot> getQueuedSpotsFromCache() {
-    Box box = Hive.box('upload_later_spots');
-    List<Spot> spots = [];
+  static List<T> getCreateQueue<T>(String boxName, T Function(Map) fromCacheFactory) {
+    Box box = Hive.box(boxName);
+    List<T> ts = [];
     for(var i = 0; i < box.length; i++){
-      var data = box.getAt(i);
-      spots.add(Spot.fromCache(data));
+      ts.add(fromCacheFactory(box.getAt(i)));
     }
-    return spots;
+    return ts;
   }
 
-  void uploadQueuedSpots() {
-    Box box = Hive.box('upload_later_spots');
+  static void createQueuedTs<T>(String boxName, Future<T?> Function(Map) uploadT) {
+    Box box = Hive.box(boxName);
     var data = [];
     for(var i = 0; i < box.length; i++){
       data.add(box.getAt(i));
     }
-    if (data != []) {
-      for(var i = data.length-1; i >= 0; i--){
-        spotService.uploadSpot(data[i]);
-      }
+    if (data.isEmpty) return;
+    for(var i = data.length-1; i >= 0; i--){
+      uploadT(data[i]);
     }
   }
 
-  void deleteQueuedSpots() {
-    Box box = Hive.box('delete_later_spots');
+  static void deleteQueuedTs<T>(String boxName, Future<void> Function(Map) deleteT) {
+    Box box = Hive.box(boxName);
     var data = [];
     for(var i = 0; i < box.length; i++){
       data.add(box.getAt(i));
     }
-    if (data != []) {
-      for(var i = data.length-1; i >= 0; i--){
-        spotService.deleteSpot(Spot.fromCache(data[i]));
-      }
+    if (data.isEmpty) return;
+    for(var i = data.length-1; i >= 0; i--){
+      deleteT(data[i]);
     }
   }
 
-  void editQueuedSpots() {
-    Box box = Hive.box('edit_later_spots');
+  static void editQueuedTs<T>(String boxName, Future<void> Function(Map) editT) {
+    Box box = Hive.box(boxName);
     var data = [];
     for(var i = 0; i < box.length; i++){
       data.add(box.getAt(i));
     }
-    if (data != []) {
-      for(var i = data.length-1; i >= 0; i--){
-        spotService.editSpot(UpdateSpot.fromCache(data[i]));
-      }
+    if (data.isEmpty) return;
+    for(var i = data.length-1; i >= 0; i--){
+      editT(data[i]);
     }
   }
 
-  void editSpotFromCache(UpdateSpot spot) {
-    Box box = Hive.box('spots');
-    box.put(spot.id, spot.toJson());
+  static void editTFromCache<T extends UpdateMyBaseInterface>(String boxName, T t) {
+    Hive.box(boxName).put(t.id, t.toJson());
   }
 
-  void deleteSpotFromCache(String spotId){
-    Box box = Hive.box('spots');
-    box.delete(spotId);
+  static void deleteTFromCacheById(String boxName, String tId){
+    Hive.box(boxName).delete(tId);
   }
 
-  void deleteSpotFromEditQueue(int spotHash){
-    Box box = Hive.box('edit_later_spots');
-    box.delete(spotHash);
+  static void deleteTFromCacheByHash(String boxName, int tHash){
+    Hive.box(boxName).delete(tHash);
   }
 
-  void deleteSpotFromDeleteQueue(int spotHash){
-    Box box = Hive.box('delete_later_spots');
-    box.delete(spotHash);
-  }
-
-  void deleteSpotFromUploadQueue(int spotHash){
-    Box box = Hive.box('upload_later_spots');
-    box.delete(spotHash);
-  }
-
-  bool isStale(Map cache, String serverUpdatedString){
+  static bool isStale(Map cache, String serverUpdatedString){
+    if (cache['updated'] == null) return true;
     DateTime cachedUpdated = DateTime.parse(cache['updated']);
     DateTime serverUpdated = DateTime.parse(serverUpdatedString);
     if (serverUpdated.compareTo(cachedUpdated) == 1) return true;

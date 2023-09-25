@@ -1,8 +1,9 @@
-import 'package:climbing_diary/components/image_list_view.dart';
 import 'package:climbing_diary/components/my_button_styles.dart';
+import 'package:climbing_diary/components/my_text_styles.dart';
 import 'package:climbing_diary/components/select_spot.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
@@ -12,15 +13,18 @@ import '../../services/media_service.dart';
 import '../../services/trip_service.dart';
 import '../add/add_image.dart';
 import '../add/add_spot.dart';
+import '../comment.dart';
 import '../edit/edit_trip.dart';
+import '../image_list_view_add.dart';
 import '../rating.dart';
 
 class TripDetails extends StatefulWidget {
-  const TripDetails({super.key, required this.trip, required this.onTripDelete, required this.onTripUpdate, required this.onSpotAdd });
+  const TripDetails({super.key, required this.trip, required this.onTripDelete, required this.onTripUpdate, required this.onSpotAdd, required this.onNetworkChange });
 
   final Trip trip;
   final ValueSetter<Trip> onTripDelete, onTripUpdate;
   final ValueSetter<Spot> onSpotAdd;
+  final ValueSetter<bool> onNetworkChange;
 
   @override
   State<StatefulWidget> createState() => _TripDetailsState();
@@ -46,7 +50,7 @@ class _TripDetailsState extends State<TripDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         Trip trip = widget.trip;
         trip.mediaIds.add(mediaId);
-        tripService.editTrip(trip.toUpdateTrip());
+        tripService.editTrip(trip.toUpdateTrip(), online);
       }
     } else {
       List<XFile> images = await picker.pickMultiImage();
@@ -54,7 +58,7 @@ class _TripDetailsState extends State<TripDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         Trip trip = widget.trip;
         trip.mediaIds.add(mediaId);
-        tripService.editTrip(trip.toUpdateTrip());
+        tripService.editTrip(trip.toUpdateTrip(), online);
       }
     }
     setState(() {});
@@ -63,22 +67,30 @@ class _TripDetailsState extends State<TripDetails>{
   void addImageDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AddImage(onAddImage: getImage);
-      });
+      builder: (BuildContext context) => AddImage(onAddImage: getImage)
+    );
   }
 
   void editTripDialog() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return EditTrip(trip: widget.trip, onUpdate: widget.onTripUpdate);
-      });
+      builder: (BuildContext context) => EditTrip(trip: widget.trip, onUpdate: widget.onTripUpdate, onNetworkChange: widget.onNetworkChange)
+    );
+  }
+
+  bool online = false;
+
+  void checkConnection() async {
+    await InternetConnectionChecker().hasConnection.then((value) {
+      widget.onNetworkChange.call(value);
+      setState(() => online = value);
+    });
   }
 
   @override
   void initState(){
     super.initState();
+    checkConnection();
   }
 
   @override
@@ -86,162 +98,105 @@ class _TripDetailsState extends State<TripDetails>{
     List<Widget> elements = [];
     Trip trip = widget.trip;
 
-    // general info
-    elements.addAll([
-      Text(
-        widget.trip.name,
-        style: const TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600
-        ),
-      ),
-    ]);
-
+    elements.add(Text(widget.trip.name, style: MyTextStyles.title));
     elements.add(Text(
       "${trip.startDate} ${trip.endDate}",
       style: const TextStyle(
-          color: Color(0xff989898),
-          fontSize: 12.0,
-          fontWeight: FontWeight.w400
+        color: Color(0xff989898),
+        fontSize: 12.0,
+        fontWeight: FontWeight.w400
       ),
     ));
-
-    if (trip.comment.isNotEmpty){
-      elements.add(Text(
-        trip.comment,
-        style: const TextStyle(
-            color: Color(0xff989898),
-            fontSize: 12.0,
-            fontWeight: FontWeight.w400
-        ),
-      ));
-    }
-
+    if (trip.comment.isNotEmpty) elements.add(Comment(comment: trip.comment));
     elements.add(Rating(rating: trip.rating));
-
-    if (trip.comment.isNotEmpty) {
-      elements.add(Container(
-          margin: const EdgeInsets.all(15.0),
-          padding: const EdgeInsets.all(5.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.blueAccent),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            trip.comment,
-          )
-      ));
-    }
 
     void deleteImageCallback(String mediumId) {
       widget.trip.mediaIds.remove(mediumId);
-      tripService.editTrip(UpdateTrip(
+      tripService.editTrip(
+        UpdateTrip(
           id: widget.trip.id,
           mediaIds: widget.trip.mediaIds
-      ));
+        ),
+        online
+      );
       setState(() {});
     }
 
     if (trip.mediaIds.isNotEmpty) {
-      elements.add(ImageListView(
+      elements.add(ImageListViewAdd(
         onDelete: deleteImageCallback,
         mediaIds: widget.trip.mediaIds,
         getImage: getImage,
       ));
     } else {
-      elements.add(
-        ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add image'),
-          onPressed: () => addImageDialog(),
-          style: MyButtonStyles.rounded
-        ),
-      );
+      elements.add(ElevatedButton.icon(
+        icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+        label: const Text('Add image'),
+        onPressed: () => addImageDialog(),
+        style: ButtonStyle(shape: MyButtonStyles.rounded)
+      ));
     }
-    // add spot
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add new spot'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AddSpot(
-                    onAdd: (spot) {
-                      widget.onSpotAdd.call(spot);
-                      setState(() {});
-                    },
-                    trip: trip,
-                  ),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    elements.add(
-      ElevatedButton.icon(
-          icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
-          label: const Text('Add existing spot'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SelectSpot(
-                      trip: widget.trip,
-                      onAdd: widget.onSpotAdd
-                  ),
-                )
-            );
-          },
-          style: MyButtonStyles.rounded
-      ),
-    );
-    // delete, edit, close
-    elements.add(
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // delete trip button
-            IconButton(
-              onPressed: () {
-                Navigator.pop(context);
-                tripService.deleteTrip(trip);
-                widget.onTripDelete.call(trip);
-              },
-              icon: const Icon(Icons.delete),
-            ),
-            IconButton(
-              onPressed: () => editTripDialog(),
-              icon: const Icon(Icons.edit),
-            ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        )
-    );
-    // spots
-    if (trip.spotIds.isNotEmpty){
-        elements.add(SpotTimeline(
+    elements.add(ElevatedButton.icon(
+      icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+      label: const Text('Add new spot'),
+      onPressed: () => Navigator.push(context,
+        MaterialPageRoute(
+          builder: (context) => AddSpot(
+            onAdd: (spot) {
+              widget.onSpotAdd.call(spot);
+              setState(() {});
+            },
             trip: trip,
-            spotIds: trip.spotIds,
-            startDate: DateTime.parse(trip.startDate),
-            endDate: DateTime.parse(trip.endDate)
-        ));
+            onNetworkChange: widget.onNetworkChange,
+          ),
+        )
+      ),
+      style: ButtonStyle(shape: MyButtonStyles.rounded)
+    ));
+    elements.add(ElevatedButton.icon(
+      icon: const Icon(Icons.add, size: 30.0, color: Colors.pink),
+      label: const Text('Add existing spot'),
+      onPressed: () => Navigator.push(context,
+        MaterialPageRoute(
+          builder: (context) => SelectSpot(
+            trip: widget.trip,
+            onAdd: widget.onSpotAdd,
+            onNetworkChange: widget.onNetworkChange,
+          ),
+        )
+      ),
+      style: ButtonStyle(shape: MyButtonStyles.rounded)
+    ));
+    elements.add(Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+            tripService.deleteTrip(trip);
+            widget.onTripDelete.call(trip);
+          },
+          icon: const Icon(Icons.delete),
+        ),
+        IconButton(
+          onPressed: () => editTripDialog(),
+          icon: const Icon(Icons.edit),
+        ),
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close),
+        ),
+      ],
+    ));
+    if (trip.spotIds.isNotEmpty){
+      elements.add(SpotTimeline(
+        trip: trip,
+        spotIds: trip.spotIds,
+        startDate: DateTime.parse(trip.startDate),
+        endDate: DateTime.parse(trip.endDate),
+        onNetworkChange: widget.onNetworkChange,
+      ));
     }
-
-    return Stack(
-        children: <Widget>[
-          Padding(
-              padding: const EdgeInsets.all(20),
-              child: ListView(
-                  children: elements
-              )
-          )
-        ]
-    );
+    return Stack(children: [Padding(padding: const EdgeInsets.all(20), child: ListView(children: elements))]);
   }
 }

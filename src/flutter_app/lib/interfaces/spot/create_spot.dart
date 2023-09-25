@@ -1,4 +1,6 @@
 class CreateSpot {
+  static const String boxName = 'create_spots';
+
   final String? comment;
   final List<double> coordinates;
   final int? distanceParking;
@@ -50,4 +52,21 @@ class CreateSpot {
     "name": name,
     "rating": rating,
   };
+
+  @override
+  int get hashCode {
+    return
+      comment.hashCode ^
+      coordinates.hashCode ^
+      distanceParking.hashCode ^
+      distancePublicTransport.hashCode ^
+      location.hashCode ^
+      name.hashCode ^
+      rating.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
+  }
 }

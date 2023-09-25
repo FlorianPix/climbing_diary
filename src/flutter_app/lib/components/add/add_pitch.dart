@@ -44,9 +44,7 @@ class _AddPitchState extends State<AddPitch>{
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: const Text('Add a new pitch'),
       content: SingleChildScrollView(
         child: Form(
@@ -54,45 +52,30 @@ class _AddPitchState extends State<AddPitch>{
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                widget.route.name,
-                style: MyTextStyles.title,
-              ),
+              Text(widget.route.name, style: MyTextStyles.title),
               TextFormField(
-                validator: (value) {
-                  return value!.isNotEmpty ? null : "please add a name";
-                },
+                validator: (value) => value!.isNotEmpty ? null : "please add a name",
                 controller: controllerName,
-                decoration: const InputDecoration(
-                    hintText: "name of the pitch", labelText: "name"),
+                decoration: const InputDecoration(hintText: "name of the pitch", labelText: "name"),
               ),
               TextFormField(
                 validator: (value) {
-                  if (value!.isEmpty){
-                    return "please add a pitch number";
-                  }
-                  if (!isNumeric(value)){
-                    return "pitch number must be a number";
-                  }
+                  if (value!.isEmpty) return "please add a pitch number";
+                  if (!isNumeric(value)) return "pitch number must be a number";
                   return null;
                 },
                 controller: controllerNum,
-                decoration: const InputDecoration(
-                    hintText: "pitch number", labelText: "pitch number"),
+                decoration: const InputDecoration(hintText: "pitch number", labelText: "pitch number"),
               ),
               DropdownButton<String>(
                 value: grade,
                 items: Grade.translationTable[gradingSystem.index].toSet().map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value)
+                    value: value,
+                    child: Text(value)
                   );
                 }).toList(),
-                onChanged: (String? value) {
-                  setState(() {
-                    grade = value!;
-                  });
-                },
+                onChanged: (String? value) => setState(() => grade = value!),
               ),
               DropdownButton<GradingSystem>(
                 value: gradingSystem,
@@ -102,34 +85,30 @@ class _AddPitchState extends State<AddPitch>{
                     child: Text(value.toShortString())
                   );
                 }).toList(),
-                onChanged: (GradingSystem? value) {
-                  setState(() {
-                    int oldIndex = Grade.translationTable[gradingSystem.index].indexOf(grade);
-                    gradingSystem = value!;
-                    grade = Grade.translationTable[gradingSystem.index][oldIndex];
-                  });
-                },
+                onChanged: (GradingSystem? value) => setState(() {
+                  int oldIndex = Grade.translationTable[gradingSystem.index].indexOf(grade);
+                  gradingSystem = value!;
+                  grade = Grade.translationTable[gradingSystem.index][oldIndex];
+                }),
               ),
               TextFormField(
                 controller: controllerLength,
-                decoration: const InputDecoration(
-                    hintText: "length in m", labelText: "length"),
+                decoration: const InputDecoration(hintText: "length in m", labelText: "length"),
               ),
               TextFormField(
                 controller: controllerComment,
-                decoration: const InputDecoration(
-                    hintText: "comment", labelText: "comment"),
+                decoration: const InputDecoration(hintText: "comment", labelText: "comment"),
               ),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
-                      "Rating",
-                      style: TextStyle(
-                          color: Colors.black.withOpacity(0.6),
-                          fontSize: 16
-                      )
+                    "Rating",
+                    style: TextStyle(
+                      color: Colors.black.withOpacity(0.6),
+                      fontSize: 16
+                    )
                   ),
                 ),
               ),
@@ -138,11 +117,7 @@ class _AddPitchState extends State<AddPitch>{
                 max: 5,
                 divisions: 5,
                 label: currentSliderValue.round().toString(),
-                onChanged: (value) {
-                  setState(() {
-                    currentSliderValue = value;
-                  });
-                },
+                onChanged: (value) => setState(() => currentSliderValue = value),
               ),
             ],
           ),
@@ -150,22 +125,22 @@ class _AddPitchState extends State<AddPitch>{
       ),
       actions: <Widget>[
         TextButton(
-            onPressed: () async {
-              bool result = await InternetConnectionChecker().hasConnection;
-              if (_formKey.currentState!.validate()) {
-                CreatePitch pitch = CreatePitch(
-                  comment: controllerComment.text,
-                  grade: Grade(grade: grade, system: gradingSystem),
-                  length: int.parse(controllerLength.text),
-                  name: controllerName.text,
-                  num: int.parse(controllerNum.text),
-                  rating: currentSliderValue.toInt(),
-                );
-                Pitch? createdPitch = await pitchService.createPitch(pitch, widget.route.id, result);
-                setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
-              }
-            },
-            child: const Text("Save"))
+          onPressed: () async {
+            bool result = await InternetConnectionChecker().hasConnection;
+            if (_formKey.currentState!.validate()) {
+              CreatePitch pitch = CreatePitch(
+                comment: controllerComment.text,
+                grade: Grade(grade: grade, system: gradingSystem),
+                length: int.parse(controllerLength.text),
+                name: controllerName.text,
+                num: int.parse(controllerNum.text),
+                rating: currentSliderValue.toInt(),
+              );
+              Pitch? createdPitch = await pitchService.createPitch(pitch, widget.route.id, result);
+              setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
+            }
+          },
+          child: const Text("Save"))
       ],
     );
   }

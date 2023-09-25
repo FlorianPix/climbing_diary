@@ -13,20 +13,37 @@ import 'cache_service.dart';
 import 'locator.dart';
 
 class AscentService {
-  final CacheService cacheService = CacheService();
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<Ascent> getAscent(String ascentId) async {
-    final Response response =
-    await netWorkLocator.dio.get('$climbingApiHost/ascent/$ascentId');
-    if (response.statusCode == 200) {
-      return Ascent.fromJson(response.data);
-    } else {
-      throw Exception('Failed to load ascent');
+  Future<Ascent?> getAscent(String ascentId, bool online) async {
+    try {
+      Box box = Hive.box('ascents');
+      if (online) {
+        final Response ascentIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/ascentUpdated/$ascentId');
+        if (ascentIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of ascent id updated");
+        String id = ascentIdUpdatedResponse.data['_id'];
+        String serverUpdated = ascentIdUpdatedResponse.data['updated'];
+        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
+          final Response missingMultiPitchRouteResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/$ascentId');
+          if (missingMultiPitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing ascent");
+          return Ascent.fromJson(missingMultiPitchRouteResponse.data);
+        } else {
+          return Ascent.fromCache(box.get(id));
+        }
+      }
+      return Ascent.fromCache(box.get(ascentId));
+    } catch (e) {
+      if (e is DioError) {
+        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
+          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
+        }
+      }
+      print(e);
     }
+    return null;
   }
 
   Future<List<Ascent>> getAscentsOfIds(bool online, List<String> ascentIds) async {
@@ -42,7 +59,7 @@ class AscentService {
         ascentIdsUpdatedResponse.data.forEach((idWithDatetime) {
           String id = idWithDatetime['_id'];
           String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
             missingAscentIds.add(id);
           } else {
             ascents.add(Ascent.fromCache(box.get(id)));
@@ -65,7 +82,8 @@ class AscentService {
         return ascents;
       } else {
         // offline
-        return cacheService.getTsFromCache<Ascent>('ascents', Ascent.fromCache);
+        List<Ascent> ascents = CacheService.getTsFromCache<Ascent>('ascents', Ascent.fromCache);
+        return ascents.where((element) => ascentIds.contains(element.id)).toList();
       }
     } catch (e) {
       if (e is DioError) {
@@ -84,36 +102,36 @@ class AscentService {
         if (ascentIdsResponse.statusCode != 200) {
           throw Exception("Error during request of ascent ids");
         }
-        List<Ascent> ascentes = [];
+        List<Ascent> ascents = [];
         List<String> missingAscentIds = [];
-        Box box = Hive.box('ascentes');
+        Box box = Hive.box('ascents');
         ascentIdsResponse.data.forEach((idWithDatetime) {
           String id = idWithDatetime['_id'];
           String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || cacheService.isStale(box.get(id), serverUpdated)) {
+          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
             missingAscentIds.add(id);
           } else {
-            ascentes.add(Ascent.fromCache(box.get(id)));
+            ascents.add(Ascent.fromCache(box.get(id)));
           }
         });
         if (missingAscentIds.isEmpty){
-          return ascentes;
+          return ascents;
         }
-        final Response missingAscentesResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/ids', data: missingAscentIds);
-        if (missingAscentesResponse.statusCode != 200) {
-          throw Exception("Error during request of missing ascentes");
+        final Response missingAscentsResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/ids', data: missingAscentIds);
+        if (missingAscentsResponse.statusCode != 200) {
+          throw Exception("Error during request of missing ascents");
         }
-        missingAscentesResponse.data.forEach((s) {
+        missingAscentsResponse.data.forEach((s) {
           Ascent ascent = Ascent.fromJson(s);
           if (!box.containsKey(ascent.id)) {
             box.put(ascent.id, ascent.toJson());
           }
-          ascentes.add(ascent);
+          ascents.add(ascent);
         });
-        return ascentes;
+        return ascents;
       } else {
         // offline
-        return cacheService.getTsFromCache<Ascent>('ascentes', Ascent.fromCache);
+        return CacheService.getTsFromCache<Ascent>('ascents', Ascent.fromCache);
       }
     } catch (e) {
       if (e is DioError) {
