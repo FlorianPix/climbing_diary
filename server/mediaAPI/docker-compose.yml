@@ -39,7 +39,7 @@ services:
       - traefik.http.services.media-api.loadbalancer.server.port=8001
 
   db:
-    image: postgres
+    image: postgres:15.4
     restart: always
     environment:
       - POSTGRES_USER=cd-media
