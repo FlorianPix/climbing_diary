@@ -48,8 +48,11 @@ class _MainPageState extends State<MainPage>{
           ),
           widget.user != null ? IconButton(
             onPressed: () => widget.logout.call(),
-            icon: const Icon(Icons.logout, color: Colors.black, size: 30.0, semanticLabel: 'logout'),
-          ) : Container(),
+            icon: const Icon(Icons.logout_rounded, color: Colors.black, size: 30.0, semanticLabel: 'logout'),
+          ) : IconButton(
+            onPressed: () => widget.login.call(),
+            icon: const Icon(Icons.login_rounded, color: Colors.black, size: 30.0, semanticLabel: 'login'),
+          ),
         ],
       ),
       body: widget.pages[pageIndex],
