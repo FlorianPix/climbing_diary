@@ -5,22 +5,22 @@ import '../../components/settings.dart';
 
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key, required this.title, required this.logout, required this.pages, required this.pageIndex, required this.onIndexChanged, required this.online, required this.user, required this.login});
+  const MainPage({super.key, required this.title, required this.logout, required this.pages, required this.online, required this.user, required this.login});
 
   final String title;
   final List<Widget> pages;
-  final int pageIndex;
   final bool online;
   final UserProfile? user;
   final VoidCallback login;
   final VoidCallback logout;
-  final ValueSetter<int> onIndexChanged;
 
   @override
   State<StatefulWidget> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage>{
+  int pageIndex = 0;
+
   void sync(){
     // TODO
     setState(() {});
@@ -33,12 +33,11 @@ class _MainPageState extends State<MainPage>{
 
   @override
   Widget build(BuildContext context) {
-    int pageIndex = widget.pageIndex;
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
-          widget.online ? IconButton(
+          (widget.online && widget.user != null) ? IconButton(
             onPressed: () => sync(),
             icon: const Icon(Icons.refresh, color: Colors.black, size: 30.0, semanticLabel: 'sync'),
           ) : Container(),
@@ -60,7 +59,6 @@ class _MainPageState extends State<MainPage>{
         type: BottomNavigationBarType.fixed,
         currentIndex: pageIndex,
         onTap: (index) {
-          widget.onIndexChanged.call(index);
           setState(() => pageIndex = index);
         },
         items: const [

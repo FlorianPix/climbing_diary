@@ -63,7 +63,6 @@ class _MyHomePageState extends State<MyHomePage> {
   late Auth0 auth0;
   late SharedPreferences prefs;
   bool online = false;
-  int currentIndex = 0;
 
   Future<void> login() async {
     try{
@@ -97,10 +96,6 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {_user = null;});
   }
 
-  void onIndexChanged(int index){
-    setState(() => currentIndex = index);
-  }
-
   void onNetworkChange(bool online){
     setState(() => this.online = online);
   }
@@ -132,8 +127,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return MainPage(
       title: widget.title,
       pages: pages,
-      pageIndex: currentIndex,
-      onIndexChanged: onIndexChanged,
       login: login,
       logout: logout,
       online: online,
