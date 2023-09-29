@@ -81,7 +81,7 @@ class _MapPageOnlineState extends State<MapPageOnline> {
 
         List<Widget> flutterMapLayers = [TileLayer(
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.climbing_diary',
+          userAgentPackageName: 'de.florian_pix.climbing_diary',
         )];
 
         if (spots.isNotEmpty) {
