@@ -1,22 +1,30 @@
+import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:flutter/material.dart';
 
 import '../../components/settings.dart';
 
 
-class MainLoggedIn extends StatefulWidget {
-  const MainLoggedIn({super.key, required this.title, required this.logout, required this.pages, required this.pageIndex, required this.onIndexChanged});
+class MainPage extends StatefulWidget {
+  const MainPage({super.key, required this.title, required this.logout, required this.pages, required this.pageIndex, required this.onIndexChanged, required this.online, required this.user, required this.login});
 
   final String title;
   final List<Widget> pages;
   final int pageIndex;
+  final bool online;
+  final UserProfile? user;
+  final VoidCallback login;
   final VoidCallback logout;
   final ValueSetter<int> onIndexChanged;
 
   @override
-  State<StatefulWidget> createState() => _MainLoggedInState();
+  State<StatefulWidget> createState() => _MainPageState();
 }
 
-class _MainLoggedInState extends State<MainLoggedIn>{
+class _MainPageState extends State<MainPage>{
+  void sync(){
+    // TODO
+    setState(() {});
+  }
 
   @override
   void initState(){
@@ -30,14 +38,18 @@ class _MainLoggedInState extends State<MainLoggedIn>{
       appBar: AppBar(
         title: Text(widget.title),
         actions: [
+          widget.online ? IconButton(
+            onPressed: () => sync(),
+            icon: const Icon(Icons.refresh, color: Colors.black, size: 30.0, semanticLabel: 'sync'),
+          ) : Container(),
           IconButton(
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Settings())),
-            icon: const Icon(Icons.settings, color: Colors.black, size: 30.0, semanticLabel: 'settings'),
+            icon: const Icon(Icons.settings_rounded, color: Colors.black, size: 30.0, semanticLabel: 'settings'),
           ),
-          IconButton(
+          widget.user != null ? IconButton(
             onPressed: () => widget.logout.call(),
             icon: const Icon(Icons.logout, color: Colors.black, size: 30.0, semanticLabel: 'logout'),
-          )
+          ) : Container(),
         ],
       ),
       body: widget.pages[pageIndex],
