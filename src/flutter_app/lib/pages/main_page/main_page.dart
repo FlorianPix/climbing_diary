@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 
 import 'package:climbing_diary/components/common/settings.dart';
 
+import '../../components/common/my_notifications.dart';
+
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key, required this.title, required this.logout, required this.pages, required this.online, required this.user, required this.login});
@@ -38,7 +40,7 @@ class _MainPageState extends State<MainPage>{
   AscentService ascentService = AscentService();
   MediaService mediaService = MediaService();
 
-  void sync() async {
+  Future<void> sync() async {
     await tripService.getTrips(widget.online);
     await spotService.getSpots(widget.online);
     await multiPitchRouteService.getMultiPitchRoutes(widget.online);
@@ -62,7 +64,10 @@ class _MainPageState extends State<MainPage>{
         title: Text(widget.title),
         actions: [
           (widget.online && widget.user != null) ? IconButton(
-            onPressed: () => sync(),
+            onPressed: () async {
+              await sync();
+              MyNotifications.showPositiveNotification("synced");
+            },
             icon: const Icon(Icons.refresh, color: Colors.black, size: 30.0, semanticLabel: 'sync'),
           ) : Container(),
           IconButton(

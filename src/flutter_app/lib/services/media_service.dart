@@ -23,15 +23,18 @@ class MediaService {
       if (response.statusCode != 200) throw Exception('Failed to load media');
       List<Media> media = [];
       Box box = Hive.box(Media.boxName);
-      await response.data.forEach((s) async {
-        String mediumUrl = await getMediumUrl(s['id']);
-        final mediumResponse = await http.get(Uri.parse(mediumUrl));
-        s['image'] = mediumResponse.bodyBytes;
-        Media medium = Media.fromJson(s);
-        if (!box.containsKey(medium.id)) {
-          box.put(medium.id, medium.toJson());
+      await Future.forEach(response.data, (dynamic s) async {
+        if (!box.containsKey(s['id'])) {
+          String mediumUrl = await getMediumUrl(s['id']);
+          final mediumResponse = await http.get(Uri.parse(mediumUrl));
+          s['image'] = mediumResponse.bodyBytes;
+          Media medium = Media.fromJson(s);
+          await box.put(medium.id, medium.toJson());
+          media.add(medium);
+        } else {
+          Media medium = Media.fromCache(box.get(s['id']));
+          media.add(medium);
         }
-        media.add(medium);
       });
       return media;
     }
