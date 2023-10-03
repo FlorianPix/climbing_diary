@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../components/my_notifications.dart';
+import '../components/common/my_notifications.dart';
 import '../config/environment.dart';
 import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';

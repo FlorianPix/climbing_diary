@@ -7,9 +7,9 @@ import '../../interfaces/ascent/update_ascent.dart';
 import '../../services/media_service.dart';
 import '../../services/ascent_service.dart';
 import '../add/add_image.dart';
-import '../comment.dart';
-import '../image_list_view_add.dart';
-import '../my_button_styles.dart';
+import '../common/comment.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import '../common/my_button_styles.dart';
 import '../edit/edit_ascent.dart';
 
 class AscentDetails extends StatefulWidget {

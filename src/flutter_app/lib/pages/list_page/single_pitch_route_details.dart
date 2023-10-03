@@ -2,11 +2,11 @@ import 'package:climbing_diary/components/info/single_pitch_route_info.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../components/add/add_image.dart';
-import '../../components/comment.dart';
-import '../../components/image_list_view_add.dart';
-import '../../components/my_button_styles.dart';
-import '../../components/rating.dart';
+import 'package:climbing_diary/components/add/add_image.dart';
+import 'package:climbing_diary/components/common/comment.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
+import 'package:climbing_diary/components/common/rating.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/single_pitch_route/update_single_pitch_route.dart';
 import '../../services/media_service.dart';

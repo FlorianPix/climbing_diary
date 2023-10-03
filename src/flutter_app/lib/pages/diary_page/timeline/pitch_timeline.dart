@@ -3,9 +3,9 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
 import '../../../components/detail/pitch_details.dart';
-import '../../../components/image_list_view.dart';
+import 'package:climbing_diary/components/common/image_list_view.dart';
 import '../../../components/info/pitch_info.dart';
-import '../../../components/rating.dart';
+import 'package:climbing_diary/components/common/rating.dart';
 import '../../../interfaces/pitch/pitch.dart';
 import '../../../interfaces/route/route.dart';
 import '../../../interfaces/spot/spot.dart';

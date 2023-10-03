@@ -1,5 +1,5 @@
 import 'package:climbing_diary/components/add/add_ascent_to_single_pitch_route.dart';
-import 'package:climbing_diary/components/my_text_styles.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,12 +12,12 @@ import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../../services/single_pitch_route_service.dart';
 import '../add/add_image.dart';
-import '../comment.dart';
-import '../image_list_view_add.dart';
-import '../my_button_styles.dart';
+import '../common/comment.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
 import '../edit/edit_single_pitch_route.dart';
 import '../info/single_pitch_route_info.dart';
-import '../rating.dart';
+import 'package:climbing_diary/components/common/rating.dart';
 
 class SinglePitchRouteDetails extends StatefulWidget {
   const SinglePitchRouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId, required this.onNetworkChange });

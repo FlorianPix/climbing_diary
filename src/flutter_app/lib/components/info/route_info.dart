@@ -6,7 +6,7 @@ import '../../interfaces/ascent/ascent_style.dart';
 import '../../interfaces/ascent/ascent_type.dart';
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../../services/multi_pitch_route_service.dart';
-import '../my_text_styles.dart';
+import '../common/my_text_styles.dart';
 
 class RouteInfo extends StatefulWidget {
   const RouteInfo({super.key, required this.route, required this.onNetworkChange});

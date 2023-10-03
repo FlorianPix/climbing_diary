@@ -1,6 +1,6 @@
-import 'package:climbing_diary/components/my_button_styles.dart';
-import 'package:climbing_diary/components/my_text_styles.dart';
-import 'package:climbing_diary/components/select_spot.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
+import 'package:climbing_diary/components/common/select_spot.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -13,10 +13,10 @@ import '../../services/media_service.dart';
 import '../../services/trip_service.dart';
 import '../add/add_image.dart';
 import '../add/add_spot.dart';
-import '../comment.dart';
+import '../common/comment.dart';
 import '../edit/edit_trip.dart';
-import '../image_list_view_add.dart';
-import '../rating.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import 'package:climbing_diary/components/common/rating.dart';
 
 class TripDetails extends StatefulWidget {
   const TripDetails({super.key, required this.trip, required this.onTripDelete, required this.onTripUpdate, required this.onSpotAdd, required this.onNetworkChange });

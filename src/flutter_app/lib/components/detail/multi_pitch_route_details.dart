@@ -1,4 +1,4 @@
-import 'package:climbing_diary/components/my_text_styles.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,13 +11,13 @@ import '../../services/media_service.dart';
 import '../../services/multi_pitch_route_service.dart';
 import '../../services/pitch_service.dart';
 import '../add/add_image.dart';
-import '../comment.dart';
-import '../image_list_view_add.dart';
-import '../my_button_styles.dart';
+import '../common/comment.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
 import '../add/add_pitch.dart';
 import '../edit/edit_multi_pitch_route.dart';
 import '../info/multi_pitch_route_info.dart';
-import '../rating.dart';
+import 'package:climbing_diary/components/common/rating.dart';
 
 class MultiPitchRouteDetails extends StatefulWidget {
   const MultiPitchRouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId, required this.onNetworkChange });

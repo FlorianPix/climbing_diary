@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../interfaces/grade.dart';
 import '../../interfaces/pitch/pitch.dart';
-import '../my_text_styles.dart';
+import '../common/my_text_styles.dart';
 
 class MultiPitchInfo extends StatefulWidget {
   const MultiPitchInfo({super.key, required this.pitchIds, required this.onNetworkChange});

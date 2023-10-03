@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:climbing_diary/components/my_skeleton.dart';
+import 'package:climbing_diary/components/common/my_skeleton.dart';
 import 'package:flutter/material.dart';
 
-import '../services/media_service.dart';
+import '../../services/media_service.dart';
 
 class ImageListView extends StatelessWidget {
   ImageListView({super.key, required this.mediaIds});

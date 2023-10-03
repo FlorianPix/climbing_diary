@@ -9,7 +9,7 @@ import '../../interfaces/pitch/pitch.dart';
 import '../../services/ascent_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../my_text_styles.dart';
+import '../common/my_text_styles.dart';
 
 class AddAscent extends StatefulWidget {
   const AddAscent({super.key, required this.pitch, this.onAdd});

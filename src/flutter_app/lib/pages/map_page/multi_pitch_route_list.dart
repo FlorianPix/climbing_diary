@@ -5,11 +5,11 @@ import 'package:timelines/timelines.dart';
 
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
-import '../../components/detail/multi_pitch_route_details.dart';
-import '../../components/info/multi_pitch_route_info.dart';
-import '../../components/info/route_info.dart';
-import '../../components/rating.dart';
-import '../../components/image_list_view.dart';
+import 'package:climbing_diary/components/detail/multi_pitch_route_details.dart';
+import 'package:climbing_diary/components/info/multi_pitch_route_info.dart';
+import 'package:climbing_diary/components/info/route_info.dart';
+import 'package:climbing_diary/components/common/rating.dart';
+import 'package:climbing_diary/components/common/image_list_view.dart';
 import '../../services/multi_pitch_route_service.dart';
 import '../diary_page/timeline/pitch_timeline.dart';
 

@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 
-import '../components/my_notifications.dart';
+import '../components/common/my_notifications.dart';
 import '../config/environment.dart';
 import '../interfaces/ascent/create_ascent.dart';
 import 'package:dio/dio.dart';

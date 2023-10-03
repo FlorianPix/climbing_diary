@@ -10,7 +10,7 @@ import '../../interfaces/ascent/ascent_type.dart';
 import '../../interfaces/grade.dart';
 import '../../interfaces/single_pitch_route/single_pitch_route.dart';
 import '../../interfaces/trip/trip.dart';
-import '../my_text_styles.dart';
+import '../common/my_text_styles.dart';
 
 class SinglePitchRouteInfo extends StatefulWidget {
   const SinglePitchRouteInfo({super.key, this.trip, required this.route, required this.onNetworkChange});

@@ -1,4 +1,4 @@
-import 'package:climbing_diary/components/my_validators.dart';
+import 'package:climbing_diary/components/common/my_validators.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';

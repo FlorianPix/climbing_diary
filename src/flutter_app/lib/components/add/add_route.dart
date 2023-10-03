@@ -12,7 +12,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../../services/multi_pitch_route_service.dart';
 import '../../services/single_pitch_route_service.dart';
-import '../my_text_styles.dart';
+import '../common/my_text_styles.dart';
 
 class AddRoute extends StatefulWidget {
   const AddRoute({super.key, required this.spot, this.onAddMultiPitchRoute, this.onAddSinglePitchRoute});

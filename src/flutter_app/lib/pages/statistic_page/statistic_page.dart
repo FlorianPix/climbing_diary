@@ -1,4 +1,4 @@
-import 'package:climbing_diary/components/my_colors.dart';
+import 'package:climbing_diary/components/common/my_colors.dart';
 import 'package:climbing_diary/interfaces/ascent/ascent_style.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
 import 'package:fl_chart/fl_chart.dart';

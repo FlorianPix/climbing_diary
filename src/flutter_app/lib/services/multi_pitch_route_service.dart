@@ -2,7 +2,7 @@ import 'package:climbing_diary/interfaces/multi_pitch_route/create_multi_pitch_r
 import 'package:climbing_diary/services/pitch_service.dart';
 import 'package:hive/hive.dart';
 
-import '../components/my_notifications.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
 import '../config/environment.dart';
 import '../interfaces/ascent/ascent.dart';
 import '../interfaces/multi_pitch_route/multi_pitch_route.dart';

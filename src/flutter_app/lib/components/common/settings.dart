@@ -1,12 +1,12 @@
-import 'package:climbing_diary/components/my_notifications.dart';
-import 'package:climbing_diary/components/my_text_styles.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../interfaces/grading_system.dart';
+import '../../../interfaces/grading_system.dart';
 
-import '../services/admin_service.dart';
-import '../services/archive_service.dart';
-import '../services/cache_service.dart';
+import '../../services/admin_service.dart';
+import '../../services/archive_service.dart';
+import '../../services/cache_service.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});

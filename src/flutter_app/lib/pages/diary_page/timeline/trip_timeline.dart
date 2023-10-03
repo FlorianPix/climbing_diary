@@ -5,9 +5,9 @@ import 'package:timelines/timelines.dart';
 
 import '../../../components/add/add_trip.dart';
 import '../../../components/detail/trip_details.dart';
-import '../../../components/image_list_view.dart';
+import 'package:climbing_diary/components/common/image_list_view.dart';
 import '../../../components/info/trip_info.dart';
-import '../../../components/rating.dart';
+import 'package:climbing_diary/components/common/rating.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/trip_service.dart';
 import 'my_timeline_theme_data.dart';

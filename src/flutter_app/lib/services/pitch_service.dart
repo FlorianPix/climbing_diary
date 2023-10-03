@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 
-import '../components/my_notifications.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
 import '../config/environment.dart';
 import '../interfaces/pitch/create_pitch.dart';
 import 'package:dio/dio.dart';

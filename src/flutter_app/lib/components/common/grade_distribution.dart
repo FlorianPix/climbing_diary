@@ -4,14 +4,14 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 
-import '../interfaces/grade.dart';
-import '../interfaces/grading_system.dart';
-import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../interfaces/pitch/pitch.dart';
-import '../interfaces/single_pitch_route/single_pitch_route.dart';
-import '../services/multi_pitch_route_service.dart';
-import '../services/pitch_service.dart';
-import '../services/single_pitch_route_service.dart';
+import '../../interfaces/grade.dart';
+import '../../interfaces/grading_system.dart';
+import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
+import '../../interfaces/pitch/pitch.dart';
+import '../../interfaces/single_pitch_route/single_pitch_route.dart';
+import '../../services/multi_pitch_route_service.dart';
+import '../../services/pitch_service.dart';
+import '../../services/single_pitch_route_service.dart';
 
 class GradeDistribution extends StatefulWidget{
   const GradeDistribution({super.key, required this.multiPitchRouteIds, required this.singlePitchRouteIds, required this.onNetworkChange});

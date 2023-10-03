@@ -1,7 +1,7 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:flutter/material.dart';
 
-import '../../components/settings.dart';
+import 'package:climbing_diary/components/common/settings.dart';
 
 
 class MainPage extends StatefulWidget {

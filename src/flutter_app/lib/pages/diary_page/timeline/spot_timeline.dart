@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
-import '../../../components/image_list_view.dart';
+import 'package:climbing_diary/components/common/image_list_view.dart';
 import '../../../components/info/spot_info.dart';
-import '../../../components/rating.dart';
+import 'package:climbing_diary/components/common/rating.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/spot_service.dart';

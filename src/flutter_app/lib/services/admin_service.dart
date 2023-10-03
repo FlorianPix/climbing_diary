@@ -1,4 +1,4 @@
-import '../components/my_notifications.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
 import '../config/environment.dart';
 import 'package:dio/dio.dart';
 

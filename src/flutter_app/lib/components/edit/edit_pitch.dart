@@ -1,4 +1,4 @@
-import 'package:climbing_diary/components/my_validators.dart';
+import 'package:climbing_diary/components/common/my_validators.dart';
 import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
 

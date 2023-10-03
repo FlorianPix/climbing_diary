@@ -1,13 +1,13 @@
-import 'package:climbing_diary/components/my_text_styles.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../interfaces/spot/spot.dart';
-import '../interfaces/trip/trip.dart';
-import '../services/spot_service.dart';
+import '../../interfaces/spot/spot.dart';
+import '../../interfaces/trip/trip.dart';
+import '../../services/spot_service.dart';
 
-import '../services/trip_service.dart';
-import 'my_button_styles.dart';
+import '../../services/trip_service.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
 
 class SelectSpot extends StatefulWidget {
   const SelectSpot({super.key, required this.trip, required this.onAdd, required this.onNetworkChange});

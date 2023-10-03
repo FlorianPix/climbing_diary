@@ -1,4 +1,4 @@
-import 'package:climbing_diary/components/my_text_styles.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:climbing_diary/pages/map_page/location_picker.dart';
 import 'package:flutter/material.dart';

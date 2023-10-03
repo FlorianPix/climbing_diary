@@ -8,7 +8,7 @@ import '../../interfaces/route/route.dart';
 import '../../services/pitch_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../my_text_styles.dart';
+import '../common/my_text_styles.dart';
 
 class AddPitch extends StatefulWidget {
   const AddPitch({super.key, required this.route});

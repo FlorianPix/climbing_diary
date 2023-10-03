@@ -10,13 +10,13 @@ import '../../pages/diary_page/timeline/ascent_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../add/add_image.dart';
-import '../comment.dart';
-import '../image_list_view_add.dart';
-import '../my_button_styles.dart';
+import '../common/comment.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import '../common/my_button_styles.dart';
 import '../add/add_ascent.dart';
 import '../edit/edit_pitch.dart';
 import '../info/pitch_info.dart';
-import '../rating.dart';
+import 'package:climbing_diary/components/common/rating.dart';
 
 class PitchDetails extends StatefulWidget {
   const PitchDetails({super.key, this.trip, required this.spot, required this.route, required this.pitch, required this.onDelete, required this.onUpdate, required this.onNetworkChange });

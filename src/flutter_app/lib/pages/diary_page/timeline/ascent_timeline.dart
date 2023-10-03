@@ -9,7 +9,7 @@ import '../../../interfaces/ascent/ascent.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../interfaces/spot/spot.dart';
 import '../../../services/ascent_service.dart';
-import '../../../components/image_list_view.dart';
+import 'package:climbing_diary/components/common/image_list_view.dart';
 import 'my_timeline_theme_data.dart';
 
 class AscentTimeline extends StatefulWidget {

@@ -2,7 +2,7 @@ import 'package:climbing_diary/interfaces/single_pitch_route/create_single_pitch
 import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch_route.dart';
 import 'package:dio/dio.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../components/my_notifications.dart';
+import '../components/common/my_notifications.dart';
 import '../config/environment.dart';
 import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';

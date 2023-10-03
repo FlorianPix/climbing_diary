@@ -9,7 +9,7 @@ import '../../interfaces/ascent/ascent_type.dart';
 import '../../interfaces/grade.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../services/ascent_service.dart';
-import '../my_text_styles.dart';
+import '../common/my_text_styles.dart';
 
 class PitchInfo extends StatefulWidget {
   const PitchInfo({super.key, required this.pitch, required this.onNetworkChange});

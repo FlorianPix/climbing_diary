@@ -10,15 +10,15 @@ import '../../pages/diary_page/timeline/route_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
 import '../add/add_image.dart';
-import '../comment.dart';
-import '../grade_distribution.dart';
-import '../image_list_view_add.dart';
-import '../my_button_styles.dart';
+import '../common/comment.dart';
+import '../common/grade_distribution.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
 import '../add/add_route.dart';
 import '../edit/edit_spot.dart';
-import '../my_text_styles.dart';
-import '../rating.dart';
-import '../transport.dart';
+import '../common/my_text_styles.dart';
+import 'package:climbing_diary/components/common/rating.dart';
+import 'package:climbing_diary/components/common/transport.dart';
 
 class SpotDetails extends StatefulWidget {
   const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate, required this.onNetworkChange });
