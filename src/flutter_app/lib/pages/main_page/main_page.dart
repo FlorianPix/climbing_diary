@@ -1,6 +1,7 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:climbing_diary/services/ascent_service.dart';
 import 'package:climbing_diary/services/cache_service.dart';
+import 'package:climbing_diary/services/media_service.dart';
 import 'package:climbing_diary/services/multi_pitch_route_service.dart';
 import 'package:climbing_diary/services/pitch_service.dart';
 import 'package:climbing_diary/services/single_pitch_route_service.dart';
@@ -35,6 +36,7 @@ class _MainPageState extends State<MainPage>{
   SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
   PitchService pitchService = PitchService();
   AscentService ascentService = AscentService();
+  MediaService mediaService = MediaService();
 
   void sync() async {
     await tripService.getTrips(widget.online);
@@ -43,6 +45,7 @@ class _MainPageState extends State<MainPage>{
     await singlePitchRouteService.getSinglePitchRoutes(widget.online);
     await pitchService.getPitches(widget.online);
     await ascentService.getAscents(widget.online);
+    await mediaService.getMedia(widget.online);
     cacheService.applyQueued();
     setState(() {});
   }

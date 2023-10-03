@@ -1,4 +1,6 @@
+import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
+import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../components/common/my_notifications.dart';
@@ -6,6 +8,7 @@ import '../config/environment.dart';
 import '../data/network/dio_client.dart';
 import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/media.dart';
+import 'cache_service.dart';
 import 'locator.dart';
 
 
@@ -14,18 +17,35 @@ class MediaService {
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<List<Media>> getMedia() async {
-    final Response response = await netWorkLocator.dio.get('$mediaApiHost/media');
-    if (response.statusCode != 200) throw Exception('Failed to load media');
-    List<Media> media = [];
-    response.data.forEach((s) => media.add(Media.fromJson(s)));
-    return media;
+  Future<List<Media>> getMedia(bool online) async {
+    if (online) {
+      final Response response = await netWorkLocator.dio.get('$mediaApiHost/media');
+      if (response.statusCode != 200) throw Exception('Failed to load media');
+      List<Media> media = [];
+      Box box = Hive.box(Media.boxName);
+      await response.data.forEach((s) async {
+        String mediumUrl = await getMediumUrl(s['id']);
+        final mediumResponse = await http.get(Uri.parse(mediumUrl));
+        s['image'] = mediumResponse.bodyBytes;
+        Media medium = Media.fromJson(s);
+        if (!box.containsKey(medium.id)) {
+          box.put(medium.id, medium.toJson());
+        }
+        media.add(medium);
+      });
+      return media;
+    }
+    return [];
   }
 
   Future<String> getMediumUrl(String mediaId) async {
     final Response response = await netWorkLocator.dio.get('$mediaApiHost/media/$mediaId/access-url');
     if (response.statusCode != 200) throw Exception('Failed to load spots');
     return response.data['url'];
+  }
+
+  Future<Media> getMedium(String mediaId) async {
+    return CacheService.getMediumFromCache(mediaId);
   }
 
   Future<String> uploadMedia(XFile file) async {

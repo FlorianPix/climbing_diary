@@ -9,6 +9,7 @@ import '../data/sharedprefs/shared_preference_helper.dart';
 import '../interfaces/ascent/ascent.dart';
 import '../interfaces/ascent/create_ascent.dart';
 import '../interfaces/ascent/update_ascent.dart';
+import '../interfaces/media.dart';
 import '../interfaces/multi_pitch_route/create_multi_pitch_route.dart';
 import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../interfaces/multi_pitch_route/update_multi_pitch_route.dart';
@@ -32,6 +33,7 @@ class CacheService{
   final String mediaApiHost = Environment().config.mediaApiHost;
 
   static const List<String> boxNames = [
+    Media.boxName,
     Trip.boxName, Trip.deleteBoxName, UpdateTrip.boxName, CreateTrip.boxName,
     Spot.boxName, Spot.deleteBoxName, UpdateSpot.boxName, CreateSpot.boxName,
     SinglePitchRoute.boxName, SinglePitchRoute.deleteBoxName, UpdateSinglePitchRoute.boxName, CreateSinglePitchRoute.boxName,
@@ -156,5 +158,11 @@ class CacheService{
     DateTime serverUpdated = DateTime.parse(serverUpdatedString);
     if (serverUpdated.compareTo(cachedUpdated) == 1) return true;
     return false;
+  }
+
+  static Media getMediumFromCache(String mediaId){
+    Box box = Hive.box(Media.boxName);
+    Media medium = Media.fromCache(box.get(mediaId));
+    return medium;
   }
 }
