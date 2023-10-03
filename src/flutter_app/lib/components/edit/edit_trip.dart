@@ -125,7 +125,7 @@ class _EditTripState extends State<EditTrip>{
                 rating: currentSliderValue.toInt(),
                 startDate: controllerStartDate.text
               );
-              Trip? updatedTrip = await tripService.editTrip(trip, online);
+              Trip? updatedTrip = await tripService.editTrip(trip, false);
               if (updatedTrip != null) widget.onUpdate.call(updatedTrip);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }

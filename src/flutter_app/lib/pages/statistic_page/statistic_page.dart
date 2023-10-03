@@ -39,9 +39,9 @@ class StatisticPageState extends State<StatisticPage> {
 
   Future<List<DetailedGrade>> fetchDetailedGrade(bool online) async {
     List<DetailedGrade> detailedGrades = [];
-    List<Pitch> pitches = await pitchService.getPitches(online);
+    List<Pitch> pitches = await pitchService.getPitches(false);
     for (Pitch pitch in pitches) {
-      List<Ascent> ascents = await ascentService.getAscentsOfIds(online, pitch.ascentIds);
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(pitch.ascentIds, false);
       for (Ascent ascent in ascents){
         if (ascent.type != AscentType.bail.index){
           DetailedGrade detailedGrade = DetailedGrade(
@@ -54,9 +54,9 @@ class StatisticPageState extends State<StatisticPage> {
         }
       }
     }
-    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutes(online);
+    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutes(false);
     for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
-      List<Ascent> ascents = await ascentService.getAscentsOfIds(online, singlePitchRoute.ascentIds);
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(singlePitchRoute.ascentIds, false);
       for (Ascent ascent in ascents){
         if (ascent.type != AscentType.bail.index){
           DetailedGrade detailedGrade = DetailedGrade(
@@ -114,7 +114,7 @@ class StatisticPageState extends State<StatisticPage> {
   @override
   Widget build(BuildContext context) {
     var heatMapBuilder = FutureBuilder<List<Ascent>>(
-      future: ascentService.getAscents(online),
+      future: ascentService.getAscents(false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();

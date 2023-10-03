@@ -48,7 +48,7 @@ class SpotTimelineState extends State<SpotTimeline> {
   Widget build(BuildContext context) {
     List<String> spotIds = widget.spotIds;
     return FutureBuilder<List<Spot?>>(
-      future: spotService.getSpotsOfIds(online, spotIds),
+      future: spotService.getSpotsOfIds(spotIds, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();

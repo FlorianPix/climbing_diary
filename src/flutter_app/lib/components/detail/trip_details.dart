@@ -50,7 +50,7 @@ class _TripDetailsState extends State<TripDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         Trip trip = widget.trip;
         trip.mediaIds.add(mediaId);
-        tripService.editTrip(trip.toUpdateTrip(), online);
+        tripService.editTrip(trip.toUpdateTrip(), false);
       }
     } else {
       List<XFile> images = await picker.pickMultiImage();
@@ -58,7 +58,7 @@ class _TripDetailsState extends State<TripDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         Trip trip = widget.trip;
         trip.mediaIds.add(mediaId);
-        tripService.editTrip(trip.toUpdateTrip(), online);
+        tripService.editTrip(trip.toUpdateTrip(), false);
       }
     }
     setState(() {});

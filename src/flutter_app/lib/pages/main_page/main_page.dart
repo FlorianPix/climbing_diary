@@ -1,4 +1,11 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
+import 'package:climbing_diary/services/cache_service.dart';
+import 'package:climbing_diary/services/multi_pitch_route_service.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
+import 'package:climbing_diary/services/single_pitch_route_service.dart';
+import 'package:climbing_diary/services/spot_service.dart';
+import 'package:climbing_diary/services/trip_service.dart';
 import 'package:flutter/material.dart';
 
 import 'package:climbing_diary/components/common/settings.dart';
@@ -21,8 +28,22 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage>{
   int pageIndex = 0;
 
-  void sync(){
-    // TODO
+  CacheService cacheService = CacheService();
+  TripService tripService = TripService();
+  SpotService spotService = SpotService();
+  MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
+  SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
+  PitchService pitchService = PitchService();
+  AscentService ascentService = AscentService();
+
+  void sync() async {
+    await tripService.getTrips(widget.online);
+    await spotService.getSpots(widget.online);
+    await multiPitchRouteService.getMultiPitchRoutes(widget.online);
+    await singlePitchRouteService.getSinglePitchRoutes(widget.online);
+    await pitchService.getPitches(widget.online);
+    await ascentService.getAscents(widget.online);
+    cacheService.applyQueued();
     setState(() {});
   }
 

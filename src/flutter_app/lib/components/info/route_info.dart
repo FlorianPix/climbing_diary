@@ -38,7 +38,7 @@ class _RouteInfoState extends State<RouteInfo>{
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Ascent?>(
-      future: multiPitchRouteService.getBestAscent(widget.route, online),
+      future: multiPitchRouteService.getBestAscent(widget.route, false),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           Ascent? ascent = snapshot.data;

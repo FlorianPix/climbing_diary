@@ -67,7 +67,7 @@ class PitchService {
     return null;
   }
 
-  Future<List<Pitch>> getPitchesOfIds(bool online, List<String> pitchIds) async {
+  Future<List<Pitch>> getPitchesOfIds(List<String> pitchIds, bool online) async {
     try {
       if(online){
         final Response pitchIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/pitchUpdated/ids', data: pitchIds);

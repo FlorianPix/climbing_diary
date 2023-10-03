@@ -64,7 +64,7 @@ class _SelectSpotState extends State<SelectSpot>{
     );
 
     Widget spotList = FutureBuilder<List<Spot>>(
-      future: spotService.getSpotsByName(controllerSearch.text, online),
+      future: spotService.getSpotsByName(controllerSearch.text, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();
@@ -76,7 +76,7 @@ class _SelectSpotState extends State<SelectSpot>{
             onPressed: () async {
               if (!widget.trip.spotIds.contains(spot.id)){
                 widget.trip.spotIds.add(spot.id);
-                Trip? updatedTrip = await tripService.editTrip(widget.trip.toUpdateTrip(), online);
+                Trip? updatedTrip = await tripService.editTrip(widget.trip.toUpdateTrip(), false);
                 widget.onAdd.call(spot);
               }
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));

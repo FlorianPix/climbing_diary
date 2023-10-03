@@ -46,7 +46,7 @@ class AscentService {
     return null;
   }
 
-  Future<List<Ascent>> getAscentsOfIds(bool online, List<String> ascentIds) async {
+  Future<List<Ascent>> getAscentsOfIds(List<String> ascentIds, bool online) async {
     try {
       if(online){
         final Response ascentIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/ascentUpdated/ids', data: ascentIds);

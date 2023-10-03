@@ -29,7 +29,7 @@ class _MapPageOnlineState extends State<MapPageOnline> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Spot>>(
-      future: spotService.getSpotsByName(controllerSearch.text, true),
+      future: spotService.getSpotsByName(controllerSearch.text, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();

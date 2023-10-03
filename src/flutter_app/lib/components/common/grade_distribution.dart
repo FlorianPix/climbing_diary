@@ -62,7 +62,7 @@ class _GradeDistributionState extends State<GradeDistribution> {
     List<MultiPitchRoute> multiPitchRoutes = await multiPitchRouteService.getMultiPitchRoutesOfIds(online, widget.multiPitchRouteIds);
     for (MultiPitchRoute multiPitchRoute in multiPitchRoutes) {
       int maxGradeIndex = -1;
-      List<Pitch> pitches = await pitchService.getPitchesOfIds(online, multiPitchRoute.pitchIds);
+      List<Pitch> pitches = await pitchService.getPitchesOfIds(multiPitchRoute.pitchIds, false);
       for (Pitch pitch in pitches) {
         int gradeIndex = Grade.translationTable[pitch.grade.system.index].indexOf(pitch.grade.grade);
         maxGradeIndex = math.max(maxGradeIndex, gradeIndex);

@@ -52,7 +52,7 @@ class _PitchInfoState extends State<PitchInfo>{
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Ascent>>(
-      future: ascentService.getAscentsOfIds(online, widget.pitch.ascentIds),
+      future: ascentService.getAscentsOfIds(widget.pitch.ascentIds, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();

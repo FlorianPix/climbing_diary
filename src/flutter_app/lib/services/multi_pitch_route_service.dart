@@ -160,9 +160,9 @@ class MultiPitchRouteService {
   Future<MultiPitchRoute?> getMultiPitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate, bool online) async {
     MultiPitchRoute? multiPitchRoute = await getMultiPitchRoute(routeId, online);
     if (multiPitchRoute == null) return null;
-    List<Pitch> pitches = await pitchService.getPitchesOfIds(online, multiPitchRoute.pitchIds);
+    List<Pitch> pitches = await pitchService.getPitchesOfIds(multiPitchRoute.pitchIds, online);
     for (Pitch pitch in pitches){
-      List<Ascent> ascents = await ascentService.getAscentsOfIds(online, pitch.ascentIds);
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(pitch.ascentIds, online);
       for (Ascent ascent in ascents){
         DateTime dateOfAscent = DateTime.parse(ascent.date);
         if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
@@ -280,12 +280,12 @@ class MultiPitchRouteService {
 
   Future<Ascent?> getBestAscent(MultiPitchRoute route, bool online) async {
     List<Ascent> bestPitchAscents = [];
-    List<Pitch> pitches = await pitchService.getPitchesOfIds(online, route.pitchIds);
+    List<Pitch> pitches = await pitchService.getPitchesOfIds(route.pitchIds, online);
     for (Pitch pitch in pitches){
       int pitchStyle = 6;
       int pitchType = 4;
       Ascent? bestPitchAscent;
-      List<Ascent> ascents = await ascentService.getAscentsOfIds(online, pitch.ascentIds);
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(pitch.ascentIds, online);
       for (Ascent ascent in ascents) {
         if (ascent.style < pitchStyle){
           bestPitchAscent = ascent;

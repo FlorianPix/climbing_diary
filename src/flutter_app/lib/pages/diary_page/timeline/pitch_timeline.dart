@@ -49,7 +49,7 @@ class PitchTimelineState extends State<PitchTimeline> {
   Widget build(BuildContext context) {
     List<String> pitchIds = widget.pitchIds;
     return FutureBuilder<List<Pitch>>(
-      future: pitchService.getPitchesOfIds(online, pitchIds),
+      future: pitchService.getPitchesOfIds(pitchIds, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();

@@ -51,7 +51,7 @@ class AscentTimelineState extends State<AscentTimeline> {
   Widget build(BuildContext context) {
     List<String> ascentIds = widget.ascentIds;
     return FutureBuilder<List<Ascent>>(
-      future: ascentService.getAscentsOfIds(online, ascentIds),
+      future: ascentService.getAscentsOfIds(ascentIds, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();

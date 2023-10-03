@@ -178,7 +178,7 @@ class SinglePitchRouteService {
   Future<SinglePitchRoute?> getSinglePitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate, bool online) async {
     SinglePitchRoute? singlePitchRoute = await getSinglePitchRoute(routeId, online);
     if (singlePitchRoute == null) return null;
-    List<Ascent> ascents = await ascentService.getAscentsOfIds(online, singlePitchRoute.ascentIds);
+    List<Ascent> ascents = await ascentService.getAscentsOfIds(singlePitchRoute.ascentIds, online);
     for (Ascent ascent in ascents) {
       DateTime dateOfAscent = DateTime.parse(ascent.date);
       if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){

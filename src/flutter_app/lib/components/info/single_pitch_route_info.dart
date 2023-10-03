@@ -54,7 +54,7 @@ class _SinglePitchRouteInfoState extends State<SinglePitchRouteInfo>{
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Ascent>>(
-      future: ascentService.getAscentsOfIds(online, widget.route.ascentIds),
+      future: ascentService.getAscentsOfIds(widget.route.ascentIds, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();

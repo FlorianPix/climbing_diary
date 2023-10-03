@@ -49,7 +49,7 @@ class _MultiPitchInfoState extends State<MultiPitchInfo>{
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Pitch>>(
-      future: pitchService.getPitchesOfIds(online, widget.pitchIds),
+      future: pitchService.getPitchesOfIds(widget.pitchIds, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();

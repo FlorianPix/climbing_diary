@@ -54,7 +54,7 @@ class SpotService {
     return null;
   }
 
-  Future<List<Spot>> getSpotsOfIds(bool online, List<String> spotIds) async {
+  Future<List<Spot>> getSpotsOfIds(List<String> spotIds, bool online) async {
     try {
       if(!online) {
         List<Spot> spots = CacheService.getTsFromCache<Spot>('spots', Spot.fromCache);
@@ -141,9 +141,9 @@ class SpotService {
     if (spot == null) return null;
     List<MultiPitchRoute> multiPitchRoutes = await multiPitchRouteService.getMultiPitchRoutesOfIds(online, spot.multiPitchRouteIds);
     for (MultiPitchRoute multiPitchRoute in multiPitchRoutes) {
-      List<Pitch> pitches = await pitchService.getPitchesOfIds(online, multiPitchRoute.pitchIds);
+      List<Pitch> pitches = await pitchService.getPitchesOfIds(multiPitchRoute.pitchIds, online);
       for (Pitch pitch in pitches){
-        List<Ascent> ascents = await ascentService.getAscentsOfIds(online, pitch.ascentIds);
+        List<Ascent> ascents = await ascentService.getAscentsOfIds(pitch.ascentIds, online);
         for (Ascent ascent in ascents){
           DateTime dateOfAscent = DateTime.parse(ascent.date);
           if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
@@ -154,7 +154,7 @@ class SpotService {
     }
     List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutesOfIds(online, spot.singlePitchRouteIds);
     for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
-      List<Ascent> ascents = await ascentService.getAscentsOfIds(online, singlePitchRoute.ascentIds);
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(singlePitchRoute.ascentIds, online);
       for (Ascent ascent in ascents){
         DateTime dateOfAscent = DateTime.parse(ascent.date);
         if ((dateOfAscent.isAfter(startDate) &&

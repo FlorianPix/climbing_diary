@@ -40,7 +40,7 @@ class TripTimelineState extends State<TripTimeline> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Trip>>(
-      future: tripService.getTrips(online),
+      future: tripService.getTrips(false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const CircularProgressIndicator();

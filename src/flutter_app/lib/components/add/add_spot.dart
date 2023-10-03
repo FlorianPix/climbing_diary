@@ -172,7 +172,7 @@ class _AddSpotState extends State<AddSpot>{
                   Trip trip = widget.trip!;
                   UpdateTrip editTrip = trip.toUpdateTrip();
                   editTrip.spotIds?.add(createdSpot.id);
-                  Trip? editedTrip = await tripService.editTrip(editTrip, online);
+                  Trip? editedTrip = await tripService.editTrip(editTrip, false);
                 }
                 widget.onAdd.call(createdSpot);
               }
