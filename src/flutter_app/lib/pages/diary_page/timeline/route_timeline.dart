@@ -61,13 +61,13 @@ class RouteTimelineState extends State<RouteTimeline> {
       future: Future.wait(multiPitchRouteIds.map((routeId) => multiPitchRouteService.getMultiPitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate, false))),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<MultiPitchRoute> multiPitchRoutes = snapshot.data!.whereType<MultiPitchRoute>().toList();
         return FutureBuilder<List<SinglePitchRoute?>>(
           future: Future.wait(singlePitchRouteIds.map((routeId) => singlePitchRouteService.getSinglePitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate, false))),
           builder: (context, snapshot) {
             if (snapshot.hasError) return Text(snapshot.error.toString());
-            if (!snapshot.hasData) return const CircularProgressIndicator();
+            if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
             List<SinglePitchRoute> singlePitchRoutes = snapshot.data!.whereType<SinglePitchRoute>().toList();
 
             void updateMultiPitchRouteCallback(MultiPitchRoute route) {

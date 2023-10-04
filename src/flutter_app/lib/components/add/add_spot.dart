@@ -2,6 +2,7 @@ import 'package:climbing_diary/components/common/my_text_styles.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:climbing_diary/pages/map_page/location_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 
 import '../../interfaces/spot/create_spot.dart';
@@ -174,6 +175,7 @@ class _AddSpotState extends State<AddSpot>{
                   editTrip.spotIds?.add(createdSpot.id);
                   Trip? editedTrip = await tripService.editTrip(editTrip, false);
                 }
+                await Hive.box(Spot.boxName).put(createdSpot.id, createdSpot.toJson());
                 widget.onAdd.call(createdSpot);
               }
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));

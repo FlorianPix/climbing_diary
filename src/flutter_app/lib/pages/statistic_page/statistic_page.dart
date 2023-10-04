@@ -117,7 +117,7 @@ class StatisticPageState extends State<StatisticPage> {
       future: ascentService.getAscents(false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Ascent> ascents = snapshot.data!;
         Map<DateTime, int> datasets = <DateTime, int>{};
         for (var ascent in ascents) {
@@ -222,7 +222,7 @@ class StatisticPageState extends State<StatisticPage> {
       future: fetchDetailedGrade(online),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<DetailedGrade> detailedGrades = snapshot.data!;
 
         bool noBetterDetailedGrade(List<DetailedGrade> list, DetailedGrade el){

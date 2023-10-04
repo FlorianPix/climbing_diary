@@ -225,9 +225,7 @@ class SpotService {
         await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
         if (mediaResponse.statusCode != 204) throw Exception('Failed to delete medium');
       }
-
-      final Response spotResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
+      final Response spotResponse = await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
       if (spotResponse.statusCode != 200) throw Exception('Failed to delete spot');
       MyNotifications.showPositiveNotification('Spot was deleted: ${spotResponse.data['name']}');
       // TODO deleteSpotFromDeleteQueue(spot.toJson().hashCode);

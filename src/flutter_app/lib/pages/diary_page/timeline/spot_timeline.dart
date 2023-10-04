@@ -51,7 +51,7 @@ class SpotTimelineState extends State<SpotTimeline> {
       future: spotService.getSpotsOfIds(spotIds, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Spot> spots = snapshot.data!.whereType<Spot>().toList();
         spots.sort((a, b) => a.name.compareTo(b.name));
 

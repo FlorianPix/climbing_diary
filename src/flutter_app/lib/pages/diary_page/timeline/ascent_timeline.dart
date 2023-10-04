@@ -54,7 +54,7 @@ class AscentTimelineState extends State<AscentTimeline> {
       future: ascentService.getAscentsOfIds(ascentIds, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Ascent> ascents = snapshot.data!;
         ascents.retainWhere((ascent) {
           DateTime dateOfAscent = DateTime.parse(ascent.date);

@@ -4,6 +4,7 @@ import 'package:climbing_diary/components/common/transport.dart';
 import 'package:climbing_diary/interfaces/spot/update_spot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -155,8 +156,9 @@ class _SpotDetailsState extends State<SpotDetails>{
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
+            await Hive.box(Spot.boxName).delete(widget.spot.id);
             spotService.deleteSpot(widget.spot);
             widget.onDelete.call(widget.spot);
           },

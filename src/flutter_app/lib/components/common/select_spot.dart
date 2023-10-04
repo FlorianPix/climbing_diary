@@ -67,7 +67,7 @@ class _SelectSpotState extends State<SelectSpot>{
       future: spotService.getSpotsByName(controllerSearch.text, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Spot> spots = snapshot.data!;
         List<Widget> elements = [];
         for(Spot spot in spots){

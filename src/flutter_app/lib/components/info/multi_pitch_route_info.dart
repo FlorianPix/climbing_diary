@@ -52,7 +52,7 @@ class _MultiPitchInfoState extends State<MultiPitchInfo>{
       future: pitchService.getPitchesOfIds(widget.pitchIds, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Pitch> pitches = snapshot.data!;
         Grade grade = const Grade(grade: "1", system: GradingSystem.french);
         int length = 0;

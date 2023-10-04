@@ -50,7 +50,7 @@ class SinglePitchRouteListState extends State<SinglePitchRouteList> {
       future: singlePitchRouteService.getSinglePitchRoutesOfIds(online, singlePitchRouteIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<SinglePitchRoute> singlePitchRoutes = snapshot.data!.whereType<SinglePitchRoute>().toList();
         singlePitchRoutes.sort((a, b) => a.name.compareTo(b.name));
 

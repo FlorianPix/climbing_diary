@@ -43,7 +43,7 @@ class TripTimelineState extends State<TripTimeline> {
       future: tripService.getTrips(false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Trip> trips = snapshot.data!;
         trips.sort((a, b) => DateTime.parse(b.startDate).compareTo(DateTime.parse(a.startDate)));
 

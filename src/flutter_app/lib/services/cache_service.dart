@@ -49,10 +49,8 @@ class CacheService{
     }
   }
 
-  static void clearCache() {
-    for (String boxName in boxNames){
-      Hive.box(boxName).clear();
-    }
+  static Future<void> clearCache() async {
+    Future.forEach(boxNames, (boxName) async => await Hive.box(boxName).clear());
   }
 
   Future<void> applyQueued() async {
@@ -63,7 +61,7 @@ class CacheService{
       try {
         final Response response = await netWorkLocator.dio.post('$climbingApiHost/trip', data: el);
         if (response.statusCode != 201) throw Exception('Failed to create trip');
-        createTripBox.deleteAt(i);
+        await createTripBox.deleteAt(i);
         MyNotifications.showPositiveNotification('Created new trip: ${response.data['name']}');
       } catch (e) {
         if (e is DioError) {
@@ -104,52 +102,38 @@ class CacheService{
     return ts;
   }
 
-  static void createQueuedTs<T>(String boxName, Future<T?> Function(Map) uploadT) {
+  static Future<void> createQueuedTs<T>(String boxName, Future<T?> Function(Map) uploadT) async {
     Box box = Hive.box(boxName);
     var data = [];
     for(var i = 0; i < box.length; i++){
       data.add(box.getAt(i));
     }
     if (data.isEmpty) return;
-    for(var i = data.length-1; i >= 0; i--){
-      uploadT(data[i]);
-    }
+    Future.forEach(data, (datum) async => await uploadT(datum));
   }
 
-  static void deleteQueuedTs<T>(String boxName, Future<void> Function(Map) deleteT) {
+  static Future<void> deleteQueuedTs<T>(String boxName, Future<void> Function(Map) deleteT) async {
     Box box = Hive.box(boxName);
     var data = [];
     for(var i = 0; i < box.length; i++){
       data.add(box.getAt(i));
     }
     if (data.isEmpty) return;
-    for(var i = data.length-1; i >= 0; i--){
-      deleteT(data[i]);
-    }
+    Future.forEach(data, (datum) async => await deleteT(datum));
   }
 
-  static void editQueuedTs<T>(String boxName, Future<void> Function(Map) editT) {
+  static Future<void> editQueuedTs<T>(String boxName, Future<void> Function(Map) editT) async {
     Box box = Hive.box(boxName);
     var data = [];
     for(var i = 0; i < box.length; i++){
       data.add(box.getAt(i));
     }
     if (data.isEmpty) return;
-    for(var i = data.length-1; i >= 0; i--){
-      editT(data[i]);
-    }
+    Future.forEach(data, (datum) async => await editT(datum));
   }
 
-  static void editTFromCache<T extends UpdateMyBaseInterface>(String boxName, T t) {
-    Hive.box(boxName).put(t.id, t.toJson());
-  }
-
-  static void deleteTFromCacheById(String boxName, String tId){
-    Hive.box(boxName).delete(tId);
-  }
-
-  static void deleteTFromCacheByHash(String boxName, int tHash){
-    Hive.box(boxName).delete(tHash);
+  static Future<void> editTFromCache<T extends UpdateMyBaseInterface>(String boxName, T t) async {
+    return await Hive.box(boxName).put(t.id, t.toJson());
   }
 
   static bool isStale(Map cache, String serverUpdatedString){

@@ -1,5 +1,6 @@
+import 'package:climbing_diary/components/common/my_colors.dart';
 import 'package:flutter/material.dart';
-import '../../components/add/add_spot.dart';
+import 'package:climbing_diary/components/add/add_spot.dart';
 import 'spot_details.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -32,7 +33,7 @@ class _MapPageOnlineState extends State<MapPageOnline> {
       future: spotService.getSpotsByName(controllerSearch.text, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Spot> spots = snapshot.data!;
 
         void addSpotCallback(Spot spot) {
@@ -50,7 +51,7 @@ class _MapPageOnlineState extends State<MapPageOnline> {
           setState(() {});
         }
 
-        deleteSpotCallback(Spot spot) {
+        void deleteSpotCallback(Spot spot) {
           spots.remove(spot);
           setState(() {});
         }
@@ -114,9 +115,9 @@ class _MapPageOnlineState extends State<MapPageOnline> {
                 onNetworkChange: widget.onNetworkChange
               ),
             )),
-            backgroundColor: Colors.green,
+            backgroundColor: MyColors.inverse[900],
             elevation: 5,
-            child: const Icon(Icons.add, size: 50.0, color: Colors.white),
+            child: const Icon(Icons.add_rounded, size: 50.0, color: Colors.white),
           )
         );
       }

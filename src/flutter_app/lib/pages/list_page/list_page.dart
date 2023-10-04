@@ -86,7 +86,7 @@ class ListPageState extends State<ListPage> {
       future: spotService.getSpotsByName(controllerSearch.text, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Spot> spots = snapshot.data!;
         return SpotList(
           spots: spots,
@@ -99,13 +99,13 @@ class ListPageState extends State<ListPage> {
       future: multiPitchRouteService.getMultiPitchRoutesByName(controllerSearch.text, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<MultiPitchRoute> multiPitchRoutes = snapshot.data!;
         return FutureBuilder<List<SinglePitchRoute>>(
           future: singlePitchRouteService.getSinglePitchRoutesByName(controllerSearch.text, false),
           builder: (context, snapshot) {
             if (snapshot.hasError) return Text(snapshot.error.toString());
-            if (!snapshot.hasData) return const CircularProgressIndicator();
+            if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
             List<SinglePitchRoute> singlePitchRoutes = snapshot.data!;
             return RouteList(
               singlePitchRoutes: singlePitchRoutes,
@@ -121,7 +121,7 @@ class ListPageState extends State<ListPage> {
       future: pitchService.getPitchesByName(controllerSearch.text, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Pitch> pitches = snapshot.data!;
         return PitchList(pitches: pitches, onNetworkChange: widget.onNetworkChange);
       }

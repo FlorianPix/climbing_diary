@@ -52,7 +52,7 @@ class PitchTimelineState extends State<PitchTimeline> {
       future: pitchService.getPitchesOfIds(pitchIds, false),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Pitch> pitches = snapshot.data!;
         pitches.sort((a, b) {
           if (a.num > b.num) return 1;

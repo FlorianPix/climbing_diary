@@ -1,5 +1,6 @@
 import 'package:climbing_diary/components/common/my_validators.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/spot/update_spot.dart';
@@ -125,7 +126,10 @@ class _EditSpotState extends State<EditSpot>{
                 comment: controllerDescription.text,
               );
               Spot? updatedSpot = await spotService.editSpot(spot);
-              if (updatedSpot != null) widget.onUpdate.call(updatedSpot);
+              if (updatedSpot != null) {
+                await Hive.box(Spot.boxName).put(updatedSpot.id, updatedSpot.toJson());
+                widget.onUpdate.call(updatedSpot);
+              }
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },
