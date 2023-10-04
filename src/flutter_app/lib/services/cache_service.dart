@@ -53,7 +53,14 @@ class CacheService{
     Future.forEach(boxNames, (boxName) async => await Hive.box(boxName).clear());
   }
 
-  Future<void> applyQueued() async {
+  static void printCache() {
+    for (var boxName in boxNames) {
+      print('$boxName: ${Hive.box(boxName).values}');
+    }
+  }
+
+  /// Apply all changes that were made locally to the server.
+  Future<void> applyChanges() async {
     // create trips from cache
     Box createTripBox = Hive.box(CreateTrip.boxName);
     for (int i = 0; i < createTripBox.length; i++){

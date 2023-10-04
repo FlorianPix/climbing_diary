@@ -173,7 +173,7 @@ class _AddSpotState extends State<AddSpot>{
                   Trip trip = widget.trip!;
                   UpdateTrip editTrip = trip.toUpdateTrip();
                   editTrip.spotIds?.add(createdSpot.id);
-                  Trip? editedTrip = await tripService.editTrip(editTrip, false);
+                  Trip editedTrip = await tripService.editTrip(editTrip);
                 }
                 await Hive.box(Spot.boxName).put(createdSpot.id, createdSpot.toJson());
                 widget.onAdd.call(createdSpot);

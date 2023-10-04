@@ -96,7 +96,7 @@ class ArchiveService {
   }
 
   Future<File?> writeBackup() async {
-    List<Trip> trips = await tripService.getTrips(true);
+    List<Trip> trips = await tripService.getTrips(online: true);
     List<Spot> spots = await spotService.getSpots(true);
     List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutes(true);
     List<MultiPitchRoute> multiPitchRoutes = await multiPitchRouteService.getMultiPitchRoutes(true);
@@ -239,7 +239,7 @@ class ArchiveService {
                   spotIds: spotIds,
                   mediaIds: mediaIds,
                 ),
-                true
+                online: true
               );
             }
           }

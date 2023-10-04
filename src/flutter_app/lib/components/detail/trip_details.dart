@@ -5,16 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
-import '../../interfaces/trip/update_trip.dart';
-import '../../pages/diary_page/timeline/spot_timeline.dart';
-import '../../services/media_service.dart';
-import '../../services/trip_service.dart';
-import '../add/add_image.dart';
-import '../add/add_spot.dart';
-import '../common/comment.dart';
-import '../edit/edit_trip.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
+import 'package:climbing_diary/interfaces/trip/update_trip.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/spot_timeline.dart';
+import 'package:climbing_diary/services/media_service.dart';
+import 'package:climbing_diary/services/trip_service.dart';
+import 'package:climbing_diary/components/add/add_image.dart';
+import 'package:climbing_diary/components/add/add_spot.dart';
+import 'package:climbing_diary/components/common/comment.dart';
+import 'package:climbing_diary/components/edit/edit_trip.dart';
 import 'package:climbing_diary/components/common/image_list_view_add.dart';
 import 'package:climbing_diary/components/common/rating.dart';
 
@@ -50,7 +50,7 @@ class _TripDetailsState extends State<TripDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         Trip trip = widget.trip;
         trip.mediaIds.add(mediaId);
-        tripService.editTrip(trip.toUpdateTrip(), false);
+        await tripService.editTrip(trip.toUpdateTrip());
       }
     } else {
       List<XFile> images = await picker.pickMultiImage();
@@ -58,7 +58,7 @@ class _TripDetailsState extends State<TripDetails>{
         var mediaId = await mediaService.uploadMedia(img);
         Trip trip = widget.trip;
         trip.mediaIds.add(mediaId);
-        tripService.editTrip(trip.toUpdateTrip(), false);
+        await tripService.editTrip(trip.toUpdateTrip());
       }
     }
     setState(() {});
@@ -116,8 +116,7 @@ class _TripDetailsState extends State<TripDetails>{
         UpdateTrip(
           id: widget.trip.id,
           mediaIds: widget.trip.mediaIds
-        ),
-        online
+        )
       );
       setState(() {});
     }

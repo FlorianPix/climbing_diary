@@ -41,14 +41,14 @@ class _MainPageState extends State<MainPage>{
 
   Future<void> sync() async {
     setState(() => syncing = true);
-    await tripService.getTrips(widget.online);
+    await cacheService.applyChanges();
+    await tripService.getTrips(online: widget.online);
     await spotService.getSpots(widget.online);
     await multiPitchRouteService.getMultiPitchRoutes(widget.online);
     await singlePitchRouteService.getSinglePitchRoutes(widget.online);
     await pitchService.getPitches(widget.online);
     await ascentService.getAscents(widget.online);
     await mediaService.getMedia(widget.online);
-    await cacheService.applyQueued();
     MyNotifications.showPositiveNotification("synced");
     setState(() => syncing = false);
   }

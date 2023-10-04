@@ -83,4 +83,37 @@ class Trip extends MyBaseInterface{
       startDate: startDate,
     );
   }
+
+  @override
+  int get hashCode {
+    int mediaIdsHashCode = 0;
+    for (String mediaId in mediaIds) {
+      if (mediaIdsHashCode == 0) {
+        mediaIdsHashCode = mediaId.hashCode;
+      } else {
+        mediaIdsHashCode = mediaIdsHashCode ^ mediaId.hashCode;
+      }
+    }
+    int spotIdsHashCode = 0;
+    for (String spotId in spotIds) {
+      if (spotIdsHashCode == 0) {
+        spotIdsHashCode = spotId.hashCode;
+      } else {
+        spotIdsHashCode = spotIdsHashCode ^ spotId.hashCode;
+      }
+    }
+    return
+      mediaIdsHashCode ^
+      spotIdsHashCode ^
+      comment.hashCode ^
+      endDate.hashCode ^
+      name.hashCode ^
+      rating.hashCode ^
+      startDate.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
+  }
 }

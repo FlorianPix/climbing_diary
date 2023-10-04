@@ -76,7 +76,7 @@ class _SelectSpotState extends State<SelectSpot>{
             onPressed: () async {
               if (!widget.trip.spotIds.contains(spot.id)){
                 widget.trip.spotIds.add(spot.id);
-                Trip? updatedTrip = await tripService.editTrip(widget.trip.toUpdateTrip(), false);
+                Trip updatedTrip = await tripService.editTrip(widget.trip.toUpdateTrip());
                 widget.onAdd.call(spot);
               }
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));

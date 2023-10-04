@@ -1,3 +1,5 @@
+import 'package:climbing_diary/interfaces/trip/trip.dart';
+
 class CreateTrip {
   static const String boxName = 'create_trips';
 
@@ -42,6 +44,21 @@ class CreateTrip {
     "rating": rating,
     "start_date": startDate,
   };
+
+  Trip toTrip(){
+    return Trip(
+        updated: DateTime.now().toIso8601String(),
+        mediaIds: [],
+        spotIds: [],
+        id: hashCode.toString(),
+        userId: '',
+        comment: comment != null ? comment! : '',
+        endDate: endDate,
+        name: name,
+        rating: rating,
+        startDate: startDate
+    );
+  }
 
   @override
   int get hashCode {

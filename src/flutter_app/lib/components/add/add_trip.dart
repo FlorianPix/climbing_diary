@@ -114,7 +114,7 @@ class _AddTripState extends State<AddTrip>{
                 comment: controllerComment.text,
                 startDate: controllerStartDate.text,
               );
-              Trip? createdTrip = await tripService.createTrip(trip, result);
+              Trip? createdTrip = await tripService.createTrip(trip);
               if (createdTrip != null) widget.onAdd.call(createdTrip);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
