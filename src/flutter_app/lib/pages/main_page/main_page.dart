@@ -1,4 +1,5 @@
 import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:flutter/material.dart';
 import 'package:climbing_diary/services/ascent_service.dart';
 import 'package:climbing_diary/services/cache_service.dart';
 import 'package:climbing_diary/services/media_service.dart';
@@ -7,11 +8,8 @@ import 'package:climbing_diary/services/pitch_service.dart';
 import 'package:climbing_diary/services/single_pitch_route_service.dart';
 import 'package:climbing_diary/services/spot_service.dart';
 import 'package:climbing_diary/services/trip_service.dart';
-import 'package:flutter/material.dart';
-
 import 'package:climbing_diary/components/common/settings.dart';
-
-import '../../components/common/my_notifications.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
 
 
 class MainPage extends StatefulWidget {
@@ -30,6 +28,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage>{
   int pageIndex = 0;
+  bool syncing = false;
 
   CacheService cacheService = CacheService();
   TripService tripService = TripService();
@@ -41,6 +40,7 @@ class _MainPageState extends State<MainPage>{
   MediaService mediaService = MediaService();
 
   Future<void> sync() async {
+    setState(() => syncing = true);
     await tripService.getTrips(widget.online);
     await spotService.getSpots(widget.online);
     await multiPitchRouteService.getMultiPitchRoutes(widget.online);
@@ -48,8 +48,9 @@ class _MainPageState extends State<MainPage>{
     await pitchService.getPitches(widget.online);
     await ascentService.getAscents(widget.online);
     await mediaService.getMedia(widget.online);
-    cacheService.applyQueued();
-    setState(() {});
+    await cacheService.applyQueued();
+    MyNotifications.showPositiveNotification("synced");
+    setState(() => syncing = false);
   }
 
   @override
@@ -66,12 +67,14 @@ class _MainPageState extends State<MainPage>{
           (widget.online && widget.user != null) ? IconButton(
             onPressed: () async {
               await sync();
-              MyNotifications.showPositiveNotification("synced");
             },
             icon: const Icon(Icons.refresh, color: Colors.black, size: 30.0, semanticLabel: 'sync'),
           ) : Container(),
           IconButton(
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const Settings())),
+            onPressed: () => showDialog(
+                context: context,
+                builder: (BuildContext context) => const Settings()
+            ),
             icon: const Icon(Icons.settings_rounded, color: Colors.black, size: 30.0, semanticLabel: 'settings'),
           ),
           widget.user != null ? IconButton(
@@ -83,7 +86,7 @@ class _MainPageState extends State<MainPage>{
           ),
         ],
       ),
-      body: widget.pages[pageIndex],
+      body: !syncing ? widget.pages[pageIndex] : const Center(child: CircularProgressIndicator()),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: pageIndex,

@@ -55,7 +55,7 @@ class CacheService{
     }
   }
 
-  void applyQueued() async {
+  Future<void> applyQueued() async {
     // create trips from cache
     Box createTripBox = Hive.box(CreateTrip.boxName);
     for (int i = 0; i < createTripBox.length; i++){
