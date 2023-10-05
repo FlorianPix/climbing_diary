@@ -1,39 +1,41 @@
-import 'package:climbing_diary/interfaces/single_pitch_route/create_single_pitch_route.dart';
-import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch_route.dart';
 import 'package:dio/dio.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import '../components/common/my_notifications.dart';
-import '../config/environment.dart';
-import '../data/network/dio_client.dart';
-import '../data/sharedprefs/shared_preference_helper.dart';
-import '../interfaces/ascent/ascent.dart';
-import '../interfaces/ascent/create_ascent.dart';
-import '../interfaces/ascent/update_ascent.dart';
-import '../interfaces/media.dart';
-import '../interfaces/multi_pitch_route/create_multi_pitch_route.dart';
-import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../interfaces/multi_pitch_route/update_multi_pitch_route.dart';
-import '../interfaces/my_base_interface/update_my_base_interface.dart';
-import '../interfaces/pitch/create_pitch.dart';
-import '../interfaces/pitch/pitch.dart';
-import '../interfaces/pitch/update_pitch.dart';
-import '../interfaces/single_pitch_route/single_pitch_route.dart';
-import '../interfaces/spot/create_spot.dart';
-import '../interfaces/spot/spot.dart';
-import '../interfaces/spot/update_spot.dart';
-import '../interfaces/trip/create_trip.dart';
-import '../interfaces/trip/trip.dart';
-import '../interfaces/trip/update_trip.dart';
-import 'locator.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/create_single_pitch_route.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch_route.dart';
+import 'package:climbing_diary/services/trip_service.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
+import 'package:climbing_diary/config/environment.dart';
+import 'package:climbing_diary/data/network/dio_client.dart';
+import 'package:climbing_diary/data/sharedprefs/shared_preference_helper.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:climbing_diary/interfaces/ascent/create_ascent.dart';
+import 'package:climbing_diary/interfaces/ascent/update_ascent.dart';
+import 'package:climbing_diary/interfaces/media.dart';
+import 'package:climbing_diary/interfaces/multi_pitch_route/create_multi_pitch_route.dart';
+import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
+import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
+import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
+import 'package:climbing_diary/interfaces/pitch/create_pitch.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:climbing_diary/interfaces/pitch/update_pitch.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
+import 'package:climbing_diary/interfaces/spot/create_spot.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/interfaces/spot/update_spot.dart';
+import 'package:climbing_diary/interfaces/trip/create_trip.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
+import 'package:climbing_diary/interfaces/trip/update_trip.dart';
+import 'package:climbing_diary/services/locator.dart';
 
 class CacheService{
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
+  final TripService tripService = TripService();
 
   static const List<String> boxNames = [
-    Media.boxName,
+    Media.boxName, Media.deleteBoxName,
     Trip.boxName, Trip.deleteBoxName, UpdateTrip.boxName, CreateTrip.boxName,
     Spot.boxName, Spot.deleteBoxName, UpdateSpot.boxName, CreateSpot.boxName,
     SinglePitchRoute.boxName, SinglePitchRoute.deleteBoxName, UpdateSinglePitchRoute.boxName, CreateSinglePitchRoute.boxName,
@@ -61,32 +63,26 @@ class CacheService{
 
   /// Apply all changes that were made locally to the server.
   Future<void> applyChanges() async {
-    // create trips from cache
+    // apply trip creations
     Box createTripBox = Hive.box(CreateTrip.boxName);
     for (int i = 0; i < createTripBox.length; i++){
       Map el = createTripBox.getAt(i);
-      try {
-        final Response response = await netWorkLocator.dio.post('$climbingApiHost/trip', data: el);
-        if (response.statusCode != 201) throw Exception('Failed to create trip');
-        await createTripBox.deleteAt(i);
-        MyNotifications.showPositiveNotification('Created new trip: ${response.data['name']}');
-      } catch (e) {
-        if (e is DioError) {
-          final response = e.response;
-          if (response != null) {
-            switch (response.statusCode) {
-              case 409: MyNotifications.showNegativeNotification('This trip already exists!'); break;
-              default: throw Exception('Failed to create trip');
-            }
-          }
-        }
-      }
+      CreateTrip trip = CreateTrip.fromCache(el);
+      await tripService.createTrip(trip, online: true);
     }
-    // edit trips from cache
+    // apply trip edits
     Box updateTripBox = Hive.box(UpdateTrip.boxName);
     for (int i = 0; i < updateTripBox.length; i++) {
       Map el = updateTripBox.getAt(i);
-      print(el);
+      UpdateTrip trip = UpdateTrip.fromCache(el);
+      await tripService.editTrip(trip, online: true);
+    }
+    // apply trip deletions
+    Box deleteTripBox = Hive.box(Trip.deleteBoxName);
+    for (int i = 0; i < deleteTripBox.length; i++) {
+      Map el = deleteTripBox.getAt(i);
+      Trip trip = Trip.fromCache(el);
+      await tripService.deleteTrip(trip, online: true);
     }
   }
 

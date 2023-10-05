@@ -104,19 +104,17 @@ class TripService {
     Box tripBox = Hive.box(Trip.boxName);
     Box createTripBox = Hive.box(CreateTrip.boxName);
     Trip tmpTrip = trip.toTrip();
-    if (!tripBox.containsKey(trip.hashCode)) await tripBox.put(trip.hashCode, tmpTrip.toJson());
-    if (!createTripBox.containsKey(trip.hashCode)) await createTripBox.put(trip.hashCode, trip.toJson());
+    await tripBox.put(trip.hashCode, tmpTrip.toJson());
+    await createTripBox.put(trip.hashCode, trip.toJson());
+    if (online == null || !online) return tmpTrip;
     // try to upload and update cache if successful
-    if (online != null && online) {
-      Map data = trip.toJson();
-      Trip? uploadedTrip = await uploadTrip(data);
-      if (uploadedTrip == null) return tmpTrip;
-      await tripBox.delete(trip.hashCode);
-      await createTripBox.delete(trip.hashCode);
-      await tripBox.put(uploadedTrip.id, uploadedTrip.toJson());
-      return uploadedTrip;
-    }
-    return tmpTrip;
+    Map data = trip.toJson();
+    Trip? uploadedTrip = await uploadTrip(data);
+    if (uploadedTrip == null) return tmpTrip;
+    await tripBox.delete(trip.hashCode);
+    await createTripBox.delete(trip.hashCode);
+    await tripBox.put(uploadedTrip.id, uploadedTrip.toJson());
+    return uploadedTrip;
   }
 
   /// Edit a trip in cache and optionally on the server.
@@ -126,10 +124,10 @@ class TripService {
     // add to cache
     Box tripBox = Hive.box(Trip.boxName);
     Box updateTripBox = Hive.box(UpdateTrip.boxName);
-    Trip oldTrip = tripBox.get(updateTrip.id);
+    Trip oldTrip = Trip.fromCache(tripBox.get(updateTrip.id));
     Trip tmpTrip = updateTrip.toTrip(oldTrip);
-    if (!tripBox.containsKey(updateTrip.id)) await tripBox.put(updateTrip.id, tmpTrip);
-    if (!updateTripBox.containsKey(updateTrip.id)) await updateTripBox.put(updateTrip.id, updateTrip);
+    await tripBox.put(updateTrip.id, tmpTrip.toJson());
+    await updateTripBox.put(updateTrip.id, updateTrip.toJson());
     if (online == null || !online) return tmpTrip;
     // try to upload and update cache if successful
     try {
@@ -157,7 +155,8 @@ class TripService {
     Box deleteTripBox = Hive.box(Trip.deleteBoxName);
     // TODO delete media from cache
     await tripBox.delete(trip.id);
-    await deleteTripBox.put(trip.id, trip);
+    await deleteTripBox.put(trip.id, trip.toJson());
+    if (online == null || !online) return;
     try {
       // delete media
       for (var id in trip.mediaIds) {

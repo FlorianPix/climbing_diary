@@ -1,4 +1,5 @@
 import 'package:climbing_diary/interfaces/trip/trip.dart';
+import 'package:uuid/uuid.dart';
 
 class CreateTrip {
   static const String boxName = 'create_trips';
@@ -50,7 +51,7 @@ class CreateTrip {
         updated: DateTime.now().toIso8601String(),
         mediaIds: [],
         spotIds: [],
-        id: hashCode.toString(),
+        id: const Uuid().v4(),
         userId: '',
         comment: comment != null ? comment! : '',
         endDate: endDate,

@@ -1,6 +1,8 @@
 import 'package:climbing_diary/interfaces/my_base_interface/my_base_interface.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 
+import 'create_trip.dart';
+
 class Trip extends MyBaseInterface{
   static const String boxName = 'trips';
   static const String deleteBoxName = 'delete_trips';
@@ -69,6 +71,16 @@ class Trip extends MyBaseInterface{
     "rating": rating,
     "start_date": startDate,
   };
+
+  CreateTrip toCreateTrip() {
+    return CreateTrip(
+      comment: comment,
+      endDate: endDate,
+      name: name,
+      rating: rating,
+      startDate: startDate,
+    );
+  }
 
   UpdateTrip toUpdateTrip() {
     return UpdateTrip(
