@@ -23,124 +23,115 @@ class MultiPitchRouteService {
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<MultiPitchRoute?> getMultiPitchRoute(String routeId, bool online) async {
+  /// Get a multi-pitch-route by its id from cache and optionally from the server.
+  /// If the parameter [online] is null or false the multi-pitch-route is searched in cache,
+  /// otherwise it is requested from the server.
+  Future<MultiPitchRoute?> getMultiPitchRoute(String multiPitchRouteId, {bool? online}) async {
+    Box box = Hive.box(MultiPitchRoute.boxName);
+    if (online == null || !online) return MultiPitchRoute.fromCache(box.get(multiPitchRouteId));
+    // request multiPitchRoute from server
     try {
-      Box box = Hive.box('multi_pitch_routes');
-      if (online) {
-        final Response multiPitchRouteIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_routeUpdated/$routeId');
-        if (multiPitchRouteIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of multi pitch route id updated");
-        String id = multiPitchRouteIdUpdatedResponse.data['_id'];
-        String serverUpdated = multiPitchRouteIdUpdatedResponse.data['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          final Response missingMultiPitchRouteResponse = await netWorkLocator.dio.post('$climbingApiHost/multi_pitch_route/$routeId');
-          if (missingMultiPitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing multi pitch route");
-          return MultiPitchRoute.fromJson(missingMultiPitchRouteResponse.data);
-        } else {
-          return MultiPitchRoute.fromCache(box.get(id));
-        }
+      // request when the multiPitchRoute was updated the last time
+      final Response multiPitchRouteIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_routeUpdated/$multiPitchRouteId');
+      if (multiPitchRouteIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot id updated");
+      String serverUpdated = multiPitchRouteIdUpdatedResponse.data['updated'];
+      // request the multiPitchRoute from the server if it was updated more recently than the one in the cache
+      if (!box.containsKey(multiPitchRouteId) || CacheService.isStale(box.get(multiPitchRouteId), serverUpdated)) {
+        final Response missingMultiPitchRouteResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$multiPitchRouteId');
+        if (missingMultiPitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing spot");
+        return MultiPitchRoute.fromJson(missingMultiPitchRouteResponse.data);
+      } else {
+        return MultiPitchRoute.fromCache(box.get(multiPitchRouteId));
       }
-      return MultiPitchRoute.fromCache(box.get(routeId));
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
-      print(e);
     }
     return null;
   }
 
-  Future<List<MultiPitchRoute>> getMultiPitchRoutesOfIds(bool online, List<String> multiPitchRouteIds) async {
+  /// Get multi-pitch-routes with given ids from cache and optionally from the server.
+  /// If the parameter [online] is null or false the multi-pitch-routes are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<List<MultiPitchRoute>> getMultiPitchRoutesOfIds(List<String> multiPitchRouteIds, {bool? online}) async {
+    List<MultiPitchRoute> multiPitchRoutes = CacheService.getTsFromCache<MultiPitchRoute>(MultiPitchRoute.boxName, MultiPitchRoute.fromCache);
+    if(online == null || !online) return multiPitchRoutes.where((multiPitchRoute) => multiPitchRouteIds.contains(multiPitchRoute.id)).toList();
+    // request multiPitchRoutes from the server
     try {
-      if(online){
-        final Response multiPitchRouteIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/multi_pitch_routeUpdated/ids', data: multiPitchRouteIds);
-        if (multiPitchRouteIdsUpdatedResponse.statusCode != 200) {
-          throw Exception("Error during request of multiPitchRoute ids updated");
+      final Response multiPitchRouteIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_routeUpdated/ids', data: multiPitchRouteIds);
+      if (multiPitchRouteIdsUpdatedResponse.statusCode != 200) throw Exception("Error during request of multiPitchRoute ids updated");
+      List<MultiPitchRoute> multiPitchRoutes = [];
+      List<String> missingMultiPitchRouteIds = [];
+      Box box = Hive.box(MultiPitchRoute.boxName);
+      multiPitchRouteIdsUpdatedResponse.data.forEach((idWithDatetime) {
+        String id = idWithDatetime['_id'];
+        String serverUpdated = idWithDatetime['updated'];
+        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
+          missingMultiPitchRouteIds.add(id);
+        } else {
+          multiPitchRoutes.add(MultiPitchRoute.fromCache(box.get(id)));
         }
-        List<MultiPitchRoute> multiPitchRoutes = [];
-        List<String> missingMultiPitchRouteIds = [];
-        Box box = Hive.box('multi_pitch_routes');
-        multiPitchRouteIdsUpdatedResponse.data.forEach((idWithDatetime) {
-          String id = idWithDatetime['_id'];
-          String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-            missingMultiPitchRouteIds.add(id);
-          } else {
-            multiPitchRoutes.add(MultiPitchRoute.fromCache(box.get(id)));
-          }
-        });
-        if (missingMultiPitchRouteIds.isEmpty){
-          return multiPitchRoutes;
-        }
-        final Response missingMultiPitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/multi_pitch_route/ids', data: missingMultiPitchRouteIds);
-        if (missingMultiPitchRoutesResponse.statusCode != 200) {
-          throw Exception("Error during request of missing multiPitchRoutes");
-        }
-        missingMultiPitchRoutesResponse.data.forEach((s) {
-          MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromJson(s);
-          if (!box.containsKey(multiPitchRoute.id)) {
-            box.put(multiPitchRoute.id, multiPitchRoute.toJson());
-          }
-          multiPitchRoutes.add(multiPitchRoute);
-        });
-        return multiPitchRoutes;
-      } else {
-        // offline
-        List<MultiPitchRoute> multiPitchRoutes = CacheService.getTsFromCache<MultiPitchRoute>('multi_pitch_routes', MultiPitchRoute.fromCache);
-        return multiPitchRoutes.where((element) => multiPitchRouteIds.contains(element.id)).toList();
-      }
-    } catch (e) {
-      ErrorService.handleConnectionErrors(e);
-    }
-    return [];
-  }
-
-  Future<List<MultiPitchRoute>> getMultiPitchRoutes(bool online) async {
-    try {
-      if(online){
-        final Response multiPitchRouteIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_routeUpdated');
-        if (multiPitchRouteIdsResponse.statusCode != 200) {
-          throw Exception("Error during request of multiPitchRoute ids");
-        }
-        List<MultiPitchRoute> multiPitchRoutes = [];
-        List<String> missingMultiPitchRouteIds = [];
-        Box box = Hive.box('multi_pitch_routes');
-        multiPitchRouteIdsResponse.data.forEach((idWithDatetime) {
-          String id = idWithDatetime['_id'];
-          String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-            missingMultiPitchRouteIds.add(id);
-          } else {
-            multiPitchRoutes.add(MultiPitchRoute.fromCache(box.get(id)));
-          }
-        });
-        if (missingMultiPitchRouteIds.isEmpty){
-          return multiPitchRoutes;
-        }
-        final Response missingMultiPitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/multi_pitch_route/ids', data: missingMultiPitchRouteIds);
-        if (missingMultiPitchRoutesResponse.statusCode != 200) {
-          throw Exception("Error during request of missing multiPitchRoutes");
-        }
-        missingMultiPitchRoutesResponse.data.forEach((s) {
-          MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromJson(s);
-          if (!box.containsKey(multiPitchRoute.id)) {
-            box.put(multiPitchRoute.id, multiPitchRoute.toJson());
-          }
-          multiPitchRoutes.add(multiPitchRoute);
-        });
-        return multiPitchRoutes;
-      } else {
-        // offline
-        return CacheService.getTsFromCache<MultiPitchRoute>('multi_pitch_routes', MultiPitchRoute.fromCache);
-      }
-    } catch (e) {
-      ErrorService.handleConnectionErrors(e);
-    }
-    return [];
-  }
-
-  Future<List<MultiPitchRoute>> getMultiPitchRoutesByName(String name, bool online) async {
-    List<MultiPitchRoute> multiPitchRoutes = await getMultiPitchRoutes(online);
-    if (name.isEmpty){
+      });
+      if (missingMultiPitchRouteIds.isEmpty) return multiPitchRoutes;
+      // request missing or stale multiPitchRoutes from the server
+      final Response missingMultiPitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_route/ids', data: missingMultiPitchRouteIds);
+      if (missingMultiPitchRoutesResponse.statusCode != 200) throw Exception("Error during request of missing multiPitchRoutes");
+      Future.forEach(missingMultiPitchRoutesResponse.data, (dynamic s) {
+        MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromJson(s);
+        box.put(multiPitchRoute.id, multiPitchRoute.toJson());
+        multiPitchRoutes.add(multiPitchRoute);
+      });
       return multiPitchRoutes;
+    } catch (e) {
+      ErrorService.handleConnectionErrors(e);
     }
+    return [];
+  }
+
+  /// Get all multi-pitch-routes from cache and optionally from the server.
+  /// If the parameter [online] is null or false the multi-pitch-routes are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<List<MultiPitchRoute>> getMultiPitchRoutes({bool? online}) async {
+    if(online == null || !online) return CacheService.getTsFromCache<MultiPitchRoute>(MultiPitchRoute.boxName, MultiPitchRoute.fromCache);
+    // request multi-pitch-routes from the server
+    try {
+      // request when the multi-pitch-routes were updated the last time
+      final Response multiPitchRouteIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_routeUpdated');
+      if (multiPitchRouteIdsResponse.statusCode != 200) throw Exception("Error during request of multiPitchRoute ids");
+      // find missing or stale (updated more recently on the server than in the cache) multi-pitch-routes
+      List<MultiPitchRoute> multiPitchRoutes = [];
+      List<String> missingMultiPitchRouteIds = [];
+      Box box = Hive.box(MultiPitchRoute.boxName);
+      multiPitchRouteIdsResponse.data.forEach((idWithDatetime) {
+        String id = idWithDatetime['_id'];
+        String serverUpdated = idWithDatetime['updated'];
+        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
+          missingMultiPitchRouteIds.add(id);
+        } else {
+          multiPitchRoutes.add(MultiPitchRoute.fromCache(box.get(id)));
+        }
+      });
+      if (missingMultiPitchRouteIds.isEmpty) return multiPitchRoutes;
+      // request missing or stale multi-pitch-routes from the server
+      final Response missingMultiPitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/multi_pitch_route/ids', data: missingMultiPitchRouteIds);
+      if (missingMultiPitchRoutesResponse.statusCode != 200) throw Exception("Error during request of missing multiPitchRoutes");
+      Future.forEach(missingMultiPitchRoutesResponse.data, (dynamic s) async {
+        MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromJson(s);
+        box.put(multiPitchRoute.id, multiPitchRoute.toJson());
+        multiPitchRoutes.add(multiPitchRoute);
+      });
+      return multiPitchRoutes;
+    } catch (e) {
+      ErrorService.handleConnectionErrors(e);
+    }
+    return [];
+  }
+
+  /// Get all multi-pitch-routes from cache and optionally from the server by their name.
+  /// If the parameter [online] is null or false the multi-pitch-routes are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<List<MultiPitchRoute>> getMultiPitchRoutesByName(String name, {bool? online}) async {
+    List<MultiPitchRoute> multiPitchRoutes = await getMultiPitchRoutes(online: online);
+    if (name.isEmpty) return multiPitchRoutes;
     return multiPitchRoutes.where((multiPitchRoute) => multiPitchRoute.name.contains(name)).toList();
   }
 

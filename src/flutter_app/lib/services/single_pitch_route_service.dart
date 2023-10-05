@@ -54,50 +54,41 @@ class SinglePitchRouteService {
     if(online == null || !online) return singlePitchRoutes.where((singlePitchRoute) => singlePitchRouteIds.contains(singlePitchRoute.id)).toList();
     // request singlePitchRoutes from the server
     try {
-      if(online){
-        final Response singlePitchRouteIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_routeUpdated/ids', data: singlePitchRouteIds);
-        if (singlePitchRouteIdsUpdatedResponse.statusCode != 200) {
-          throw Exception("Error during request of singlePitchRoute ids updated");
+      // request when the singlePitchRoutes were updated the last time
+      final Response singlePitchRouteIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_routeUpdated/ids', data: singlePitchRouteIds);
+      if (singlePitchRouteIdsUpdatedResponse.statusCode != 200) throw Exception("Error during request of singlePitchRoute ids updated");
+      // find missing or stale (updated more recently on the server than in the cache) singlePitchRoutes
+      List<SinglePitchRoute> singlePitchRoutes = [];
+      List<String> missingSinglePitchRouteIds = [];
+      Box box = Hive.box(SinglePitchRoute.boxName);
+      singlePitchRouteIdsUpdatedResponse.data.forEach((idWithDatetime) {
+        String id = idWithDatetime['_id'];
+        String serverUpdated = idWithDatetime['updated'];
+        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
+          missingSinglePitchRouteIds.add(id);
+        } else {
+          singlePitchRoutes.add(SinglePitchRoute.fromCache(box.get(id)));
         }
-        List<SinglePitchRoute> singlePitchRoutes = [];
-        List<String> missingSinglePitchRouteIds = [];
-        Box box = Hive.box('single_pitch_routes');
-        singlePitchRouteIdsUpdatedResponse.data.forEach((idWithDatetime) {
-          String id = idWithDatetime['_id'];
-          String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-            missingSinglePitchRouteIds.add(id);
-          } else {
-            singlePitchRoutes.add(SinglePitchRoute.fromCache(box.get(id)));
-          }
-        });
-        if (missingSinglePitchRouteIds.isEmpty){
-          return singlePitchRoutes;
-        }
-        final Response missingSinglePitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_route/ids', data: missingSinglePitchRouteIds);
-        if (missingSinglePitchRoutesResponse.statusCode != 200) {
-          throw Exception("Error during request of missing singlePitchRoutes");
-        }
-        missingSinglePitchRoutesResponse.data.forEach((s) {
-          SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(s);
-          if (!box.containsKey(singlePitchRoute.id)) {
-            box.put(singlePitchRoute.id, singlePitchRoute.toJson());
-          }
-          singlePitchRoutes.add(singlePitchRoute);
-        });
-        return singlePitchRoutes;
-      } else {
-        // offline
-        List<SinglePitchRoute> singlePitchRoutes = CacheService.getTsFromCache<SinglePitchRoute>('single_pitch_routes', SinglePitchRoute.fromCache);
-        return singlePitchRoutes.where((element) => singlePitchRouteIds.contains(element.id)).toList();
-      }
+      });
+      if (missingSinglePitchRouteIds.isEmpty) return singlePitchRoutes;
+      // request missing or stale singlePitchRoutes from the server
+      final Response missingSinglePitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_route/ids', data: missingSinglePitchRouteIds);
+      if (missingSinglePitchRoutesResponse.statusCode != 200) throw Exception("Error during request of missing singlePitchRoutes");
+      Future.forEach(missingSinglePitchRoutesResponse.data, (dynamic s) async {
+        SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(s);
+        box.put(singlePitchRoute.id, singlePitchRoute.toJson());
+        singlePitchRoutes.add(singlePitchRoute);
+      });
+      return singlePitchRoutes;
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
-      print(e);
     }
     return [];
   }
 
+  /// Get all single-pitch-routes from cache and optionally from the server.
+  /// If the parameter [online] is null or false the single-pitch-routes are searched in cache,
+  /// otherwise they are requested from the server.
   Future<List<SinglePitchRoute>> getSinglePitchRoutes({bool? online}) async {
     if(online == null || !online) return CacheService.getTsFromCache<SinglePitchRoute>(SinglePitchRoute.boxName, SinglePitchRoute.fromCache);
     // request single-pitch-routes from the server
