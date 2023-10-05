@@ -141,7 +141,7 @@ class AscentService {
     if (online == null || !online) return tmpAscent;
     // try to upload and update cache if successful
     Map data = ascent.toJson();
-    Ascent? uploadedAscent = await uploadAscent(pitchId, data);
+    Ascent? uploadedAscent = await uploadAscentForPitch(pitchId, data);
     if (uploadedAscent == null) return tmpAscent;
     await ascentBox.delete(ascent.hashCode);
     await createAscentBox.delete(ascent.hashCode);
@@ -205,7 +205,7 @@ class AscentService {
   /// Delete a ascent its media in cache and optionally on the server.
   /// If the parameter [online] is null or false the data is deleted only from the cache and later from the server at the next sync.
   /// Otherwise it is deleted from cache and from the server immediately.
-  Future<void> deleteAscent(Ascent ascent, String pitchId, {bool? online}) async {
+  Future<void> deleteAscentOfPitch(Ascent ascent, String pitchId, {bool? online}) async {
     Box ascentBox = Hive.box(Ascent.boxName);
     Box deleteAscentBox = Hive.box(Ascent.deleteBoxName);
     await ascentBox.delete(ascent.id);
@@ -263,7 +263,7 @@ class AscentService {
   }
 
   /// Upload an ascent to the server.
-  Future<Ascent?> uploadAscent(String pitchId, Map data) async {
+  Future<Ascent?> uploadAscentForPitch(String pitchId, Map data) async {
     try {
       final Response response = await netWorkLocator.dio.post('$climbingApiHost/ascent/pitch/$pitchId', data: data);
       if (response.statusCode != 201) throw Exception('Failed to create ascent');

@@ -1,12 +1,11 @@
-import 'package:climbing_diary/interfaces/grading_system.dart';
-import 'package:climbing_diary/services/pitch_service.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../interfaces/grade.dart';
-import '../../interfaces/pitch/pitch.dart';
-import '../common/my_text_styles.dart';
+import 'package:climbing_diary/interfaces/grading_system.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
+import 'package:climbing_diary/interfaces/grade.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 
 class MultiPitchInfo extends StatefulWidget {
   const MultiPitchInfo({super.key, required this.pitchIds, required this.onNetworkChange});
@@ -49,7 +48,7 @@ class _MultiPitchInfoState extends State<MultiPitchInfo>{
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Pitch>>(
-      future: pitchService.getPitchesOfIds(widget.pitchIds, false),
+      future: pitchService.getPitchesOfIds(widget.pitchIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());

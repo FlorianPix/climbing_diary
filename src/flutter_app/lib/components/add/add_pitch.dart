@@ -1,14 +1,11 @@
-import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
-
-import '../../interfaces/grade.dart';
-import '../../interfaces/pitch/create_pitch.dart';
-import '../../interfaces/pitch/pitch.dart';
-import '../../interfaces/route/route.dart';
-import '../../services/pitch_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
-
-import '../common/my_text_styles.dart';
+import 'package:climbing_diary/interfaces/grading_system.dart';
+import 'package:climbing_diary/interfaces/grade.dart';
+import 'package:climbing_diary/interfaces/pitch/create_pitch.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:climbing_diary/interfaces/route/route.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 
 class AddPitch extends StatefulWidget {
   const AddPitch({super.key, required this.route});
@@ -126,7 +123,6 @@ class _AddPitchState extends State<AddPitch>{
       actions: <Widget>[
         TextButton(
           onPressed: () async {
-            bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
               CreatePitch pitch = CreatePitch(
                 comment: controllerComment.text,
@@ -136,7 +132,7 @@ class _AddPitchState extends State<AddPitch>{
                 num: int.parse(controllerNum.text),
                 rating: currentSliderValue.toInt(),
               );
-              Pitch? createdPitch = await pitchService.createPitch(pitch, widget.route.id, result);
+              Pitch? createdPitch = await pitchService.createPitch(pitch, widget.route.id);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },

@@ -1,16 +1,16 @@
+import 'package:flutter/material.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
 import 'package:climbing_diary/pages/list_page/pitch_list.dart';
 import 'package:climbing_diary/pages/list_page/spot_list.dart';
 import 'package:climbing_diary/pages/list_page/route_list.dart';
 import 'package:climbing_diary/services/pitch_service.dart';
-import 'package:flutter/material.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
-import '../../interfaces/pitch/pitch.dart';
-import '../../interfaces/single_pitch_route/single_pitch_route.dart';
-import '../../interfaces/spot/spot.dart';
-import '../../services/multi_pitch_route_service.dart';
-import '../../services/single_pitch_route_service.dart';
-import '../../services/spot_service.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/services/multi_pitch_route_service.dart';
+import 'package:climbing_diary/services/single_pitch_route_service.dart';
+import 'package:climbing_diary/services/spot_service.dart';
 
 class ListPage extends StatefulWidget {
   const ListPage({super.key, required this.onNetworkChange});
@@ -96,7 +96,7 @@ class ListPageState extends State<ListPage> {
     );
 
     Widget routeList = FutureBuilder<List<MultiPitchRoute>>(
-      future: multiPitchRouteService.getMultiPitchRoutesByName(controllerSearch.text, false),
+      future: multiPitchRouteService.getMultiPitchRoutesByName(controllerSearch.text),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
@@ -118,7 +118,7 @@ class ListPageState extends State<ListPage> {
     );
 
     Widget pitchList = FutureBuilder<List<Pitch>>(
-      future: pitchService.getPitchesByName(controllerSearch.text, false),
+      future: pitchService.getPitchesByName(controllerSearch.text),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());

@@ -1,16 +1,15 @@
-import 'package:climbing_diary/interfaces/grading_system.dart';
-import 'package:climbing_diary/services/ascent_service.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../interfaces/ascent/ascent.dart';
-import '../../interfaces/ascent/ascent_style.dart';
-import '../../interfaces/ascent/ascent_type.dart';
-import '../../interfaces/grade.dart';
-import '../../interfaces/single_pitch_route/single_pitch_route.dart';
-import '../../interfaces/trip/trip.dart';
-import '../common/my_text_styles.dart';
+import 'package:climbing_diary/interfaces/grading_system.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent_style.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent_type.dart';
+import 'package:climbing_diary/interfaces/grade.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 
 class SinglePitchRouteInfo extends StatefulWidget {
   const SinglePitchRouteInfo({super.key, this.trip, required this.route, required this.onNetworkChange});
@@ -54,7 +53,7 @@ class _SinglePitchRouteInfoState extends State<SinglePitchRouteInfo>{
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Ascent>>(
-      future: ascentService.getAscentsOfIds(widget.route.ascentIds, false),
+      future: ascentService.getAscentsOfIds(widget.route.ascentIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());

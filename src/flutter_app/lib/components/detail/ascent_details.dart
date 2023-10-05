@@ -1,16 +1,15 @@
-import 'package:climbing_diary/components/info/ascent_info.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../../interfaces/ascent/ascent.dart';
-import '../../interfaces/ascent/update_ascent.dart';
-import '../../services/media_service.dart';
-import '../../services/ascent_service.dart';
-import '../add/add_image.dart';
-import '../common/comment.dart';
+import 'package:climbing_diary/components/info/ascent_info.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:climbing_diary/interfaces/ascent/update_ascent.dart';
+import 'package:climbing_diary/services/media_service.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
+import 'package:climbing_diary/components/add/add_image.dart';
+import 'package:climbing_diary/components/common/comment.dart';
 import 'package:climbing_diary/components/common/image_list_view_add.dart';
-import '../common/my_button_styles.dart';
-import '../edit/edit_ascent.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
+import 'package:climbing_diary/components/edit/edit_ascent.dart';
 
 class AscentDetails extends StatefulWidget {
   const AscentDetails({super.key, required this.pitchId, required this.ascent, required this.onDelete, required this.onUpdate, required this.ofMultiPitch });
@@ -103,7 +102,7 @@ class _AscentDetailsState extends State<AscentDetails>{
         IconButton(
           onPressed: () {
             Navigator.pop(context);
-            ascentService.deleteAscent(ascent, widget.pitchId, widget.ofMultiPitch);
+            ascentService.deleteAscentOfPitch(ascent, widget.pitchId);
             widget.onDelete.call(ascent);
           },
           icon: const Icon(Icons.delete),

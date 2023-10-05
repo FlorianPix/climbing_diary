@@ -1,16 +1,15 @@
-import 'package:climbing_diary/interfaces/route/route.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
-
-import '../../../components/detail/ascent_details.dart';
-import '../../../components/info/ascent_info.dart';
-import '../../../interfaces/ascent/ascent.dart';
-import '../../../interfaces/trip/trip.dart';
-import '../../../interfaces/spot/spot.dart';
-import '../../../services/ascent_service.dart';
+import 'package:climbing_diary/interfaces/route/route.dart';
+import 'package:climbing_diary/components/detail/ascent_details.dart';
+import 'package:climbing_diary/components/info/ascent_info.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
 import 'package:climbing_diary/components/common/image_list_view.dart';
-import 'my_timeline_theme_data.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/my_timeline_theme_data.dart';
 
 class AscentTimeline extends StatefulWidget {
   const AscentTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchId, required this.ascentIds, required this.onDelete, required this.onUpdate, required this.startDate, required this.endDate, required this.ofMultiPitch, required this.onNetworkChange});
@@ -51,7 +50,7 @@ class AscentTimelineState extends State<AscentTimeline> {
   Widget build(BuildContext context) {
     List<String> ascentIds = widget.ascentIds;
     return FutureBuilder<List<Ascent>>(
-      future: ascentService.getAscentsOfIds(ascentIds, false),
+      future: ascentService.getAscentsOfIds(ascentIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());

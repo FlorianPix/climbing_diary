@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import '../../interfaces/grade.dart';
-import '../../interfaces/grading_system.dart';
-import '../../interfaces/multi_pitch_route/create_multi_pitch_route.dart';
-import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../../interfaces/single_pitch_route/create_single_pitch_route.dart';
-import '../../interfaces/single_pitch_route/single_pitch_route.dart';
-import '../../interfaces/spot/spot.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
-
-import '../../services/multi_pitch_route_service.dart';
-import '../../services/single_pitch_route_service.dart';
-import '../common/my_text_styles.dart';
+import 'package:climbing_diary/interfaces/grade.dart';
+import 'package:climbing_diary/interfaces/grading_system.dart';
+import 'package:climbing_diary/interfaces/multi_pitch_route/create_multi_pitch_route.dart';
+import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/create_single_pitch_route.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/services/multi_pitch_route_service.dart';
+import 'package:climbing_diary/services/single_pitch_route_service.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 
 class AddRoute extends StatefulWidget {
   const AddRoute({super.key, required this.spot, this.onAddMultiPitchRoute, this.onAddSinglePitchRoute});
@@ -144,7 +141,6 @@ class _AddRouteState extends State<AddRoute>{
       actions: <Widget>[
         TextButton(
             onPressed: () async {
-              bool result = await InternetConnectionChecker().hasConnection;
               if (_formKey.currentState!.validate()) {
                 if (isMultiPitch){
                   CreateMultiPitchRoute route = CreateMultiPitchRoute(
@@ -153,7 +149,7 @@ class _AddRouteState extends State<AddRoute>{
                     rating: currentSliderValue.toInt(),
                     comment: controllerComment.text,
                   );
-                  MultiPitchRoute? createdRoute = await multiPitchRouteService.createMultiPitchRoute(route, spot.id, result);
+                  MultiPitchRoute? createdRoute = await multiPitchRouteService.createMultiPitchRoute(route, spot.id);
                   widget.onAddMultiPitchRoute?.call(createdRoute!);
                 } else {
                   CreateSinglePitchRoute route = CreateSinglePitchRoute(

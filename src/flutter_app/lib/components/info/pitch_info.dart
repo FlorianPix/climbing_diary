@@ -1,15 +1,14 @@
-import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../interfaces/ascent/ascent.dart';
-import '../../interfaces/ascent/ascent_style.dart';
-import '../../interfaces/ascent/ascent_type.dart';
-import '../../interfaces/grade.dart';
-import '../../interfaces/pitch/pitch.dart';
-import '../../services/ascent_service.dart';
-import '../common/my_text_styles.dart';
+import 'package:climbing_diary/interfaces/grading_system.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent_style.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent_type.dart';
+import 'package:climbing_diary/interfaces/grade.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 
 class PitchInfo extends StatefulWidget {
   const PitchInfo({super.key, required this.pitch, required this.onNetworkChange});
@@ -52,7 +51,7 @@ class _PitchInfoState extends State<PitchInfo>{
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Ascent>>(
-      future: ascentService.getAscentsOfIds(widget.pitch.ascentIds, false),
+      future: ascentService.getAscentsOfIds(widget.pitch.ascentIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());

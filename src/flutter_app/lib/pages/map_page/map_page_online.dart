@@ -1,12 +1,11 @@
-import 'package:climbing_diary/components/common/my_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:climbing_diary/components/add/add_spot.dart';
-import 'spot_details.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-
-import '../../interfaces/spot/spot.dart';
-import '../../services/spot_service.dart';
+import 'package:climbing_diary/components/common/my_colors.dart';
+import 'package:climbing_diary/components/add/add_spot.dart';
+import 'package:climbing_diary/pages/map_page/spot_details.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/services/spot_service.dart';
 
 class MapPageOnline extends StatefulWidget {
   const MapPageOnline({super.key, required this.onNetworkChange});
@@ -30,7 +29,7 @@ class _MapPageOnlineState extends State<MapPageOnline> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Spot>>(
-      future: spotService.getSpotsByName(controllerSearch.text, false),
+      future: spotService.getSpotsByName(controllerSearch.text),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());

@@ -210,7 +210,7 @@ class ArchiveService {
                       Ascent? ascent = getTById<Ascent>(ascentId, ascents);
                       if (ascent != null && createdPitch != null) {
                         await pitchService.editPitch(UpdatePitch(id: createdPitch.id, mediaIds: getMediaIds(mediaIdTranslation, pitch)));
-                        Ascent? createdAscent = await ascentService.uploadAscent(createdPitch.id, ascent.toJson());
+                        Ascent? createdAscent = await ascentService.uploadAscentForPitch(createdPitch.id, ascent.toJson());
                         if(createdAscent != null) {
                           await ascentService.editAscent(UpdateAscent(id: createdAscent.id, mediaIds: getMediaIds(mediaIdTranslation, ascent)));
                         }
