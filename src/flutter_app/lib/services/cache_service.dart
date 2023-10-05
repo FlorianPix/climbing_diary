@@ -1,5 +1,9 @@
-import 'package:climbing_diary/services/spot_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
+import 'package:climbing_diary/services/multi_pitch_route_service.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
+import 'package:climbing_diary/services/single_pitch_route_service.dart';
+import 'package:climbing_diary/services/spot_service.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/create_single_pitch_route.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch_route.dart';
 import 'package:climbing_diary/services/trip_service.dart';
@@ -33,6 +37,10 @@ class CacheService{
   final String mediaApiHost = Environment().config.mediaApiHost;
   final TripService tripService = TripService();
   final SpotService spotService = SpotService();
+  final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
+  final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
+  final PitchService pitchService = PitchService();
+  final AscentService ascentService = AscentService();
 
   static const List<String> boxNames = [
     Media.boxName, Media.deleteBoxName,
@@ -133,7 +141,33 @@ class CacheService{
   }
 
   Future<void> applyAscentChanges() async {
-
+    // apply ascent creations
+    Box createAscentBox = Hive.box(CreateAscent.boxName);
+    for (int i = 0; i < createAscentBox.length; i++){
+      Map el = createAscentBox.getAt(i);
+      String id = createAscentBox.keyAt(i);
+      Box test = Hive.box(Pitch.boxName);
+      print(test.get(id));
+      CreateAscent ascent = CreateAscent.fromCache(el);
+      await ascentService.createAscentForPitch(id, ascent, online: true);
+      await ascentService.createAscentForSinglePitchRoute(id, ascent, online: true);
+    }
+    // apply ascent edits
+    Box updateAscentBox = Hive.box(UpdateAscent.boxName);
+    for (int i = 0; i < updateAscentBox.length; i++) {
+      Map el = updateAscentBox.getAt(i);
+      UpdateAscent ascent = UpdateAscent.fromCache(el);
+      await ascentService.editAscent(ascent, online: true);
+    }
+    // apply ascent deletions
+    Box deleteAscentBox = Hive.box(Ascent.deleteBoxName);
+    for (int i = 0; i < deleteAscentBox.length; i++) {
+      Map el = deleteAscentBox.getAt(i);
+      String id = createAscentBox.keyAt(i);
+      Ascent ascent = Ascent.fromCache(el);
+      await ascentService.deleteAscentOfPitch(id, ascent, online: true);
+      await ascentService.deleteAscentOfSinglePitchRoute(id, ascent, online: true);
+    }
   }
 
   static List<T> getTsFromCache<T>(String boxName, T Function(Map) fromCacheFactory) {

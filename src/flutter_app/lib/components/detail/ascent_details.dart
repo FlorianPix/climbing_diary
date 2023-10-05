@@ -35,7 +35,7 @@ class _AscentDetailsState extends State<AscentDetails>{
         var mediaId = await mediaService.uploadMedium(img);
         Ascent ascent = widget.ascent;
         ascent.mediaIds.add(mediaId);
-        ascentService.editAscent(ascent.toUpdateAscent());
+        await ascentService.editAscent(ascent.toUpdateAscent());
       }
     } else {
       List<XFile> images = await picker.pickMultiImage();
@@ -43,7 +43,7 @@ class _AscentDetailsState extends State<AscentDetails>{
         var mediaId = await mediaService.uploadMedium(img);
         Ascent ascent = widget.ascent;
         ascent.mediaIds.add(mediaId);
-        ascentService.editAscent(ascent.toUpdateAscent());
+        await ascentService.editAscent(ascent.toUpdateAscent());
       }
     }
     setState(() {});
@@ -102,7 +102,7 @@ class _AscentDetailsState extends State<AscentDetails>{
         IconButton(
           onPressed: () {
             Navigator.pop(context);
-            ascentService.deleteAscentOfPitch(ascent, widget.pitchId);
+            ascentService.deleteAscentOfPitch(widget.pitchId, ascent);
             widget.onDelete.call(ascent);
           },
           icon: const Icon(Icons.delete),

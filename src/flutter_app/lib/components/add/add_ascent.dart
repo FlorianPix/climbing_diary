@@ -105,7 +105,7 @@ class _AddAscentState extends State<AddAscent>{
                 style: ascentStyleValue.index,
                 type: ascentTypeValue.index,
               );
-              Ascent? createdAscent = await ascentService.createAscent(widget.pitch.id, ascent);
+              Ascent? createdAscent = await ascentService.createAscentForPitch(widget.pitch.id, ascent);
               widget.onAdd?.call(createdAscent!);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
