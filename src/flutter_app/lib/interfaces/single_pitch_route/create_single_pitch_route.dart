@@ -1,4 +1,6 @@
 import 'package:climbing_diary/interfaces/route/create_route.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
+import 'package:uuid/uuid.dart';
 
 import '../grade.dart';
 
@@ -36,6 +38,22 @@ class CreateSinglePitchRoute extends CreateClimbingRoute {
       location: cache['location'],
       name: cache['name'],
       rating: cache['rating'],
+    );
+  }
+
+  SinglePitchRoute toSinglePitchRoute(){
+    return SinglePitchRoute(
+      updated: DateTime.now().toIso8601String(),
+      mediaIds: [],
+      id: const Uuid().v4(),
+      userId: '',
+      comment: comment != null ? comment! : '',
+      name: name,
+      rating: rating,
+      ascentIds: [],
+      location: location != null ? location! : '',
+      grade: grade,
+      length: length,
     );
   }
 

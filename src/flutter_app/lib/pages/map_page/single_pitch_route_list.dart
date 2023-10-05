@@ -47,7 +47,7 @@ class SinglePitchRouteListState extends State<SinglePitchRouteList> {
     List<String> singlePitchRouteIds = widget.singlePitchRouteIds;
 
     return FutureBuilder<List<SinglePitchRoute?>>(
-      future: singlePitchRouteService.getSinglePitchRoutesOfIds(online, singlePitchRouteIds),
+      future: singlePitchRouteService.getSinglePitchRoutesOfIds(singlePitchRouteIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());

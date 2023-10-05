@@ -43,12 +43,12 @@ class _MainPageState extends State<MainPage>{
     setState(() => syncing = true);
     await cacheService.applyChanges();
     await tripService.getTrips(online: widget.online);
-    await spotService.getSpots(widget.online);
-    await multiPitchRouteService.getMultiPitchRoutes(widget.online);
-    await singlePitchRouteService.getSinglePitchRoutes(widget.online);
-    await pitchService.getPitches(widget.online);
-    await ascentService.getAscents(widget.online);
-    await mediaService.getMedia(widget.online);
+    await spotService.getSpots(online: widget.online);
+    await multiPitchRouteService.getMultiPitchRoutes(online: widget.online);
+    await singlePitchRouteService.getSinglePitchRoutes(online: widget.online);
+    await pitchService.getPitches(online: widget.online);
+    await ascentService.getAscents(online: widget.online);
+    await mediaService.getMedia(online: widget.online);
     MyNotifications.showPositiveNotification("synced");
     setState(() => syncing = false);
   }

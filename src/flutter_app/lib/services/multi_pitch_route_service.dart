@@ -1,20 +1,19 @@
-import 'package:climbing_diary/interfaces/multi_pitch_route/create_multi_pitch_route.dart';
-import 'package:climbing_diary/services/pitch_service.dart';
-import 'package:hive/hive.dart';
-
-import 'package:climbing_diary/components/common/my_notifications.dart';
-import '../config/environment.dart';
-import '../interfaces/ascent/ascent.dart';
-import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../interfaces/multi_pitch_route/update_multi_pitch_route.dart';
-import '../interfaces/pitch/pitch.dart';
 import 'package:dio/dio.dart';
-
-import '../data/network/dio_client.dart';
-import '../data/sharedprefs/shared_preference_helper.dart';
-import 'ascent_service.dart';
-import 'cache_service.dart';
-import 'locator.dart';
+import 'package:hive/hive.dart';
+import 'package:climbing_diary/interfaces/multi_pitch_route/create_multi_pitch_route.dart';
+import 'package:climbing_diary/services/error_service.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
+import 'package:climbing_diary/config/environment.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
+import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:climbing_diary/data/network/dio_client.dart';
+import 'package:climbing_diary/data/sharedprefs/shared_preference_helper.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
+import 'package:climbing_diary/services/cache_service.dart';
+import 'package:climbing_diary/services/locator.dart';
 
 class MultiPitchRouteService {
   final PitchService pitchService = PitchService();
@@ -42,11 +41,7 @@ class MultiPitchRouteService {
       }
       return MultiPitchRoute.fromCache(box.get(routeId));
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
+      ErrorService.handleConnectionErrors(e);
       print(e);
     }
     return null;
@@ -92,11 +87,7 @@ class MultiPitchRouteService {
         return multiPitchRoutes.where((element) => multiPitchRouteIds.contains(element.id)).toList();
       }
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
+      ErrorService.handleConnectionErrors(e);
     }
     return [];
   }
@@ -140,11 +131,7 @@ class MultiPitchRouteService {
         return CacheService.getTsFromCache<MultiPitchRoute>('multi_pitch_routes', MultiPitchRoute.fromCache);
       }
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
+      ErrorService.handleConnectionErrors(e);
     }
     return [];
   }

@@ -1,17 +1,16 @@
-import 'package:climbing_diary/pages/diary_page/timeline/my_timeline_theme_data.dart';
-import 'package:climbing_diary/pages/diary_page/timeline/route_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
-
+import 'package:climbing_diary/pages/diary_page/timeline/my_timeline_theme_data.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/route_timeline.dart';
 import 'package:climbing_diary/components/common/image_list_view.dart';
-import '../../../components/info/spot_info.dart';
+import 'package:climbing_diary/components/info/spot_info.dart';
 import 'package:climbing_diary/components/common/rating.dart';
-import '../../../interfaces/spot/spot.dart';
-import '../../../interfaces/trip/trip.dart';
-import '../../../services/spot_service.dart';
-import '../../../services/trip_service.dart';
-import '../spot_details.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
+import 'package:climbing_diary/services/spot_service.dart';
+import 'package:climbing_diary/services/trip_service.dart';
+import 'package:climbing_diary/pages/diary_page/spot_details.dart';
 
 class SpotTimeline extends StatefulWidget {
   const SpotTimeline({super.key, required this.spotIds, required this.trip, required this.startDate, required this.endDate, required this.onNetworkChange});
@@ -48,7 +47,7 @@ class SpotTimelineState extends State<SpotTimeline> {
   Widget build(BuildContext context) {
     List<String> spotIds = widget.spotIds;
     return FutureBuilder<List<Spot?>>(
-      future: spotService.getSpotsOfIds(spotIds, false),
+      future: spotService.getSpotsOfIds(spotIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());

@@ -164,7 +164,7 @@ class _AddRouteState extends State<AddRoute>{
                     grade: Grade(grade: grade, system: gradingSystem),
                     length: int.parse(controllerLength.text)
                   );
-                  SinglePitchRoute? createdRoute = await singlePitchRouteService.createSinglePitchRoute(route, spot.id, result);
+                  SinglePitchRoute? createdRoute = await singlePitchRouteService.createSinglePitchRoute(route, spot.id);
                   widget.onAddSinglePitchRoute?.call(createdRoute!);
                 }
                 setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));

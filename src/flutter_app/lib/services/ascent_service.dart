@@ -1,3 +1,4 @@
+import 'package:climbing_diary/services/error_service.dart';
 import 'package:hive/hive.dart';
 
 import '../components/common/my_notifications.dart';
@@ -36,11 +37,7 @@ class AscentService {
       }
       return Ascent.fromCache(box.get(ascentId));
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
+      ErrorService.handleConnectionErrors(e);
       print(e);
     }
     return null;
@@ -86,11 +83,7 @@ class AscentService {
         return ascents.where((element) => ascentIds.contains(element.id)).toList();
       }
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
+      ErrorService.handleConnectionErrors(e);
     }
     return [];
   }
@@ -134,11 +127,7 @@ class AscentService {
         return CacheService.getTsFromCache<Ascent>('ascents', Ascent.fromCache);
       }
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
+      ErrorService.handleConnectionErrors(e);
     }
     return [];
   }

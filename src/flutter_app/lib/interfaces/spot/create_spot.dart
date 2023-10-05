@@ -1,3 +1,6 @@
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:uuid/uuid.dart';
+
 class CreateSpot {
   static const String boxName = 'create_spots';
 
@@ -52,6 +55,24 @@ class CreateSpot {
     "name": name,
     "rating": rating,
   };
+
+  Spot toSpot(){
+    return Spot(
+      updated: DateTime.now().toIso8601String(),
+      mediaIds: [],
+      singlePitchRouteIds: [],
+      multiPitchRouteIds: [],
+      id: const Uuid().v4(),
+      userId: '',
+      comment: comment != null ? comment! : '',
+      name: name,
+      rating: rating,
+      coordinates: coordinates,
+      distanceParking: distanceParking != null ? distanceParking! : 0,
+      distancePublicTransport: distancePublicTransport != null ? distancePublicTransport! : 0,
+      location: location,
+    );
+  }
 
   @override
   int get hashCode {

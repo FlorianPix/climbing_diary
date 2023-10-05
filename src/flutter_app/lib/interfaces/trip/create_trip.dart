@@ -48,16 +48,16 @@ class CreateTrip {
 
   Trip toTrip(){
     return Trip(
-        updated: DateTime.now().toIso8601String(),
-        mediaIds: [],
-        spotIds: [],
-        id: const Uuid().v4(),
-        userId: '',
-        comment: comment != null ? comment! : '',
-        endDate: endDate,
-        name: name,
-        rating: rating,
-        startDate: startDate
+      updated: DateTime.now().toIso8601String(),
+      mediaIds: [],
+      spotIds: [],
+      id: const Uuid().v4(),
+      userId: '',
+      comment: comment != null ? comment! : '',
+      endDate: endDate,
+      name: name,
+      rating: rating,
+      startDate: startDate
     );
   }
 

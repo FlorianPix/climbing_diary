@@ -53,7 +53,7 @@ class _GradeDistributionState extends State<GradeDistribution> {
       _distribution[i] = 0;
     }
 
-    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutesOfIds(online, widget.singlePitchRouteIds);
+    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutesOfIds(widget.singlePitchRouteIds);
     for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
       int gradeIndex = Grade.translationTable[singlePitchRoute.grade.system.index].indexOf(singlePitchRoute.grade.grade);
       _distribution[gradeIndex] = _distribution[gradeIndex]! + 1;

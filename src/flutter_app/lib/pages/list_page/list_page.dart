@@ -83,7 +83,7 @@ class ListPageState extends State<ListPage> {
     );
 
     Widget spotList = FutureBuilder<List<Spot>>(
-      future: spotService.getSpotsByName(controllerSearch.text, false),
+      future: spotService.getSpotsByName(controllerSearch.text),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
@@ -102,7 +102,7 @@ class ListPageState extends State<ListPage> {
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<MultiPitchRoute> multiPitchRoutes = snapshot.data!;
         return FutureBuilder<List<SinglePitchRoute>>(
-          future: singlePitchRouteService.getSinglePitchRoutesByName(controllerSearch.text, false),
+          future: singlePitchRouteService.getSinglePitchRoutesByName(controllerSearch.text),
           builder: (context, snapshot) {
             if (snapshot.hasError) return Text(snapshot.error.toString());
             if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());

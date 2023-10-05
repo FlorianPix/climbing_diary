@@ -167,7 +167,7 @@ class _AddSpotState extends State<AddSpot>{
                 name: controllerTitle.text,
                 rating: currentSliderValue.toInt(),
               );
-              Spot? createdSpot = await spotService.createSpot(spot, result);
+              Spot? createdSpot = await spotService.createSpot(spot);
               if (createdSpot != null) {
                 if (widget.trip != null) {
                   Trip trip = widget.trip!;

@@ -1,4 +1,5 @@
 import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
 
 class UpdateSpot extends UpdateMyBaseInterface{
   static const String boxName = 'edit_spots';
@@ -59,6 +60,24 @@ class UpdateSpot extends UpdateMyBaseInterface{
       location: cache['location'],
       name: cache['name'],
       rating: cache['rating'],
+    );
+  }
+
+  Spot toSpot(Spot oldSpot){
+    return Spot(
+      updated: DateTime.now().toIso8601String(),
+      mediaIds: mediaIds != null ? mediaIds! : oldSpot.mediaIds,
+      id: id,
+      userId: userId != null ? userId! : oldSpot.userId,
+      comment: comment != null ? comment! : oldSpot.comment,
+      name: name != null ? name! : oldSpot.name,
+      rating: rating != null ? rating! : oldSpot.rating,
+      singlePitchRouteIds: singlePitchRouteIds != null ? singlePitchRouteIds! : oldSpot.singlePitchRouteIds,
+      multiPitchRouteIds: multiPitchRouteIds != null ? multiPitchRouteIds! : oldSpot.multiPitchRouteIds,
+      coordinates: coordinates != null ? coordinates! : oldSpot.coordinates,
+      distanceParking: distanceParking != null ? distanceParking! : oldSpot.distanceParking,
+      distancePublicTransport: distancePublicTransport != null ? distancePublicTransport! : oldSpot.distancePublicTransport,
+      location: location != null ? location! : oldSpot.location,
     );
   }
 

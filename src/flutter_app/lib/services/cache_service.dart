@@ -1,3 +1,4 @@
+import 'package:climbing_diary/services/spot_service.dart';
 import 'package:dio/dio.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/create_single_pitch_route.dart';
@@ -33,6 +34,7 @@ class CacheService{
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
   final TripService tripService = TripService();
+  final SpotService spotService = SpotService();
 
   static const List<String> boxNames = [
     Media.boxName, Media.deleteBoxName,
@@ -63,6 +65,16 @@ class CacheService{
 
   /// Apply all changes that were made locally to the server.
   Future<void> applyChanges() async {
+    await applyTripChanges();
+    MyNotifications.showPositiveNotification("synced trips");
+    await applySpotChanges();
+    await applySinglePitchRouteChanges();
+    await applyMultiPitchRouteChanges();
+    await applyPitchChanges();
+    await applyAscentChanges();
+  }
+
+  Future<void> applyTripChanges() async {
     // apply trip creations
     Box createTripBox = Hive.box(CreateTrip.boxName);
     for (int i = 0; i < createTripBox.length; i++){
@@ -84,6 +96,46 @@ class CacheService{
       Trip trip = Trip.fromCache(el);
       await tripService.deleteTrip(trip, online: true);
     }
+  }
+
+  Future<void> applySpotChanges() async {
+    // apply spot creations
+    Box createSpotBox = Hive.box(CreateSpot.boxName);
+    for (int i = 0; i < createSpotBox.length; i++){
+      Map el = createSpotBox.getAt(i);
+      CreateSpot spot = CreateSpot.fromCache(el);
+      await spotService.createSpot(spot, online: true);
+    }
+    // apply spot edits
+    Box updateSpotBox = Hive.box(UpdateSpot.boxName);
+    for (int i = 0; i < updateSpotBox.length; i++) {
+      Map el = updateSpotBox.getAt(i);
+      UpdateSpot spot = UpdateSpot.fromCache(el);
+      await spotService.editSpot(spot, online: true);
+    }
+    // apply spot deletions
+    Box deleteSpotBox = Hive.box(Spot.deleteBoxName);
+    for (int i = 0; i < deleteSpotBox.length; i++) {
+      Map el = deleteSpotBox.getAt(i);
+      Spot spot = Spot.fromCache(el);
+      await spotService.deleteSpot(spot, online: true);
+    }
+  }
+
+  Future<void> applySinglePitchRouteChanges() async {
+
+  }
+
+  Future<void> applyMultiPitchRouteChanges() async {
+
+  }
+
+  Future<void> applyPitchChanges() async {
+
+  }
+
+  Future<void> applyAscentChanges() async {
+
   }
 
   static List<T> getTsFromCache<T>(String boxName, T Function(Map) fromCacheFactory) {
