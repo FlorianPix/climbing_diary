@@ -170,7 +170,7 @@ class ArchiveService {
             String oldImageId = image.path;
             oldImageId = oldImageId.split('/').last;
             oldImageId = oldImageId.split('.')[0];
-            String newImageId = await mediaService.uploadMedia(XFile(image.path));
+            String newImageId = await mediaService.uploadMedium(XFile(image.path));
             mediaIdTranslation[oldImageId] = newImageId;
           }
 

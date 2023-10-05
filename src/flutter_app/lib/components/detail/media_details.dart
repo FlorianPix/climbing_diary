@@ -1,8 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:photo_view/photo_view.dart';
-
-import '../../services/media_service.dart';
+import 'package:climbing_diary/interfaces/media.dart';
+import 'package:climbing_diary/services/media_service.dart';
 
 class MediaDetails extends StatefulWidget {
   const MediaDetails({super.key, required this.url, required this.onDelete });
@@ -39,7 +40,7 @@ class _MediaDetailsState extends State<MediaDetails>{
         IconButton(
           onPressed: () {
             Navigator.pop(context);
-            mediaService.deleteMedium(mediumId);
+            mediaService.deleteMedium(Media.fromCache(Hive.box(Media.boxName).get(mediumId)));
             widget.onDelete.call(mediumId);
           },
           icon: const Icon(Icons.delete),

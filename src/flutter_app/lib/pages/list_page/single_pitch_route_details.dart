@@ -43,7 +43,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
     if (media == ImageSource.camera) {
       var img = await picker.pickImage(source: media);
       if (img != null) {
-        var mediaId = await mediaService.uploadMedia(img);
+        var mediaId = await mediaService.uploadMedium(img);
         SinglePitchRoute singlePitchRoute = widget.route;
         singlePitchRoute.mediaIds.add(mediaId);
         singlePitchRouteService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());
@@ -51,7 +51,7 @@ class _SinglePitchRouteDetailsState extends State<SinglePitchRouteDetails>{
     } else {
       List<XFile> images = await picker.pickMultiImage();
       for (XFile img in images){
-        var mediaId = await mediaService.uploadMedia(img);
+        var mediaId = await mediaService.uploadMedium(img);
         SinglePitchRoute singlePitchRoute = widget.route;
         singlePitchRoute.mediaIds.add(mediaId);
         singlePitchRouteService.editSinglePitchRoute(singlePitchRoute.toUpdateSinglePitchRoute());

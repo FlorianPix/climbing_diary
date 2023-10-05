@@ -47,7 +47,7 @@ class _TripDetailsState extends State<TripDetails>{
     if (media == ImageSource.camera) {
       var img = await picker.pickImage(source: media);
       if (img != null) {
-        var mediaId = await mediaService.uploadMedia(img);
+        var mediaId = await mediaService.uploadMedium(img);
         Trip trip = widget.trip;
         trip.mediaIds.add(mediaId);
         await tripService.editTrip(trip.toUpdateTrip());
@@ -55,7 +55,7 @@ class _TripDetailsState extends State<TripDetails>{
     } else {
       List<XFile> images = await picker.pickMultiImage();
       for (XFile img in images){
-        var mediaId = await mediaService.uploadMedia(img);
+        var mediaId = await mediaService.uploadMedium(img);
         Trip trip = widget.trip;
         trip.mediaIds.add(mediaId);
         await tripService.editTrip(trip.toUpdateTrip());

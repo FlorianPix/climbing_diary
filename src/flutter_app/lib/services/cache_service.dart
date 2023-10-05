@@ -1,5 +1,4 @@
 import 'package:climbing_diary/services/spot_service.dart';
-import 'package:dio/dio.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/create_single_pitch_route.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch_route.dart';
@@ -15,7 +14,6 @@ import 'package:climbing_diary/interfaces/media.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/create_multi_pitch_route.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
-import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
 import 'package:climbing_diary/interfaces/pitch/create_pitch.dart';
 import 'package:climbing_diary/interfaces/pitch/pitch.dart';
 import 'package:climbing_diary/interfaces/pitch/update_pitch.dart';
@@ -148,6 +146,16 @@ class CacheService{
     return ts;
   }
 
+  static List<Media> getMediaFromCache(Media Function(Map) fromCacheFactory) {
+    Box box = Hive.box(Media.boxName);
+    List<Media> ts = [];
+    for(var i = 0; i < box.length; i++){
+      var data = box.getAt(i);
+      ts.add(fromCacheFactory(data));
+    }
+    return ts;
+  }
+
   static List<T> getCreateQueue<T>(String boxName, T Function(Map) fromCacheFactory) {
     Box box = Hive.box(boxName);
     List<T> ts = [];
@@ -187,21 +195,11 @@ class CacheService{
     Future.forEach(data, (datum) async => await editT(datum));
   }
 
-  static Future<void> editTFromCache<T extends UpdateMyBaseInterface>(String boxName, T t) async {
-    return await Hive.box(boxName).put(t.id, t.toJson());
-  }
-
   static bool isStale(Map cache, String serverUpdatedString){
     if (cache['updated'] == null) return true;
     DateTime cachedUpdated = DateTime.parse(cache['updated']);
     DateTime serverUpdated = DateTime.parse(serverUpdatedString);
     if (serverUpdated.compareTo(cachedUpdated) == 1) return true;
     return false;
-  }
-
-  static Media getMediumFromCache(String mediaId){
-    Box box = Hive.box(Media.boxName);
-    Media medium = Media.fromCache(box.get(mediaId));
-    return medium;
   }
 }

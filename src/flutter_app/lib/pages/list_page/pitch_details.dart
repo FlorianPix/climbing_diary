@@ -40,7 +40,7 @@ class _PitchDetailsState extends State<PitchDetails>{
     if (media == ImageSource.camera) {
       var img = await picker.pickImage(source: media);
       if (img != null) {
-        var mediaId = await mediaService.uploadMedia(img);
+        var mediaId = await mediaService.uploadMedium(img);
         Pitch pitch = widget.pitch;
         pitch.mediaIds.add(mediaId);
         pitchService.editPitch(pitch.toUpdatePitch());
@@ -48,7 +48,7 @@ class _PitchDetailsState extends State<PitchDetails>{
     } else {
       List<XFile> images = await picker.pickMultiImage();
       for (XFile img in images){
-        var mediaId = await mediaService.uploadMedia(img);
+        var mediaId = await mediaService.uploadMedium(img);
         Pitch pitch = widget.pitch;
         pitch.mediaIds.add(mediaId);
         pitchService.editPitch(pitch.toUpdatePitch());

@@ -32,7 +32,7 @@ class _AscentDetailsState extends State<AscentDetails>{
     if (media == ImageSource.camera) {
       var img = await picker.pickImage(source: media);
       if (img != null) {
-        var mediaId = await mediaService.uploadMedia(img);
+        var mediaId = await mediaService.uploadMedium(img);
         Ascent ascent = widget.ascent;
         ascent.mediaIds.add(mediaId);
         ascentService.editAscent(ascent.toUpdateAscent());
@@ -40,7 +40,7 @@ class _AscentDetailsState extends State<AscentDetails>{
     } else {
       List<XFile> images = await picker.pickMultiImage();
       for (XFile img in images){
-        var mediaId = await mediaService.uploadMedia(img);
+        var mediaId = await mediaService.uploadMedium(img);
         Ascent ascent = widget.ascent;
         ascent.mediaIds.add(mediaId);
         ascentService.editAscent(ascent.toUpdateAscent());
