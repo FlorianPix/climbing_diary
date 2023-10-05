@@ -182,7 +182,6 @@ class SpotService {
   /// If the parameter [online] is null or false the spot is added to the cache and uploaded later at the next sync.
   /// Otherwise it is added to the cache and to the server.
   Future<Spot?> createSpot(CreateSpot createSpot, {bool? online}) async {
-    // sanitise createSpot
     CreateSpot spot = CreateSpot(
       name: createSpot.name,
       coordinates: createSpot.coordinates,
@@ -265,7 +264,7 @@ class SpotService {
     }
   }
 
-  /// Upload spot to the server.
+  /// Upload a spot to the server.
   Future<Spot?> uploadSpot(Map data) async {
     try {
       final Response response = await netWorkLocator.dio.post('$climbingApiHost/spot', data: data);
@@ -273,18 +272,7 @@ class SpotService {
       MyNotifications.showPositiveNotification('Created new spot: ${response.data['name']}');
       return Spot.fromJson(response.data);
     } catch (e) {
-      if (e is DioError) {
-        final response = e.response;
-        if (response != null) {
-          switch (response.statusCode) {
-            case 409:
-              MyNotifications.showNegativeNotification('This spot already exists!');
-              break;
-            default:
-              throw Exception('Failed to create spot');
-          }
-        }
-      }
+      ErrorService.handleCreationErrors(e, 'spot');
     }
     return null;
   }

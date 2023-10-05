@@ -1,17 +1,15 @@
-import 'package:climbing_diary/services/error_service.dart';
-import 'package:hive/hive.dart';
-
-import 'package:climbing_diary/components/common/my_notifications.dart';
-import '../config/environment.dart';
-import '../interfaces/pitch/create_pitch.dart';
 import 'package:dio/dio.dart';
-
-import '../data/network/dio_client.dart';
-import '../data/sharedprefs/shared_preference_helper.dart';
-import '../interfaces/pitch/pitch.dart';
-import '../interfaces/pitch/update_pitch.dart';
-import 'cache_service.dart';
-import 'locator.dart';
+import 'package:hive/hive.dart';
+import 'package:climbing_diary/services/error_service.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
+import 'package:climbing_diary/config/environment.dart';
+import 'package:climbing_diary/interfaces/pitch/create_pitch.dart';
+import 'package:climbing_diary/data/network/dio_client.dart';
+import 'package:climbing_diary/data/sharedprefs/shared_preference_helper.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:climbing_diary/interfaces/pitch/update_pitch.dart';
+import 'package:climbing_diary/services/cache_service.dart';
+import 'package:climbing_diary/services/locator.dart';
 
 class PitchService {
   final netWorkLocator = getIt.get<DioClient>();
@@ -19,7 +17,120 @@ class PitchService {
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<Pitch?> createPitch(CreatePitch createPitch, String routeId, bool hasConnection) async {
+  /// Get a pitch by its id from cache and optionally from the server.
+  /// If the parameter [online] is null or false the pitch is searched in cache,
+  /// otherwise it is requested from the server.
+  Future<Pitch?> getPitch(String pitchId, {bool? online}) async {
+    Box box = Hive.box(Pitch.boxName);
+    if (online == null || !online) return Pitch.fromCache(box.get(pitchId));
+    // request pitch from server
+    try {
+      // request when the pitch was updated the last time
+      final Response pitchIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/pitchUpdated/$pitchId');
+      if (pitchIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of pitch id updated");
+      String serverUpdated = pitchIdUpdatedResponse.data['updated'];
+      // request the pitch from the server if it was updated more recently than the one in the cache
+      if (!box.containsKey(pitchId) || CacheService.isStale(box.get(pitchId), serverUpdated)) {
+        final Response missingPitchResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/$pitchId');
+        if (missingPitchResponse.statusCode != 200) throw Exception("Error during request of missing pitch");
+        return Pitch.fromJson(missingPitchResponse.data);
+      } else {
+        return Pitch.fromCache(box.get(pitchId));
+      }
+    } catch (e) {
+      ErrorService.handleConnectionErrors(e);
+    }
+    return null;
+  }
+
+  /// Get pitches with given ids from cache and optionally from the server.
+  /// If the parameter [online] is null or false the pitches are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<List<Pitch>> getPitchesOfIds(List<String> pitchIds, {bool? online}) async {
+    List<Pitch> pitches = CacheService.getTsFromCache<Pitch>(Pitch.boxName, Pitch.fromCache);
+    if(online == null || !online) return pitches.where((pitch) => pitchIds.contains(pitch.id)).toList();
+    // request pitches from the server
+    try {
+      final Response pitchIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/pitchUpdated/ids', data: pitchIds);
+      if (pitchIdsUpdatedResponse.statusCode != 200) throw Exception("Error during request of pitch ids updated");
+      List<Pitch> pitches = [];
+      List<String> missingPitchIds = [];
+      Box box = Hive.box(Pitch.boxName);
+      pitchIdsUpdatedResponse.data.forEach((idWithDatetime) {
+        String id = idWithDatetime['_id'];
+        String serverUpdated = idWithDatetime['updated'];
+        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
+          missingPitchIds.add(id);
+        } else {
+          pitches.add(Pitch.fromCache(box.get(id)));
+        }
+      });
+      if (missingPitchIds.isEmpty) return pitches;
+      // request missing or stale pitches from the server
+      final Response missingPitchesResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/ids', data: missingPitchIds);
+      if (missingPitchesResponse.statusCode != 200) throw Exception("Error during request of missing pitches");
+      Future.forEach(missingPitchesResponse.data, (dynamic s) async {
+        Pitch pitch = Pitch.fromJson(s);
+        await box.put(pitch.id, pitch.toJson());
+        pitches.add(pitch);
+      });
+      return pitches;
+    } catch (e) {
+      ErrorService.handleConnectionErrors(e);
+    }
+    return [];
+  }
+
+  /// Get all pitches from cache and optionally from the server.
+  /// If the parameter [online] is null or false the pitches are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<List<Pitch>> getPitches({bool? online}) async {
+    if(online == null || !online) return CacheService.getTsFromCache<Pitch>(Pitch.boxName, Pitch.fromCache);
+    // request pitches from the server
+    try {
+      // request when the pitches were updated the last time
+      final Response pitchIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/pitchUpdated');
+      if (pitchIdsResponse.statusCode != 200) throw Exception("Error during request of pitch ids");
+      List<Pitch> pitches = [];
+      List<String> missingPitchIds = [];
+      Box box = Hive.box(Pitch.boxName);
+      pitchIdsResponse.data.forEach((idWithDatetime) {
+        String id = idWithDatetime['_id'];
+        String serverUpdated = idWithDatetime['updated'];
+        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
+          missingPitchIds.add(id);
+        } else {
+          pitches.add(Pitch.fromCache(box.get(id)));
+        }
+      });
+      if (missingPitchIds.isEmpty) return pitches;
+      final Response missingPitchesResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/ids', data: missingPitchIds);
+      if (missingPitchesResponse.statusCode != 200) throw Exception("Error during request of missing pitches");
+      Future.forEach(missingPitchesResponse.data, (dynamic s) async {
+        Pitch pitch = Pitch.fromJson(s);
+        await box.put(pitch.id, pitch.toJson());
+        pitches.add(pitch);
+      });
+      return pitches;
+    } catch (e) {
+      ErrorService.handleConnectionErrors(e);
+    }
+    return [];
+  }
+
+  /// Get all pitches from cache and optionally from the server by their name.
+  /// If the parameter [online] is null or false the pitches are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<List<Pitch>> getPitchesByName(String name, {bool? online}) async {
+    List<Pitch> pitches = await getPitches(online: online);
+    if (name.isEmpty) return pitches;
+    return pitches.where((pitch) => pitch.name.contains(name)).toList();
+  }
+
+  /// Create a pitch in cache and optionally on the server.
+  /// If the parameter [online] is null or false the pitch is added to the cache and uploaded later at the next sync.
+  /// Otherwise it is added to the cache and to the server.
+  Future<Pitch?> createPitch(CreatePitch createPitch, String routeId, {bool? online}) async {
     CreatePitch pitch = CreatePitch(
       comment: (createPitch.comment != null) ? createPitch.comment! : "",
       grade: createPitch.grade,
@@ -28,203 +139,85 @@ class PitchService {
       num: createPitch.num,
       rating: createPitch.rating,
     );
-    if (hasConnection) {
-      var data = pitch.toJson();
-      return uploadPitch(routeId, data);
-    } else {
-      // save to cache
-      Box box = Hive.box('upload_later_pitches');
-      Map pitchJson = pitch.toJson();
-      box.put(pitchJson.hashCode, pitchJson);
-    }
-    return null;
+    // add to cache
+    Box pitchBox = Hive.box(Pitch.boxName);
+    Box createPitchBox = Hive.box(CreatePitch.boxName);
+    Pitch tmpPitch = pitch.toPitch();
+    await pitchBox.put(pitch.hashCode, tmpPitch.toJson());
+    await createPitchBox.put(pitch.hashCode, pitch.toJson());
+    if (online == null || !online) return tmpPitch;
+    // try to upload and update cache if successful
+    Map data = pitch.toJson();
+    Pitch? uploadedPitch = await uploadPitch(routeId, data);
+    if (uploadedPitch == null) return tmpPitch;
+    await pitchBox.delete(pitch.hashCode);
+    await createPitchBox.delete(pitch.hashCode);
+    await pitchBox.put(uploadedPitch.id, uploadedPitch.toJson());
+    return uploadedPitch;
   }
 
-  Future<Pitch?> getPitch(String pitchId, bool online) async {
+  /// Edit a pitch in cache and optionally on the server.
+  /// If the parameter [online] is null or false the pitch is edited only in the cache and later on the server at the next sync.
+  /// Otherwise it is edited in cache and on the server immediately.
+  Future<Pitch?> editPitch(UpdatePitch updatePitch, {bool? online}) async {
+    // add to cache
+    Box pitchBox = Hive.box(Pitch.boxName);
+    Box updatePitchBox = Hive.box(UpdatePitch.boxName);
+    Pitch oldPitch = Pitch.fromCache(pitchBox.get(updatePitch.id));
+    Pitch tmpPitch = updatePitch.toPitch(oldPitch);
+    await pitchBox.put(updatePitch.id, tmpPitch.toJson());
+    await updatePitchBox.put(updatePitch.id, updatePitch.toJson());
+    if (online == null || !online) return tmpPitch;
+    // try to upload and update cache if successful
     try {
-      Box box = Hive.box('pitches');
-      if (online) {
-        final Response pitchIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/pitchUpdated/$pitchId');
-        if (pitchIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of pitch id updated");
-        String id = pitchIdUpdatedResponse.data['_id'];
-        String serverUpdated = pitchIdUpdatedResponse.data['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          final Response missingMultiPitchRouteResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/$pitchId');
-          if (missingMultiPitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing pitch");
-          return Pitch.fromJson(missingMultiPitchRouteResponse.data);
-        } else {
-          return Pitch.fromCache(box.get(id));
-        }
-      }
-      return Pitch.fromCache(box.get(pitchId));
-    } catch (e) {
-      ErrorService.handleConnectionErrors(e);
-      print(e);
-    }
-    return null;
-  }
-
-  Future<List<Pitch>> getPitchesOfIds(List<String> pitchIds, bool online) async {
-    try {
-      if(online){
-        final Response pitchIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/pitchUpdated/ids', data: pitchIds);
-        if (pitchIdsUpdatedResponse.statusCode != 200) throw Exception("Error during request of pitch ids updated");
-        List<Pitch> pitches = [];
-        List<String> missingPitchIds = [];
-        Box box = Hive.box('pitches');
-        pitchIdsUpdatedResponse.data.forEach((idWithDatetime) {
-          String id = idWithDatetime['_id'];
-          String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-            missingPitchIds.add(id);
-          } else {
-            pitches.add(Pitch.fromCache(box.get(id)));
-          }
-        });
-        if (missingPitchIds.isEmpty){
-          return pitches;
-        }
-        final Response missingPitchesResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/ids', data: missingPitchIds);
-        if (missingPitchesResponse.statusCode != 200) throw Exception("Error during request of missing pitches");
-        missingPitchesResponse.data.forEach((s) {
-          Pitch pitch = Pitch.fromJson(s);
-          if (!box.containsKey(pitch.id)) {
-            box.put(pitch.id, pitch.toJson());
-          }
-          pitches.add(pitch);
-        });
-        return pitches;
-      } else {
-        // offline
-        return CacheService.getTsFromCache<Pitch>('pitches', Pitch.fromCache);
-      }
-    } catch (e) {
-      ErrorService.handleConnectionErrors(e);
-    }
-    return [];
-  }
-
-  Future<List<Pitch>> getPitches(bool online) async {
-    try {
-      if(online){
-        final Response pitchIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/pitchUpdated');
-        if (pitchIdsResponse.statusCode != 200) throw Exception("Error during request of pitch ids");
-        List<Pitch> pitches = [];
-        List<String> missingPitchIds = [];
-        Box box = Hive.box('pitches');
-        pitchIdsResponse.data.forEach((idWithDatetime) {
-          String id = idWithDatetime['_id'];
-          String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-            missingPitchIds.add(id);
-          } else {
-            pitches.add(Pitch.fromCache(box.get(id)));
-          }
-        });
-        if (missingPitchIds.isEmpty){
-          return pitches;
-        }
-        final Response missingPitchesResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/ids', data: missingPitchIds);
-        if (missingPitchesResponse.statusCode != 200) throw Exception("Error during request of missing pitches");
-        missingPitchesResponse.data.forEach((s) {
-          Pitch pitch = Pitch.fromJson(s);
-          if (!box.containsKey(pitch.id)) box.put(pitch.id, pitch.toJson());
-          pitches.add(pitch);
-        });
-        return pitches;
-      } else {
-        // offline
-        return CacheService.getTsFromCache<Pitch>('pitches', Pitch.fromCache);
-      }
-    } catch (e) {
-      ErrorService.handleConnectionErrors(e);
-    }
-    return [];
-  }
-
-  Future<List<Pitch>> getPitchesByName(String name, bool online) async {
-    List<Pitch> pitches = await getPitches(online);
-    if (name.isEmpty) return pitches;
-    return pitches.where((pitch) => pitch.name.contains(name)).toList();
-  }
-
-  Future<Pitch?> editPitch(UpdatePitch pitch) async {
-    try {
-      final Response response = await netWorkLocator.dio
-          .put('$climbingApiHost/pitch/${pitch.id}', data: pitch.toJson());
+      final Response response = await netWorkLocator.dio.put('$climbingApiHost/pitch/${updatePitch.id}', data: updatePitch.toJson());
       if (response.statusCode != 200) throw Exception('Failed to edit pitch');
-      // TODO deletePitchFromEditQueue(pitch.hashCode);
-      return Pitch.fromJson(response.data);
+      Pitch pitch = Pitch.fromJson(response.data);
+      await pitchBox.put(updatePitch.id, updatePitch.toJson());
+      await updatePitchBox.delete(updatePitch.id);
+      return pitch;
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this pitch and edit later
-          Box box = Hive.box('edit_later_pitchs');
-          Map pitchJson = pitch.toJson();
-          box.put(pitchJson.hashCode, pitchJson);
-        }
-      }
-    } finally {
-      // TODO editPitchFromCache(pitch);
+      ErrorService.handleConnectionErrors(e);
     }
     return null;
   }
 
-  Future<void> deletePitch(String routeId, Pitch pitch) async {
+  /// Delete a pitch its media, and ascents in cache and optionally on the server.
+  /// If the parameter [online] is null or false the data is deleted only from the cache and later from the server at the next sync.
+  /// Otherwise it is deleted from cache and from the server immediately.
+  Future<void> deletePitch(String routeId, Pitch pitch, {bool? online}) async {
+    Box pitchBox = Hive.box(Pitch.boxName);
+    Box deletePitchBox = Hive.box(Pitch.deleteBoxName);
+    await pitchBox.delete(pitch.id);
+    await deletePitchBox.put(pitch.id, pitch.toJson());
+    // TODO delete media from cache
+    // TODO delete ascents from cache
+    if (online == null || !online) return;
     try {
+      // delete media
       for (var id in pitch.mediaIds) {
-        final Response mediaResponse =
-        await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
+        final Response mediaResponse = await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
         if (mediaResponse.statusCode != 204) throw Exception('Failed to delete medium');
       }
-
-      final Response pitchResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/pitch/${pitch.id}/route/$routeId');
-      if (pitchResponse.statusCode != 200) {
-        MyNotifications.showNegativeNotification('Failed to delete pitch: ${pitch.name}');
-      }
+      // delete pitch
+      final Response pitchResponse = await netWorkLocator.dio.delete('$climbingApiHost/pitch/${pitch.id}');
+      if (pitchResponse.statusCode != 200) throw Exception('Failed to delete pitch');
+      await deletePitchBox.delete(pitch.id);
       MyNotifications.showPositiveNotification('Pitch was deleted: ${pitchResponse.data['name']}');
-      // TODO deletePitchFromDeleteQueue(pitch.toJson().hashCode);
-      return pitchResponse.data;
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this pitch and delete later
-          Box box = Hive.box('delete_later_pitchs');
-          Map pitchJson = pitch.toJson();
-          box.put(pitchJson.hashCode, pitchJson);
-        }
-      }
-    } finally {
-      // TODO deletePitchFromCache(pitch.id);
+      ErrorService.handleConnectionErrors(e);
     }
   }
 
+  /// Upload a pitch to the server.
   Future<Pitch?> uploadPitch(String routeId, Map data) async {
     try {
-      final Response response = await netWorkLocator.dio
-          .post('$climbingApiHost/pitch/route/$routeId', data: data);
-      if (response.statusCode == 201) {
-        MyNotifications.showPositiveNotification('Created new pitch: ${response.data['name']}');
-        return Pitch.fromJson(response.data);
-      } else {
-        throw Exception('Failed to create pitch $response');
-      }
+      final Response response = await netWorkLocator.dio.post('$climbingApiHost/pitch/route/$routeId', data: data);
+      if (response.statusCode != 201) throw Exception('Failed to create pitch $response');
+      MyNotifications.showPositiveNotification('Created new pitch: ${response.data['name']}');
+      return Pitch.fromJson(response.data);
     } catch (e) {
-      if (e is DioError) {
-        final response = e.response;
-        if (response != null) {
-          switch (response.statusCode) {
-            case 409:
-              MyNotifications.showNegativeNotification('This pitch already exists!');
-              break;
-            default:
-              throw Exception('Failed to create pitch $response');
-          }
-        }
-      }
-    } finally {
-      // TODO deletePitchFromUploadQueue(data.hashCode);
+      ErrorService.handleCreationErrors(e, 'pitch');
     }
     return null;
   }

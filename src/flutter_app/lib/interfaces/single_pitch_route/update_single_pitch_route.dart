@@ -1,4 +1,5 @@
 import 'package:climbing_diary/interfaces/route/update_route.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
 
 import '../grade.dart';
 
@@ -49,6 +50,22 @@ class UpdateSinglePitchRoute extends UpdateClimbingRoute{
       rating: cache['rating'],
       grade: cache['rating'],
       length: cache['rating'],
+    );
+  }
+
+  SinglePitchRoute toSinglePitchRoute(SinglePitchRoute oldSinglePitchRoute){
+    return SinglePitchRoute(
+      updated: DateTime.now().toIso8601String(),
+      mediaIds: mediaIds != null ? mediaIds! : oldSinglePitchRoute.mediaIds,
+      id: id,
+      userId: userId != null ? userId! : oldSinglePitchRoute.userId,
+      comment: comment != null ? comment! : oldSinglePitchRoute.comment,
+      name: name != null ? name! : oldSinglePitchRoute.name,
+      rating: rating != null ? rating! : oldSinglePitchRoute.rating,
+      location: location != null ? location! : oldSinglePitchRoute.location,
+      ascentIds: ascentIds != null ? ascentIds! : oldSinglePitchRoute.ascentIds,
+      grade: grade != null ? grade! : oldSinglePitchRoute.grade,
+      length: length != null ? length! : oldSinglePitchRoute.length,
     );
   }
 

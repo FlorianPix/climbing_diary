@@ -137,7 +137,7 @@ class SinglePitchRouteService {
   /// Get all single-pitch-routes within a date range from cache and optionally from the server.
   /// If the parameter [online] is null or false the single-pitch-routes are searched in cache,
   /// otherwise they are requested from the server.
-  Future<SinglePitchRoute?> getSinglePitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate, bool online) async {
+  Future<SinglePitchRoute?> getSinglePitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate, {bool? online}) async {
     SinglePitchRoute? singlePitchRoute = await getSinglePitchRoute(routeId, online: online);
     if (singlePitchRoute == null) return null;
     List<Ascent> ascents = await ascentService.getAscentsOfIds(singlePitchRoute.ascentIds, online: online);
@@ -154,9 +154,8 @@ class SinglePitchRouteService {
   /// If the parameter [online] is null or false the single-pitch-route is added to the cache and uploaded later at the next sync.
   /// Otherwise it is added to the cache and to the server.
   Future<SinglePitchRoute?> createSinglePitchRoute(CreateSinglePitchRoute createRoute, String spotId, {bool? online}) async {
-    // sanitise createSinglePitchRoute
     CreateSinglePitchRoute singlePitchRoute = CreateSinglePitchRoute(
-      comment: (createRoute.comment != null) ? createRoute.comment! : "",
+      comment: createRoute.comment != null ? createRoute.comment! : "",
       location: createRoute.location,
       name: createRoute.name,
       rating: createRoute.rating,
@@ -207,7 +206,7 @@ class SinglePitchRouteService {
     return null;
   }
 
-  /// Delete a single-pitch-route its media, pitches and ascents in cache and optionally on the server.
+  /// Delete a single-pitch-route its media, pitch and ascents in cache and optionally on the server.
   /// Also remove its id from the associated spot. 
   /// If the parameter [online] is null or false the data is deleted only from the cache and later from the server at the next sync.
   /// Otherwise it is deleted from cache and from the server immediately.
@@ -236,10 +235,11 @@ class SinglePitchRouteService {
     }
   }
 
+  /// Upload a single-pitch-route to the server.
   Future<SinglePitchRoute?> uploadSinglePitchRoute(String spotId, Map data) async {
     try {
       final Response response = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_route/spot/$spotId', data: data);
-      if (response.statusCode != 201) throw Exception('Failed to create route');
+      if (response.statusCode != 201) throw Exception('Failed to create single pitch route');
       MyNotifications.showPositiveNotification('Created new single pitch route: ${response.data['name']}');
       return SinglePitchRoute.fromJson(response.data);
     } catch (e) {

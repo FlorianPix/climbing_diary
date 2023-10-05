@@ -1,3 +1,6 @@
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:uuid/uuid.dart';
+
 class CreateAscent {
   static const String boxName = 'create_ascents';
 
@@ -37,6 +40,19 @@ class CreateAscent {
     "style": style,
     "type": type,
   };
+
+  Ascent toAscent(){
+    return Ascent(
+      updated: DateTime.now().toIso8601String(),
+      mediaIds: [],
+      id: const Uuid().v4(),
+      userId: '',
+      comment: comment != null ? comment! : '',
+      date: date,
+      style: style,
+      type: type,
+    );
+  }
 
   @override
   int get hashCode {

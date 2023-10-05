@@ -86,7 +86,6 @@ class TripService {
   /// If the parameter [online] is null or false the trip is added to the cache and uploaded later at the next sync.
   /// Otherwise it is added to the cache and to the server.
   Future<Trip> createTrip(CreateTrip createTrip, {bool? online}) async {
-    // sanitise createTrip
     CreateTrip trip = CreateTrip(
       comment: (createTrip.comment != null) ? createTrip.comment! : "",
       endDate: createTrip.endDate,
