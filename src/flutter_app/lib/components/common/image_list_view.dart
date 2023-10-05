@@ -1,7 +1,7 @@
 import 'package:climbing_diary/components/common/my_skeleton.dart';
 import 'package:flutter/material.dart';
 
-import '../../interfaces/media.dart';
+import '../../interfaces/media/media.dart';
 import '../../services/media_service.dart';
 
 class ImageListView extends StatelessWidget {

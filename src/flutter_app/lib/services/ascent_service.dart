@@ -1,4 +1,4 @@
-import 'package:climbing_diary/interfaces/media.dart';
+import 'package:climbing_diary/interfaces/media/media.dart';
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
 import 'package:climbing_diary/services/error_service.dart';

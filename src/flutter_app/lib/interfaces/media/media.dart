@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 class Media {
   static const String boxName = 'media';
+  static const String createBoxName = 'create_media';
   static const String deleteBoxName = 'delete_media';
 
   final String id;

@@ -7,7 +7,7 @@ import 'package:climbing_diary/components/common/my_notifications.dart';
 import 'package:climbing_diary/config/environment.dart';
 import 'package:climbing_diary/data/network/dio_client.dart';
 import 'package:climbing_diary/data/sharedprefs/shared_preference_helper.dart';
-import 'package:climbing_diary/interfaces/media.dart';
+import 'package:climbing_diary/interfaces/media/media.dart';
 import 'package:climbing_diary/services/cache_service.dart';
 import 'package:climbing_diary/services/locator.dart';
 

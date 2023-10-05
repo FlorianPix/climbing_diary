@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:climbing_diary/interfaces/media.dart';
+import 'package:climbing_diary/interfaces/media/media.dart';
 import 'package:climbing_diary/services/media_service.dart';
 
 class MediaDetails extends StatefulWidget {

@@ -1,3 +1,4 @@
+import 'package:climbing_diary/services/media_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:climbing_diary/services/ascent_service.dart';
 import 'package:climbing_diary/services/multi_pitch_route_service.dart';
@@ -14,7 +15,7 @@ import 'package:climbing_diary/data/sharedprefs/shared_preference_helper.dart';
 import 'package:climbing_diary/interfaces/ascent/ascent.dart';
 import 'package:climbing_diary/interfaces/ascent/create_ascent.dart';
 import 'package:climbing_diary/interfaces/ascent/update_ascent.dart';
-import 'package:climbing_diary/interfaces/media.dart';
+import 'package:climbing_diary/interfaces/media/media.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/create_multi_pitch_route.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
@@ -41,6 +42,7 @@ class CacheService{
   final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
   final PitchService pitchService = PitchService();
   final AscentService ascentService = AscentService();
+  final MediaService mediaService = MediaService();
 
   static const List<String> boxNames = [
     Media.boxName, Media.deleteBoxName,
@@ -167,6 +169,26 @@ class CacheService{
       Ascent ascent = Ascent.fromCache(el);
       await ascentService.deleteAscentOfPitch(id, ascent, online: true);
       await ascentService.deleteAscentOfSinglePitchRoute(id, ascent, online: true);
+    }
+  }
+
+  Future<void> applyMediaChanges() async {
+    // apply media creations
+    Box createMediaBox = Hive.box(Media.createBoxName);
+    for (int i = 0; i < createMediaBox.length; i++){
+      Map el = createMediaBox.getAt(i);
+      String id = createMediaBox.keyAt(i);
+      Media media = Media.fromCache(el);
+      // TODO get XFile
+      await mediaService.uploadMedium();
+    }
+    // apply media deletions
+    Box deleteMediaBox = Hive.box(Media.deleteBoxName);
+    for (int i = 0; i < deleteMediaBox.length; i++) {
+      Map el = deleteMediaBox.getAt(i);
+      String id = createMediaBox.keyAt(i);
+      Media media = Media.fromCache(el);
+      await mediaService.deleteMedium(media, online: true);
     }
   }
 
