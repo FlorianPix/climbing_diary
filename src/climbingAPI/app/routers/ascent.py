@@ -203,31 +203,43 @@ async def delete_ascent_from_single_pitch_route(route_id: str, ascent_id: str, u
     db = await get_db()
     pitch = await db["single_pitch_route"].find_one({"_id": ObjectId(route_id), "user_id": user.id})
     if pitch is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Single pitch route {route_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Single pitch route {route_id} not found"
+        )
     # pitch was found
     ascent = await db["ascent"].find_one({"_id": ObjectId(ascent_id), "user_id": user.id})
     if ascent is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Ascent {ascent_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ascent {ascent_id} not found"
+        )
     # ascent was found
     if await db["single_pitch_route"].find_one({"_id": ObjectId(route_id), "ascent_ids": ObjectId(ascent_id)}) is None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail=f"Ascent {ascent_id} does not belong to pitch {route_id}")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Ascent {ascent_id} does not belong to pitch {route_id}"
+        )
     # ascent belongs to pitch
     delete_result = await db["ascent"].delete_one({"_id": ObjectId(ascent_id)})
     if delete_result.deleted_count != 1:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Ascent {ascent_id} could not be deleted")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ascent {ascent_id} could not be deleted"
+        )
     # ascent was deleted
     update_result = await db["single_pitch_route"].update_one({"_id": ObjectId(route_id)}, {"$set": {"updated": datetime.datetime.now()}, "$pull": {"ascent_ids": ObjectId(ascent_id)}})
     if update_result.modified_count != 1:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail=f"Removing ascent_id {ascent_id} from pitch {route_id} failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Removing ascent_id {ascent_id} from pitch {route_id} failed"
+        )
     # ascent_id was removed
-    if (updated_pitch := await db["single_pitch_route"].find_one({"_id": ObjectId(route_id)})) is not None:
+    if await db["single_pitch_route"].find_one({"_id": ObjectId(route_id)}) is not None:
         return ascent
     else:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Single pitch route {route_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Single pitch route {route_id} not found"
+        )
 

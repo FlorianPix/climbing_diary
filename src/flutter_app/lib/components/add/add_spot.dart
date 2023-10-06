@@ -175,7 +175,6 @@ class _AddSpotState extends State<AddSpot>{
                   editTrip.spotIds?.add(createdSpot.id);
                   Trip editedTrip = await tripService.editTrip(editTrip);
                 }
-                await Hive.box(Spot.boxName).put(createdSpot.id, createdSpot.toJson());
                 widget.onAdd.call(createdSpot);
               }
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));

@@ -31,8 +31,8 @@ class Media {
 
   factory Media.fromCache(Map<dynamic, dynamic> cache) {
     return Media(
-      createdAt: cache['createdAt'],
-      id: cache['_id'],
+      createdAt: cache['created_at'],
+      id: cache['id'],
       userId: cache['user_id'],
       title: cache['title'],
       image: cache['image']
@@ -40,10 +40,31 @@ class Media {
   }
 
   Map toJson() => {
-    "createdAt": createdAt,
-    "_id": id,
+    "created_at": createdAt,
+    "id": id,
     "user_id": userId,
     "title": title,
     "image": image
   };
+
+  @override
+  int get hashCode {
+    int imageHashCode = 0;
+    for (var pixel in image) {
+      if (imageHashCode == 0) {
+        imageHashCode = pixel.hashCode;
+      } else {
+        imageHashCode = imageHashCode ^ pixel.hashCode;
+      }
+    }
+    return
+      createdAt.hashCode ^
+      title.hashCode ^
+      imageHashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
+  }
 }

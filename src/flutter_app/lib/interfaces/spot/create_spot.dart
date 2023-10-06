@@ -76,9 +76,17 @@ class CreateSpot {
 
   @override
   int get hashCode {
+    int coordinatesHashcode = 0;
+    for (double coordinate in coordinates) {
+      if (coordinatesHashcode == 0) {
+        coordinatesHashcode = coordinatesHashcode.hashCode;
+      } else {
+        coordinatesHashcode = coordinatesHashcode ^ coordinate.hashCode;
+      }
+    }
     return
       comment.hashCode ^
-      coordinates.hashCode ^
+      coordinatesHashcode ^
       distanceParking.hashCode ^
       distancePublicTransport.hashCode ^
       location.hashCode ^

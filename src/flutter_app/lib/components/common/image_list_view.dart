@@ -1,8 +1,7 @@
-import 'package:climbing_diary/components/common/my_skeleton.dart';
 import 'package:flutter/material.dart';
-
-import '../../interfaces/media/media.dart';
-import '../../services/media_service.dart';
+import 'package:climbing_diary/components/common/my_skeleton.dart';
+import 'package:climbing_diary/interfaces/media/media.dart';
+import 'package:climbing_diary/services/media_service.dart';
 
 class ImageListView extends StatelessWidget {
   ImageListView({super.key, required this.mediaIds});
@@ -20,9 +19,8 @@ class ImageListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future<List<Media>> futureMedia = fetchMedia(mediaIds);
     Widget images = FutureBuilder<List<Media>>(
-      future: futureMedia,
+      future: fetchMedia(mediaIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) {

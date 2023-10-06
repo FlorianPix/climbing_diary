@@ -1,38 +1,22 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:climbing_diary/interfaces/media/media.dart';
 import 'package:climbing_diary/services/media_service.dart';
 
-class MediaDetails extends StatefulWidget {
-  const MediaDetails({super.key, required this.url, required this.onDelete });
+class MediaDetails extends StatelessWidget {
+  MediaDetails({super.key, required this.medium, required this.onDelete });
 
-  final String url;
+  final Media medium;
   final ValueSetter<String> onDelete;
-
-  @override
-  State<StatefulWidget> createState() => _MediaDetailsState();
-}
-
-class _MediaDetailsState extends State<MediaDetails>{
   final MediaService mediaService = MediaService();
 
   @override
-  void initState(){
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    String mediumId = widget.url;
-    mediumId = mediumId.split('/')[6];
-    mediumId = mediumId.split('?')[0];
-
     List<Widget> elements = [];
     elements.add(ClipRRect(
       borderRadius: BorderRadius.circular(8.0),
-      child: PhotoView(imageProvider: CachedNetworkImageProvider(widget.url)),
+      child: PhotoView(imageProvider: Image.memory(medium.image).image),
     ));
     elements.add(Positioned(child: Card(child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -40,8 +24,8 @@ class _MediaDetailsState extends State<MediaDetails>{
         IconButton(
           onPressed: () {
             Navigator.pop(context);
-            mediaService.deleteMedium(Media.fromCache(Hive.box(Media.boxName).get(mediumId)));
-            widget.onDelete.call(mediumId);
+            mediaService.deleteMedium(Media.fromCache(Hive.box(Media.boxName).get(medium.id)));
+            onDelete.call(medium.id);
           },
           icon: const Icon(Icons.delete),
         ),

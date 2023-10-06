@@ -101,4 +101,56 @@ class Spot extends MyBaseInterface{
       rating: rating,
     );
   }
+
+  @override
+  int get hashCode {
+    int mediaIdsHashCode = 0;
+    for (String mediaId in mediaIds) {
+      if (mediaIdsHashCode == 0) {
+        mediaIdsHashCode = mediaId.hashCode;
+      } else {
+        mediaIdsHashCode = mediaIdsHashCode ^ mediaId.hashCode;
+      }
+    }
+    int singlePitchRouteIdsHashCode = 0;
+    for (String singlePitchRouteId in singlePitchRouteIds) {
+      if (singlePitchRouteIdsHashCode == 0) {
+        singlePitchRouteIdsHashCode = singlePitchRouteId.hashCode;
+      } else {
+        singlePitchRouteIdsHashCode = singlePitchRouteIdsHashCode ^ singlePitchRouteId.hashCode;
+      }
+    }
+    int multiPitchRouteIdsHashCode = 0;
+    for (String multiPitchRouteId in multiPitchRouteIds) {
+      if (multiPitchRouteIdsHashCode == 0) {
+        multiPitchRouteIdsHashCode = multiPitchRouteId.hashCode;
+      } else {
+        multiPitchRouteIdsHashCode = multiPitchRouteIdsHashCode ^ multiPitchRouteId.hashCode;
+      }
+    }
+    int coordinatesHashcode = 0;
+    for (double coordinate in coordinates) {
+      if (coordinatesHashcode == 0) {
+        coordinatesHashcode = coordinatesHashcode.hashCode;
+      } else {
+        coordinatesHashcode = coordinatesHashcode ^ coordinate.hashCode;
+      }
+    }
+    return
+      mediaIdsHashCode ^
+      singlePitchRouteIdsHashCode ^
+      multiPitchRouteIdsHashCode ^
+      comment.hashCode ^
+      coordinatesHashcode ^
+      distanceParking.hashCode ^
+      distancePublicTransport.hashCode ^
+      location.hashCode ^
+      name.hashCode ^
+      rating.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
+  }
 }

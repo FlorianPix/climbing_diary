@@ -48,13 +48,13 @@ class UpdateSpot extends UpdateMyBaseInterface{
 
   factory UpdateSpot.fromCache(Map<dynamic, dynamic> cache) {
     return UpdateSpot(
-      mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : [],
-      singlePitchRouteIds: cache['single_pitch_route_ids'] != null ? List<String>.from(cache['single_pitch_route_ids']) : [],
-      multiPitchRouteIds: cache['multi_pitch_route_ids'] != null ? List<String>.from(cache['multi_pitch_route_ids']) : [],
+      mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : null,
+      singlePitchRouteIds: cache['single_pitch_route_ids'] != null ? List<String>.from(cache['single_pitch_route_ids']) : null,
+      multiPitchRouteIds: cache['multi_pitch_route_ids'] != null ? List<String>.from(cache['multi_pitch_route_ids']) : null,
       id: cache['_id'],
       userId: cache['user_id'],
       comment: cache['comment'],
-      coordinates: List<double>.from(cache['coordinates']),
+      coordinates: cache['coordinates'] != null ? List<double>.from(cache['coordinates']) : null,
       distanceParking: cache['distance_parking'],
       distancePublicTransport: cache['distance_public_transport'],
       location: cache['location'],

@@ -47,7 +47,7 @@ class CacheService{
   final MediaService mediaService = MediaService();
 
   static const List<String> boxNames = [
-    Media.boxName, Media.deleteBoxName,
+    Media.boxName, Media.deleteBoxName, Media.createBoxName,
     Trip.boxName, Trip.deleteBoxName, UpdateTrip.boxName, CreateTrip.boxName,
     Spot.boxName, Spot.deleteBoxName, UpdateSpot.boxName, CreateSpot.boxName,
     SinglePitchRoute.boxName, SinglePitchRoute.deleteBoxName, UpdateSinglePitchRoute.boxName, CreateSinglePitchRoute.boxName,
@@ -68,25 +68,29 @@ class CacheService{
   }
 
   static void printCache() {
+    print('--- Cache ---');
     for (var boxName in boxNames) {
-      print('$boxName: ${Hive.box(boxName).values}');
+      print('$boxName ${Hive.box(boxName).length}: ${Hive.box(boxName).values}');
     }
+    print('--- End ---');
   }
 
   /// Apply all changes that were made locally to the server.
   Future<void> applyChanges() async {
     await applyTripChanges();
-    MyNotifications.showPositiveNotification("synced trips");
+    MyNotifications.showPositiveNotification("synced your trip changes");
     await applySpotChanges();
-    MyNotifications.showPositiveNotification("synced spots");
+    MyNotifications.showPositiveNotification("synced your spot changes");
     await applySinglePitchRouteChanges();
-    MyNotifications.showPositiveNotification("synced single pitch routes");
+    MyNotifications.showPositiveNotification("synced your single pitch route changes");
     await applyMultiPitchRouteChanges();
-    MyNotifications.showPositiveNotification("synced multi pitch routes");
+    MyNotifications.showPositiveNotification("synced your multi pitch route changes");
     await applyPitchChanges();
-    MyNotifications.showPositiveNotification("synced pitches");
+    MyNotifications.showPositiveNotification("synced your pitch changes");
     await applyAscentChanges();
-    MyNotifications.showPositiveNotification("synced ascents");
+    MyNotifications.showPositiveNotification("synced your ascent changes");
+    await applyMediaChanges();
+    MyNotifications.showPositiveNotification("synced your media changes");
   }
 
   Future<void> applyTripChanges() async {
@@ -155,8 +159,6 @@ class CacheService{
     for (int i = 0; i < createAscentBox.length; i++){
       Map el = createAscentBox.getAt(i);
       String id = createAscentBox.keyAt(i);
-      Box test = Hive.box(Pitch.boxName);
-      print(test.get(id));
       CreateAscent ascent = CreateAscent.fromCache(el);
       await ascentService.createAscentForPitch(id, ascent, online: true);
       await ascentService.createAscentForSinglePitchRoute(id, ascent, online: true);
@@ -190,7 +192,7 @@ class CacheService{
       Map el = createMediaBox.getAt(i);
       Media media = Media.fromCache(el);
       XFile image = XFile.fromData(media.image);
-      await mediaService.uploadMedium(image);
+      await mediaService.uploadMedium(image, online: true);
     }
     // apply media deletions
     Box deleteMediaBox = Hive.box(Media.deleteBoxName);

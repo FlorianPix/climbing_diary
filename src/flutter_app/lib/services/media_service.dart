@@ -64,10 +64,26 @@ class MediaService {
   }
 
   /// Upload a medium to the server.
-  Future<String> uploadMedium(XFile file) async {
+  Future<String> uploadMedium(XFile file, {bool? online}) async {
+    // add to cache
+    Box mediaBox = Hive.box(Media.boxName);
+    Box createSpotBox = Hive.box(Media.createBoxName);
+    Media tmpMedia = Media(
+      id: '',
+      userId: '',
+      title: file.name,
+      createdAt: DateTime.now().toIso8601String(),
+      image: await file.readAsBytes(),
+    );
+    await mediaBox.put(tmpMedia.hashCode.toString(), tmpMedia.toJson());
+    await createSpotBox.put(tmpMedia.hashCode.toString(), tmpMedia.toJson());
+    if (online == null || !online) return tmpMedia.hashCode.toString();
     FormData formData = FormData.fromMap({"file": await MultipartFile.fromFile(file.path)});
     final Response response = await netWorkLocator.dio.post('$mediaApiHost/media', data: formData);
     if (response.statusCode != 200) throw Exception('Failed to upload medium');
+    await mediaBox.delete(tmpMedia.hashCode.toString());
+    await createSpotBox.delete(tmpMedia.hashCode.toString());
+    await mediaBox.put(response.data['id'], response.data);
     MyNotifications.showPositiveNotification('Added new image');
     return response.data['id'];
   }

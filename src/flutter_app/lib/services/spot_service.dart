@@ -195,14 +195,14 @@ class SpotService {
     Box spotBox = Hive.box(Spot.boxName);
     Box createSpotBox = Hive.box(CreateSpot.boxName);
     Spot tmpSpot = spot.toSpot();
-    await spotBox.put(spot.hashCode, tmpSpot.toJson());
+    await spotBox.put(tmpSpot.hashCode, tmpSpot.toJson());
     await createSpotBox.put(spot.hashCode, spot.toJson());
     if (online == null || !online) return tmpSpot;
     // try to upload and update cache if successful
     Map data = spot.toJson();
     Spot? uploadedSpot = await uploadSpot(data);
     if (uploadedSpot == null) return tmpSpot;
-    await spotBox.delete(spot.hashCode);
+    await spotBox.delete(tmpSpot.hashCode);
     await createSpotBox.delete(spot.hashCode);
     await spotBox.put(uploadedSpot.id, uploadedSpot.toJson());
     return uploadedSpot;

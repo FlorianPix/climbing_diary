@@ -46,7 +46,7 @@ class _SpotDetailsState extends State<SpotDetails>{
         var mediaId = await mediaService.uploadMedium(img);
         Spot spot = widget.spot;
         spot.mediaIds.add(mediaId);
-        spotService.editSpot(spot.toUpdateSpot());
+        await spotService.editSpot(spot.toUpdateSpot());
       }
     } else {
       List<XFile> images = await picker.pickMultiImage();
@@ -54,7 +54,7 @@ class _SpotDetailsState extends State<SpotDetails>{
         var mediaId = await mediaService.uploadMedium(img);
         Spot spot = widget.spot;
         spot.mediaIds.add(mediaId);
-        spotService.editSpot(spot.toUpdateSpot());
+        await spotService.editSpot(spot.toUpdateSpot());
       }
     }
     setState(() {});
