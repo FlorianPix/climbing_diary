@@ -1,3 +1,4 @@
+import 'package:climbing_diary/pages/diary_page/timeline/my_timeline_theme_data.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
@@ -54,7 +55,7 @@ class MultiPitchRouteListState extends State<MultiPitchRouteList> {
         List<MultiPitchRoute> multiPitchRoutes = snapshot.data!.whereType<MultiPitchRoute>().toList();
         multiPitchRoutes.sort((a, b) => a.name.compareTo(b.name));
 
-        updateMultiPitchRouteCallback(MultiPitchRoute route) {
+        void updateMultiPitchRouteCallback(MultiPitchRoute route) {
           var index = -1;
           for (int i = 0; i < multiPitchRoutes.length; i++) {
             if (multiPitchRoutes[i].id == route.id) index = i;
@@ -64,19 +65,14 @@ class MultiPitchRouteListState extends State<MultiPitchRouteList> {
           setState(() {});
         }
 
-        deleteMultiPitchRouteCallback(MultiPitchRoute route) {
+        void deleteMultiPitchRouteCallback(MultiPitchRoute route) {
           multiPitchRoutes.remove(route);
           setState(() {});
         }
 
         if (multiPitchRoutes.isNotEmpty){
           return FixedTimeline.tileBuilder(
-            theme: TimelineThemeData(
-              nodePosition: 0,
-              color: const Color(0xff989898),
-              indicatorTheme: const IndicatorThemeData(position: 0, size: 20.0,),
-              connectorTheme: const ConnectorThemeData(thickness: 2.5,),
-            ),
+            theme: MyTimeLineThemeData.defaultTheme,
             builder: TimelineTileBuilder.connected(
               connectionDirection: ConnectionDirection.before,
               itemCount: multiPitchRoutes.length,

@@ -100,9 +100,13 @@ class _AscentDetailsState extends State<AscentDetails>{
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
-            ascentService.deleteAscentOfPitch(widget.pitchId, ascent);
+            if (widget.ofMultiPitch) {
+              await ascentService.deleteAscentOfPitch(widget.pitchId, ascent);
+            } else {
+              await ascentService.deleteAscentOfSinglePitchRoute(widget.pitchId, ascent);
+            }
             widget.onDelete.call(ascent);
           },
           icon: const Icon(Icons.delete),

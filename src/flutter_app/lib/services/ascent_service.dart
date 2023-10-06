@@ -1,6 +1,7 @@
-import 'package:climbing_diary/interfaces/media/media.dart';
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
+import 'package:climbing_diary/interfaces/ascent/delete_ascent.dart';
+import 'package:climbing_diary/interfaces/media/media.dart';
 import 'package:climbing_diary/services/error_service.dart';
 import 'package:climbing_diary/components/common/my_notifications.dart';
 import 'package:climbing_diary/config/environment.dart';
@@ -220,7 +221,7 @@ class AscentService {
         if (mediaResponse.statusCode != 204) throw Exception('Failed to delete medium');
       }
       // delete ascent
-      final Response ascentResponse = await netWorkLocator.dio.delete('$climbingApiHost/ascent/${ascent.id}');
+      final Response ascentResponse = await netWorkLocator.dio.delete('$climbingApiHost/ascent/${ascent.id}/pitch/$pitchId');
       if (ascentResponse.statusCode != 200) throw Exception('Failed to delete ascent');
       await deleteAscentBox.delete(ascent.id);
       MyNotifications.showPositiveNotification('Ascent was deleted: ${ascentResponse.data['name']}');
@@ -237,7 +238,8 @@ class AscentService {
     Box deleteAscentBox = Hive.box(Ascent.deleteBoxName);
     Box mediaBox = Hive.box(Media.boxName);
     await ascentBox.delete(ascent.id);
-    await deleteAscentBox.put(ascent.id, ascent.toJson());
+    DeleteAscent deleteAscent = DeleteAscent(pitchId: pitchId, ascent: ascent, ofPitch: false);
+    await deleteAscentBox.put(ascent.id, deleteAscent.toJson());
     for (String id in ascent.mediaIds) {
       await mediaBox.delete(id);
     }
@@ -249,7 +251,7 @@ class AscentService {
         if (mediaResponse.statusCode != 204) throw Exception('Failed to delete medium');
       }
       // delete ascent
-      final Response ascentResponse = await netWorkLocator.dio.delete('$climbingApiHost/ascent/${ascent.id}');
+      final Response ascentResponse = await netWorkLocator.dio.delete('$climbingApiHost/ascent/${ascent.id}/route/$pitchId');
       if (ascentResponse.statusCode != 200) throw Exception('Failed to delete ascent');
       await deleteAscentBox.delete(ascent.id);
       MyNotifications.showPositiveNotification('Ascent was deleted: ${ascentResponse.data['name']}');

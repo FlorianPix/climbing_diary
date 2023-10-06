@@ -110,7 +110,7 @@ class PitchTimelineState extends State<PitchTimeline> {
                         pitchId: pitches[index].id,
                         ascentIds: pitches[index].ascentIds,
                         onUpdate: (ascent) {
-                          // TODO
+                          setState(() {});
                         },
                         onDelete: (ascent) {
                           pitches[index].ascentIds.remove(ascent.id);

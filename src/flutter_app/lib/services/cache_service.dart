@@ -1,3 +1,4 @@
+import 'package:climbing_diary/interfaces/ascent/delete_ascent.dart';
 import 'package:climbing_diary/services/media_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:climbing_diary/services/ascent_service.dart';
@@ -30,6 +31,7 @@ import 'package:climbing_diary/interfaces/trip/create_trip.dart';
 import 'package:climbing_diary/interfaces/trip/trip.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:climbing_diary/services/locator.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CacheService{
   final netWorkLocator = getIt.get<DioClient>();
@@ -76,10 +78,15 @@ class CacheService{
     await applyTripChanges();
     MyNotifications.showPositiveNotification("synced trips");
     await applySpotChanges();
+    MyNotifications.showPositiveNotification("synced spots");
     await applySinglePitchRouteChanges();
+    MyNotifications.showPositiveNotification("synced single pitch routes");
     await applyMultiPitchRouteChanges();
+    MyNotifications.showPositiveNotification("synced multi pitch routes");
     await applyPitchChanges();
+    MyNotifications.showPositiveNotification("synced pitches");
     await applyAscentChanges();
+    MyNotifications.showPositiveNotification("synced ascents");
   }
 
   Future<void> applyTripChanges() async {
@@ -165,10 +172,14 @@ class CacheService{
     Box deleteAscentBox = Hive.box(Ascent.deleteBoxName);
     for (int i = 0; i < deleteAscentBox.length; i++) {
       Map el = deleteAscentBox.getAt(i);
-      String id = createAscentBox.keyAt(i);
-      Ascent ascent = Ascent.fromCache(el);
-      await ascentService.deleteAscentOfPitch(id, ascent, online: true);
-      await ascentService.deleteAscentOfSinglePitchRoute(id, ascent, online: true);
+      DeleteAscent deleteAscent = DeleteAscent.fromCache(el);
+      String pitchId = deleteAscent.pitchId;
+      Ascent ascent = deleteAscent.ascent;
+      if (deleteAscent.ofPitch) {
+        await ascentService.deleteAscentOfPitch(pitchId, ascent, online: true);
+      } else {
+        await ascentService.deleteAscentOfSinglePitchRoute(pitchId, ascent, online: true);
+      }
     }
   }
 
@@ -177,16 +188,14 @@ class CacheService{
     Box createMediaBox = Hive.box(Media.createBoxName);
     for (int i = 0; i < createMediaBox.length; i++){
       Map el = createMediaBox.getAt(i);
-      String id = createMediaBox.keyAt(i);
       Media media = Media.fromCache(el);
-      // TODO get XFile
-      await mediaService.uploadMedium();
+      XFile image = XFile.fromData(media.image);
+      await mediaService.uploadMedium(image);
     }
     // apply media deletions
     Box deleteMediaBox = Hive.box(Media.deleteBoxName);
     for (int i = 0; i < deleteMediaBox.length; i++) {
       Map el = deleteMediaBox.getAt(i);
-      String id = createMediaBox.keyAt(i);
       Media media = Media.fromCache(el);
       await mediaService.deleteMedium(media, online: true);
     }

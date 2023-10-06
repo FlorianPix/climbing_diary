@@ -64,7 +64,7 @@ class AscentTimelineState extends State<AscentTimeline> {
         });
         ascents.sort((a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
 
-        updateAscentCallback(Ascent ascent) {
+        void updateAscentCallback(Ascent ascent) {
           var index = -1;
           for (int i = 0; i < ascents.length; i++) {
             if (ascents[i].id == ascent.id) index = i;
@@ -75,7 +75,7 @@ class AscentTimelineState extends State<AscentTimeline> {
           setState(() {});
         }
 
-        deleteAscentCallback(Ascent ascent) {
+        void deleteAscentCallback(Ascent ascent) {
           ascents.remove(ascent);
           ascentIds.remove(ascent.id);
           widget.onDelete.call(ascent);
