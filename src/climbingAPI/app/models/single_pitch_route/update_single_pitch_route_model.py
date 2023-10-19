@@ -1,24 +1,16 @@
-from datetime import date
-from pydantic import BaseModel
-from bson import ObjectId
-from typing import Optional, List
-
+from typing import Optional
 from app.models.route.update_route_model import UpdateRouteModel
-
 from app.models.grade import Grade
-
 from app.models.grading_system import GradingSystem
 
 
 class UpdateSinglePitchRouteModel(UpdateRouteModel):
     ascent_ids: Optional[tuple]
-
     grade: Optional[Grade]
     length: Optional[int]
 
     class Config:
         arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
                 "media_ids": [],

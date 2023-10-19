@@ -1,12 +1,10 @@
 from datetime import date
 from pydantic import BaseModel, Field
-from bson import ObjectId
 from typing import Optional
-
-from app.models.py_object_id import PyObjectId
 
 
 class CreateTripModel(BaseModel):
+    trip_id: str = Field(default_factory=str, alias="_id")
     comment: Optional[str]
     end_date: date
     name: str = Field(...)
@@ -16,7 +14,6 @@ class CreateTripModel(BaseModel):
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
                 "comment": "Great trip",
