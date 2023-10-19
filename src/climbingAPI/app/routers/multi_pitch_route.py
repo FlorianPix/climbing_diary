@@ -3,18 +3,15 @@ from typing import List
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security, status
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import Response, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi_auth0 import Auth0User
 
 from app.core.db import get_db
 from app.core.auth import auth
 
 from app.models.spot.spot_model import SpotModel
-
 from app.models.multi_pitch_route.multi_pitch_route_model import MultiPitchRouteModel
-from app.models.multi_pitch_route.create_multi_pitch_route_model import CreateMultiPitchRouteModel
 from app.models.multi_pitch_route.update_multi_pitch_route_model import UpdateMultiPitchRouteModel
-from app.models.id_with_datetime import IdWithDatetime
 
 router = APIRouter()
 
@@ -94,35 +91,6 @@ async def retrieve_all_routes(user: Auth0User = Security(auth.get_user, scopes=[
     db = await get_db()
     routes = await db["multi_pitch_route"].find({"user_id": user.id}).to_list(None)
     return routes
-
-
-@router.get('Updated/{route_id}', description="Get a route id and when it was updated", response_model=IdWithDatetime, dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_route_id_updated(route_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    if (idWithDatetime := await db["multi_pitch_route"].find_one({"_id": route_id, "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
-        return idWithDatetime
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")
-
-
-@router.post('Updated/ids', description="Get route ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_route_ids_updated(route_ids: List[str] = Body(...), user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    if not route_ids: return []
-    db = await get_db()
-    idsWithDatetime = []
-    for route_id in route_ids:
-        if (route := await db["multi_pitch_route"].find_one({"_id": route_id, "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
-            idsWithDatetime.append(route)
-        else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")
-    if idsWithDatetime: return idsWithDatetime
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Routes not found")
-
-
-@router.get('Updated', description="Retrieve all multi pitch route ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_all_route_ids_updated(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    multi_pitch_route_ids = await db["multi_pitch_route"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
-    return multi_pitch_route_ids
 
 
 @router.put('/{route_id}', description="Update a multi pitch route", response_model=MultiPitchRouteModel, dependencies=[Depends(auth.implicit_scheme)])

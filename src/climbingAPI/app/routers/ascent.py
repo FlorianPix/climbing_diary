@@ -11,8 +11,6 @@ from app.core.auth import auth
 
 from app.models.ascent.ascent_model import AscentModel
 from app.models.ascent.update_ascent_model import UpdateAscentModel
-from app.models.ascent.create_ascent_model import CreateAscentModel
-from app.models.id_with_datetime import IdWithDatetime
 
 router = APIRouter()
 
@@ -48,7 +46,7 @@ async def create_ascent_for_pitch(pitch_id: str, ascent: AscentModel = Body(...)
 
 
 @router.post('/route/{route_id}', description="Create a new ascent", response_model=AscentModel, dependencies=[Depends(auth.implicit_scheme)])
-async def create_ascent_for_single_pitch_route(route_id: str, ascent: CreateAscentModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+async def create_ascent_for_single_pitch_route(route_id: str, ascent: AscentModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     ascent = jsonable_encoder(ascent)
     ascent["user_id"] = user.id
     ascent["media_ids"] = []
@@ -107,37 +105,6 @@ async def retrieve_all_ascents(user: Auth0User = Security(auth.get_user, scopes=
     db = await get_db()
     ascents = await db["ascent"].find({"user_id": user.id}).to_list(None)
     return ascents
-
-
-@router.get('Updated/{ascent_id}', description="Get a ascent id and when it was updated", response_model=IdWithDatetime, dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_ascent_id_updated(ascent_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    if (idWithDatetime := await db["ascent"].find_one({"_id": ascent_id, "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
-        return idWithDatetime
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Ascent {ascent_id} not found")
-
-
-@router.post('Updated/ids', description="Get ascent ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_ascent_ids_updated(ascent_ids: List[str] = Body(...), user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    if not ascent_ids:
-        return []
-    db = await get_db()
-    idsWithDatetime = []
-    for ascent_id in ascent_ids:
-        if (ascent := await db["ascent"].find_one({"_id": ascent_id, "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
-            idsWithDatetime.append(ascent)
-        else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Ascent {ascent_id} not found")
-    if idsWithDatetime:
-        return idsWithDatetime
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Ascents not found")
-
-
-@router.get('Updated', description="Retrieve all ascent ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_all_ascent_ids_updated(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    ascent_ids = await db["ascent"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
-    return ascent_ids
 
 
 @router.put('/{ascent_id}', description="Update an ascent", response_model=AscentModel, dependencies=[Depends(auth.implicit_scheme)])

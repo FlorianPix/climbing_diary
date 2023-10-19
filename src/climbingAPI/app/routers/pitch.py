@@ -1,15 +1,16 @@
 import datetime
 from typing import List
+
 from fastapi import APIRouter, Body, Depends, HTTPException, Security, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi_auth0 import Auth0User
+
 from app.core.db import get_db
 from app.core.auth import auth
+
 from app.models.pitch.pitch_model import PitchModel
 from app.models.pitch.update_pitch_model import UpdatePitchModel
-from app.models.pitch.create_pitch_model import CreatePitchModel
-from app.models.id_with_datetime import IdWithDatetime
 
 router = APIRouter()
 
@@ -82,36 +83,6 @@ async def retrieve_all_pitches(user: Auth0User = Security(auth.get_user, scopes=
     db = await get_db()
     pitches = await db["pitch"].find({"user_id": user.id}).to_list(None)
     return pitches
-
-
-@router.get('Updated/{pitch_id}', description="Get a pitch id and when it was updated", response_model=IdWithDatetime, dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_pitch_id_updated(pitch_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    if (idWithDatetime := await db["pitch"].find_one({"_id": pitch_id, "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
-        return idWithDatetime
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Pitch {pitch_id} not found")
-
-
-@router.post('Updated/ids', description="Get pitch ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_pitch_ids_updated(pitch_ids: List[str] = Body(...), user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    if not pitch_ids: return []
-    db = await get_db()
-    idsWithDatetime = []
-    for pitch_id in pitch_ids:
-        if (pitch := await db["pitch"].find_one({"_id": pitch_id, "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
-            idsWithDatetime.append(pitch)
-        else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Pitch {pitch_id} not found")
-    if idsWithDatetime:
-        return idsWithDatetime
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Pitches not found")
-
-
-@router.get('Updated', description="Retrieve all pitch ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_all_pitch_ids_updated(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    pitch_ids = await db["pitch"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
-    return pitch_ids
 
 
 @router.put('/{pitch_id}', description="Update a pitch", response_model=PitchModel, dependencies=[Depends(auth.implicit_scheme)])

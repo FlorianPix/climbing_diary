@@ -3,16 +3,14 @@ from typing import List
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Security, status
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import Response, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi_auth0 import Auth0User
 
 from app.core.db import get_db
 from app.core.auth import auth
 
 from app.models.spot.spot_model import SpotModel
-from app.models.spot.create_spot_model import CreateSpotModel
 from app.models.spot.update_spot_model import UpdateSpotModel
-from app.models.id_with_datetime import IdWithDatetime
 
 router = APIRouter()
 
@@ -73,37 +71,6 @@ async def retrieve_spots(user: Auth0User = Security(auth.get_user, scopes=["read
     db = await get_db()
     spots = await db["spot"].find({"user_id": user.id}).to_list(None)
     return spots
-
-
-@router.get('Updated/{spot_id}', description="Get a spot id and when it was updated", response_model=IdWithDatetime, dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_spot_id_updated(spot_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    if (idWithDatetime := await db["spot"].find_one({"_id": spot_id, "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
-        return idWithDatetime
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spot {spot_id} not found")
-
-
-@router.post('Updated/ids', description="Get spot ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_spot_ids_updated(spot_ids: List[str] = Body(...), user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    if not spot_ids:
-        return []
-    db = await get_db()
-    idsWithDatetime = []
-    for spot_id in spot_ids:
-        if (spot := await db["spot"].find_one({"_id": spot_id, "user_id": user.id}, {"_id": 1, "updated": 1})) is not None:
-            idsWithDatetime.append(spot)
-        else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spot {spot_id} not found")
-    if idsWithDatetime:
-        return idsWithDatetime
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spots not found")
-
-
-@router.get('Updated', description="Retrieve all spot ids and when they were updated", response_model=List[IdWithDatetime], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_all_spot_ids_updated(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
-    db = await get_db()
-    spot_ids = await db["spot"].find({"user_id": user.id}, {"_id": 1, "updated": 1}).to_list(None)
-    return spot_ids
 
 
 @router.put('/{spot_id}', description="Update a spot", response_model=SpotModel, dependencies=[Depends(auth.implicit_scheme)])
