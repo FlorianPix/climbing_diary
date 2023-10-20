@@ -27,18 +27,9 @@ class AscentService {
     if (online == null || !online) return Ascent.fromCache(box.get(ascentId));
     // request ascent from server
     try {
-      // request when the trip was updated the last time
-      final Response ascentIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/ascentUpdated/$ascentId');
-      if (ascentIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of ascent id updated");
-      String serverUpdated = ascentIdUpdatedResponse.data['updated'];
-      // request the ascent from the server if it was updated more recently than the one in the cache
-      if (!box.containsKey(ascentId) || CacheService.isStale(box.get(ascentId), serverUpdated)) {
-        final Response missingAscentResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/$ascentId');
-        if (missingAscentResponse.statusCode != 200) throw Exception("Error during request of missing ascent");
-        return Ascent.fromJson(missingAscentResponse.data);
-      } else {
-        return Ascent.fromCache(box.get(ascentId));
-      }
+      final Response ascentResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/$ascentId');
+      if (ascentResponse.statusCode != 200) throw Exception("Error during request of missing ascent");
+      return Ascent.fromJson(ascentResponse.data);
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
     }
@@ -53,27 +44,11 @@ class AscentService {
     if(online == null || !online) return ascents.where((ascent) => ascentIds.contains(ascent.id)).toList();
     // request ascents from the server
     try {
-      // request when the ascents were updated the last time
-      final Response ascentIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/ascentUpdated/ids', data: ascentIds);
-      if (ascentIdsUpdatedResponse.statusCode != 200) throw Exception("Error during request of ascent ids updated");
-      // find missing or stale (updated more recently on the server than in the cache) ascents
       List<Ascent> ascents = [];
-      List<String> missingAscentIds = [];
       Box box = Hive.box(Ascent.boxName);
-      ascentIdsUpdatedResponse.data.forEach((idWithDatetime) {
-        String id = idWithDatetime['_id'];
-        String serverUpdated = idWithDatetime['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          missingAscentIds.add(id);
-        } else {
-          ascents.add(Ascent.fromCache(box.get(id)));
-        }
-      });
-      if (missingAscentIds.isEmpty) return ascents;
-      // request missing or stale ascents from the server
-      final Response missingAscentsResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/ids', data: missingAscentIds);
-      if (missingAscentsResponse.statusCode != 200) throw Exception("Error during request of missing ascents");
-      Future.forEach(missingAscentsResponse.data, (dynamic s) async {
+      final Response ascentsResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/ids', data: ascentIds);
+      if (ascentsResponse.statusCode != 200) throw Exception("Error during request of missing ascents");
+      Future.forEach(ascentsResponse.data, (dynamic s) async {
         Ascent ascent = Ascent.fromJson(s);
         await box.put(ascent.id, ascent.toJson());
         ascents.add(ascent);
@@ -92,27 +67,11 @@ class AscentService {
     if(online == null || !online) return CacheService.getTsFromCache<Ascent>(Ascent.boxName, Ascent.fromCache);
     // request ascents from the server
     try {
-      // request when the ascents were updated the last time
-      final Response ascentIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/ascentUpdated');
-      if (ascentIdsResponse.statusCode != 200) throw Exception("Error during request of ascent ids");
-      // find missing or stale (updated more recently on the server than in the cache) ascents
       List<Ascent> ascents = [];
-      List<String> missingAscentIds = [];
       Box box = Hive.box(Ascent.boxName);
-      ascentIdsResponse.data.forEach((idWithDatetime) {
-        String id = idWithDatetime['_id'];
-        String serverUpdated = idWithDatetime['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          missingAscentIds.add(id);
-        } else {
-          ascents.add(Ascent.fromCache(box.get(id)));
-        }
-      });
-      if (missingAscentIds.isEmpty) return ascents;
-      // request missing or stale ascents from the server
-      final Response missingAscentsResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/ids', data: missingAscentIds);
-      if (missingAscentsResponse.statusCode != 200) throw Exception("Error during request of missing ascents");
-      Future.forEach(missingAscentsResponse.data, (dynamic s) async {
+      final Response ascentsResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/ids');
+      if (ascentsResponse.statusCode != 200) throw Exception("Error during request of missing ascents");
+      Future.forEach(ascentsResponse.data, (dynamic s) async {
         Ascent ascent = Ascent.fromJson(s);
         box.put(ascent.id, ascent.toJson());
         ascents.add(ascent);

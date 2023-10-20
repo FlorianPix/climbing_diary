@@ -160,9 +160,9 @@ async def delete_spot(spot_id: str, user: Auth0User = Security(auth.get_user, sc
     trips = await db["trip"].find({"user_id": user.id}).to_list(None)
     if trips:
         for trip in trips:
-            update_result = await db["trip"].update_one(
-                {"_id": trip['_id'], "user_id": user.id},
-                {"$pull": {"spot_ids": spot_id}}
-            )
+            await db["trip"].update_one({"_id": trip['_id'], "user_id": user.id}, {"$pull": {"spot_ids": spot_id}})
     # spot_id was removed from trips
+    for media_id in spot["media_ids"]:
+        await db["medium"].delete_one({"_id": media_id})
+    # media deleted
     return spot

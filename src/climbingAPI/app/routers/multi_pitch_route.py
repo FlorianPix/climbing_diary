@@ -160,7 +160,11 @@ async def delete_route(spot_id: str, route_id: str, user: Auth0User = Security(a
             detail=f"Removing route_id {route_id} from spot {spot_id} failed"
         )
     # route_id was removed
-    if (updated_spot := await db["spot"].find_one({"_id": spot_id})) is not None:
+    updated_spot = await db["spot"].find_one({"_id": spot_id})
+    for media_id in route["media_ids"]:
+        await db["medium"].delete_one({"_id": media_id})
+    # media deleted
+    if updated_spot is not None:
         return updated_spot
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spot {spot_id} not found")

@@ -54,27 +54,11 @@ class SinglePitchRouteService {
     if(online == null || !online) return singlePitchRoutes.where((singlePitchRoute) => singlePitchRouteIds.contains(singlePitchRoute.id)).toList();
     // request singlePitchRoutes from the server
     try {
-      // request when the singlePitchRoutes were updated the last time
-      final Response singlePitchRouteIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_routeUpdated/ids', data: singlePitchRouteIds);
-      if (singlePitchRouteIdsUpdatedResponse.statusCode != 200) throw Exception("Error during request of singlePitchRoute ids updated");
-      // find missing or stale (updated more recently on the server than in the cache) singlePitchRoutes
       List<SinglePitchRoute> singlePitchRoutes = [];
-      List<String> missingSinglePitchRouteIds = [];
       Box box = Hive.box(SinglePitchRoute.boxName);
-      singlePitchRouteIdsUpdatedResponse.data.forEach((idWithDatetime) {
-        String id = idWithDatetime['_id'];
-        String serverUpdated = idWithDatetime['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          missingSinglePitchRouteIds.add(id);
-        } else {
-          singlePitchRoutes.add(SinglePitchRoute.fromCache(box.get(id)));
-        }
-      });
-      if (missingSinglePitchRouteIds.isEmpty) return singlePitchRoutes;
-      // request missing or stale singlePitchRoutes from the server
-      final Response missingSinglePitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_route/ids', data: missingSinglePitchRouteIds);
-      if (missingSinglePitchRoutesResponse.statusCode != 200) throw Exception("Error during request of missing singlePitchRoutes");
-      Future.forEach(missingSinglePitchRoutesResponse.data, (dynamic s) async {
+      final Response singlePitchRoutesResponse = await netWorkLocator.dio.put('$climbingApiHost/single_pitch_route/ids', data: singlePitchRouteIds);
+      if (singlePitchRoutesResponse.statusCode != 200) throw Exception("Error during request of missing singlePitchRoutes");
+      Future.forEach(singlePitchRoutesResponse.data, (dynamic s) async {
         SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(s);
         box.put(singlePitchRoute.id, singlePitchRoute.toJson());
         singlePitchRoutes.add(singlePitchRoute);
@@ -93,27 +77,11 @@ class SinglePitchRouteService {
     if(online == null || !online) return CacheService.getTsFromCache<SinglePitchRoute>(SinglePitchRoute.boxName, SinglePitchRoute.fromCache);
     // request single-pitch-routes from the server
     try {
-      // request when the single-pitch-routes were updated the last time
-      final Response singlePitchRouteIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_routeUpdated');
-      if (singlePitchRouteIdsResponse.statusCode != 200) throw Exception("Error during request of singlePitchRoute ids");
-      // find missing or stale (updated more recently on the server than in the cache) single-pitch-routes
       List<SinglePitchRoute> singlePitchRoutes = [];
-      List<String> missingSinglePitchRouteIds = [];
       Box box = Hive.box(SinglePitchRoute.boxName);
-      singlePitchRouteIdsResponse.data.forEach((idWithDatetime) {
-        String id = idWithDatetime['_id'];
-        String serverUpdated = idWithDatetime['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          missingSinglePitchRouteIds.add(id);
-        } else {
-          singlePitchRoutes.add(SinglePitchRoute.fromCache(box.get(id)));
-        }
-      });
-      if (missingSinglePitchRouteIds.isEmpty) return singlePitchRoutes;
-      // request missing or stale single-pitch-routes from the server
-      final Response missingSinglePitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_route/ids', data: missingSinglePitchRouteIds);
-      if (missingSinglePitchRoutesResponse.statusCode != 200) throw Exception("Error during request of missing singlePitchRoutes");
-      Future.forEach(missingSinglePitchRoutesResponse.data, (dynamic s) {
+      final Response singlePitchRoutesResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route');
+      if (singlePitchRoutesResponse.statusCode != 200) throw Exception("Error during request of missing singlePitchRoutes");
+      Future.forEach(singlePitchRoutesResponse.data, (dynamic s) {
         SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(s);
         box.put(singlePitchRoute.id, singlePitchRoute.toJson());
         singlePitchRoutes.add(singlePitchRoute);

@@ -25,18 +25,9 @@ class PitchService {
     if (online == null || !online) return Pitch.fromCache(box.get(pitchId));
     // request pitch from server
     try {
-      // request when the pitch was updated the last time
-      final Response pitchIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/pitchUpdated/$pitchId');
-      if (pitchIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of pitch id updated");
-      String serverUpdated = pitchIdUpdatedResponse.data['updated'];
-      // request the pitch from the server if it was updated more recently than the one in the cache
-      if (!box.containsKey(pitchId) || CacheService.isStale(box.get(pitchId), serverUpdated)) {
-        final Response missingPitchResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/$pitchId');
-        if (missingPitchResponse.statusCode != 200) throw Exception("Error during request of missing pitch");
-        return Pitch.fromJson(missingPitchResponse.data);
-      } else {
-        return Pitch.fromCache(box.get(pitchId));
-      }
+      final Response missingPitchResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/$pitchId');
+      if (missingPitchResponse.statusCode != 200) throw Exception("Error during request of missing pitch");
+      return Pitch.fromJson(missingPitchResponse.data);
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
     }
@@ -51,23 +42,9 @@ class PitchService {
     if(online == null || !online) return pitches.where((pitch) => pitchIds.contains(pitch.id)).toList();
     // request pitches from the server
     try {
-      final Response pitchIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/pitchUpdated/ids', data: pitchIds);
-      if (pitchIdsUpdatedResponse.statusCode != 200) throw Exception("Error during request of pitch ids updated");
       List<Pitch> pitches = [];
-      List<String> missingPitchIds = [];
       Box box = Hive.box(Pitch.boxName);
-      pitchIdsUpdatedResponse.data.forEach((idWithDatetime) {
-        String id = idWithDatetime['_id'];
-        String serverUpdated = idWithDatetime['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          missingPitchIds.add(id);
-        } else {
-          pitches.add(Pitch.fromCache(box.get(id)));
-        }
-      });
-      if (missingPitchIds.isEmpty) return pitches;
-      // request missing or stale pitches from the server
-      final Response missingPitchesResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/ids', data: missingPitchIds);
+      final Response missingPitchesResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/ids', data: pitchIds);
       if (missingPitchesResponse.statusCode != 200) throw Exception("Error during request of missing pitches");
       Future.forEach(missingPitchesResponse.data, (dynamic s) async {
         Pitch pitch = Pitch.fromJson(s);
@@ -88,23 +65,9 @@ class PitchService {
     if(online == null || !online) return CacheService.getTsFromCache<Pitch>(Pitch.boxName, Pitch.fromCache);
     // request pitches from the server
     try {
-      // request when the pitches were updated the last time
-      final Response pitchIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/pitchUpdated');
-      if (pitchIdsResponse.statusCode != 200) throw Exception("Error during request of pitch ids");
       List<Pitch> pitches = [];
-      List<String> missingPitchIds = [];
       Box box = Hive.box(Pitch.boxName);
-      pitchIdsResponse.data.forEach((idWithDatetime) {
-        String id = idWithDatetime['_id'];
-        String serverUpdated = idWithDatetime['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          missingPitchIds.add(id);
-        } else {
-          pitches.add(Pitch.fromCache(box.get(id)));
-        }
-      });
-      if (missingPitchIds.isEmpty) return pitches;
-      final Response missingPitchesResponse = await netWorkLocator.dio.post('$climbingApiHost/pitch/ids', data: missingPitchIds);
+      final Response missingPitchesResponse = await netWorkLocator.dio.get('$climbingApiHost/pitch');
       if (missingPitchesResponse.statusCode != 200) throw Exception("Error during request of missing pitches");
       Future.forEach(missingPitchesResponse.data, (dynamic s) async {
         Pitch pitch = Pitch.fromJson(s);

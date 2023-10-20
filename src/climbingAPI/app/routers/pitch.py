@@ -144,7 +144,11 @@ async def delete_pitch(route_id: str, pitch_id: str, user: Auth0User = Security(
             detail=f"Removing pitch_id {pitch_id} from route {route_id} failed"
         )
     # pitch_id was removed
-    if (updated_route := await db["multi_pitch_route"].find_one({"_id": route_id})) is not None:
+    updated_route = await db["multi_pitch_route"].find_one({"_id": route_id})
+    for media_id in pitch["media_ids"]:
+        await db["medium"].delete_one({"_id": media_id})
+    # media deleted
+    if updated_route is not None:
         return pitch
     else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Route {route_id} not found")

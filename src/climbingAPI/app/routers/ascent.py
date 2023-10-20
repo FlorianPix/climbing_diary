@@ -156,7 +156,11 @@ async def delete_ascent_from_pitch(pitch_id: str, ascent_id: str, user: Auth0Use
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail=f"Removing ascent_id {ascent_id} from pitch {pitch_id} failed")
     # ascent_id was removed
-    if (updated_pitch := await db["pitch"].find_one({"_id": pitch_id})) is not None:
+    updated_pitch = await db["pitch"].find_one({"_id": pitch_id})
+    for media_id in ascent["media_ids"]:
+        await db["medium"].delete_one({"_id": media_id})
+    # media deleted
+    if updated_pitch is not None:
         return ascent
     else:
         raise HTTPException(
@@ -202,7 +206,11 @@ async def delete_ascent_from_single_pitch_route(route_id: str, ascent_id: str, u
             detail=f"Removing ascent_id {ascent_id} from pitch {route_id} failed"
         )
     # ascent_id was removed
-    if await db["single_pitch_route"].find_one({"_id": route_id}) is not None:
+    update_route = await db["single_pitch_route"].find_one({"_id": route_id})
+    for media_id in ascent["media_ids"]:
+        await db["medium"].delete_one({"_id": media_id})
+    # media deleted
+    if update_route is not None:
         return ascent
     else:
         raise HTTPException(

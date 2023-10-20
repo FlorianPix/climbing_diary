@@ -95,7 +95,7 @@ class TripService {
       final Response response = await netWorkLocator.dio.put('$climbingApiHost/trip/${updateTrip.id}', data: updateTrip.toJson());
       if (response.statusCode != 200) throw Exception('Failed to edit trip');
       Trip trip = Trip.fromJson(response.data);
-      await tripBox.put(updateTrip.id, updateTrip.toJson());
+      await tripBox.put(updateTrip.id, trip.toJson());
       await updateTripBox.delete(updateTrip.id);
       return trip;
     } catch (e) {

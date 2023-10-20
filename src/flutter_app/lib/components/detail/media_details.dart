@@ -22,9 +22,9 @@ class MediaDetails extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
-            mediaService.deleteMedium(Media.fromCache(Hive.box(Media.boxName).get(medium.id)));
+            await mediaService.deleteMedium(Media.fromCache(Hive.box(Media.boxName).get(medium.id)));
             onDelete.call(medium.id);
           },
           icon: const Icon(Icons.delete),

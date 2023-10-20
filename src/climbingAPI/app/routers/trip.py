@@ -88,7 +88,13 @@ async def delete_trip(trip_id: str, user: Auth0User = Security(auth.get_user, sc
     trip = await db["trip"].find_one({"_id": trip_id, "user_id": user.id})
     if trip is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Trip {trip_id} not found")
+    # trip found
     delete_result = await db["trip"].delete_one({"_id": trip_id})
-    if delete_result.deleted_count == 1:
-        return trip
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Trip {trip_id} not found")
+    if delete_result.deleted_count != 1:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Trip {trip_id} couldn't be deleted")
+    # trip deleted
+    for media_id in trip["media_ids"]:
+        await db["medium"].delete_one({"_id": media_id})
+    # media deleted
+    return trip
+

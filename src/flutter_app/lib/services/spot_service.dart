@@ -18,6 +18,9 @@ import 'package:climbing_diary/services/ascent_service.dart';
 import 'package:climbing_diary/services/cache_service.dart';
 import 'package:climbing_diary/services/locator.dart';
 import 'package:climbing_diary/services/multi_pitch_route_service.dart';
+import 'package:climbing_diary/interfaces/media/media.dart';
+
+import '../interfaces/trip/trip.dart';
 
 class SpotService {
   final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
@@ -188,20 +191,30 @@ class SpotService {
   Future<void> deleteSpot(Spot spot, {bool? online}) async {
     Box spotBox = Hive.box(Spot.boxName);
     Box deleteSpotBox = Hive.box(Spot.deleteBoxName);
+    // delete spot from cache
     await spotBox.delete(spot.id);
+    // add spot to deletion queue for later sync
     await deleteSpotBox.put(spot.id, spot.toJson());
-    // TODO delete media from cache
+    // delete spot id from trips
+    Box tripBox = Hive.box(Trip.boxName);
+    for (var el in tripBox.values) {
+      Trip trip = Trip.fromCache(el);
+      if (trip.spotIds.contains(spot.id)){
+        trip.spotIds.remove(spot.id);
+        await tripBox.put(trip.id, trip.toJson());
+      }
+    }
+    // delete media of spot from cache
+    Box mediaBox = Hive.box(Media.boxName);
+    for (String mediaId in spot.mediaIds){
+      await mediaBox.delete(mediaId);
+    }
     // TODO delete single pitch routes from cache
     // TODO delete multi pitch routes from cache
     // TODO delete pitches from cache
     // TODO delete ascents from cache
     if (online == null || !online) return;
     try {
-      // delete media
-      for (var id in spot.mediaIds) {
-        final Response mediaResponse = await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-        if (mediaResponse.statusCode != 204) throw Exception('Failed to delete medium');
-      }
       // delete spot
       final Response spotResponse = await netWorkLocator.dio.delete('$climbingApiHost/spot/${spot.id}');
       if (spotResponse.statusCode != 200) throw Exception('Failed to delete spot');
@@ -215,7 +228,6 @@ class SpotService {
   /// Upload a spot to the server.
   Future<Spot?> uploadSpot(Map data) async {
     try {
-      print(data);
       final Response response = await netWorkLocator.dio.post('$climbingApiHost/spot', data: data);
       if (response.statusCode != 201) throw Exception('Failed to create spot');
       MyNotifications.showPositiveNotification('Created new spot: ${response.data['name']}');
