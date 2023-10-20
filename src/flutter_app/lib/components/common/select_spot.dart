@@ -71,12 +71,11 @@ class _SelectSpotState extends State<SelectSpot>{
         List<Spot> spots = snapshot.data!;
         List<Widget> elements = [];
         for(Spot spot in spots){
-          List<String> location = spot.location.split(",");
           elements.add(Padding(padding: const EdgeInsets.all(2), child: TextButton(
             onPressed: () async {
               if (!widget.trip.spotIds.contains(spot.id)){
                 widget.trip.spotIds.add(spot.id);
-                Trip updatedTrip = await tripService.editTrip(widget.trip.toUpdateTrip());
+                await tripService.editTrip(widget.trip.toUpdateTrip());
                 widget.onAdd.call(spot);
               }
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));

@@ -109,8 +109,10 @@ class TripTimelineState extends State<TripTimeline> {
                           onTripDelete: deleteTripCallback,
                           onTripUpdate: updateTripCallback,
                           onSpotAdd: (spot) {
-                            trips[index].spotIds.add(spot.id);
-                            setState(() {});
+                            if (!trips[index].spotIds.contains(spot.id)) {
+                              trips[index].spotIds.add(spot.id);
+                              setState(() {});
+                            }
                           },
                           onNetworkChange: widget.onNetworkChange,
                         )
