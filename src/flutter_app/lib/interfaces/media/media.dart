@@ -21,27 +21,27 @@ class Media {
 
   factory Media.fromJson(Map<String, dynamic> json) {
     return Media(
-      id: json['id'],
+      id: json['_id'],
       userId: json['user_id'],
       title: json['title'],
       createdAt: json['created_at'],
-      image: json['image']
+      image: Uint8List.fromList(json['image'].cast<int>())
     );
   }
 
   factory Media.fromCache(Map<dynamic, dynamic> cache) {
     return Media(
       createdAt: cache['created_at'],
-      id: cache['id'],
+      id: cache['_id'],
       userId: cache['user_id'],
       title: cache['title'],
-      image: cache['image']
+      image: Uint8List.fromList(cache['image'])
     );
   }
 
   Map toJson() => {
     "created_at": createdAt,
-    "id": id,
+    "_id": id,
     "user_id": userId,
     "title": title,
     "image": image

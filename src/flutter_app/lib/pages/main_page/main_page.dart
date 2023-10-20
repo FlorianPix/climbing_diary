@@ -40,7 +40,7 @@ class _MainPageState extends State<MainPage>{
   MediaService mediaService = MediaService();
 
   Future<void> sync() async {
-    setState(() => syncing = true);
+    // setState(() => syncing = true);
     await cacheService.applyChanges();
     await tripService.getTrips(online: widget.online);
     await spotService.getSpots(online: widget.online);
@@ -50,7 +50,7 @@ class _MainPageState extends State<MainPage>{
     await ascentService.getAscents(online: widget.online);
     await mediaService.getMedia(online: widget.online);
     MyNotifications.showPositiveNotification("synced");
-    setState(() => syncing = false);
+    // setState(() => syncing = false);
   }
 
   @override

@@ -191,15 +191,7 @@ class CacheService{
     Box createMediaBox = Hive.box(Media.createBoxName);
     for (int i = 0; i < createMediaBox.length; i++){
       Map el = createMediaBox.getAt(i);
-      Media media = Media.fromCache(el);
-      XFile file = XFile.fromData(media.image);
-      Media medium = Media(
-        id: const Uuid().v4(),
-        userId: '',
-        title: file.name,
-        createdAt: DateTime.now().toIso8601String(),
-        image: await file.readAsBytes(),
-      );
+      Media medium = Media.fromCache(el);
       await mediaService.createMedium(medium, online: true);
     }
     // apply media deletions

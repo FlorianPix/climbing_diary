@@ -1,12 +1,11 @@
 import 'package:climbing_diary/interfaces/media/media.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../../services/media_service.dart';
-import '../add/add_image.dart';
-import '../detail/media_details.dart';
+import 'package:climbing_diary/services/media_service.dart';
+import 'package:climbing_diary/components/add/add_image.dart';
+import 'package:climbing_diary/components/detail/media_details.dart';
 import 'package:climbing_diary/components/common/my_button_styles.dart';
-import 'my_skeleton.dart';
+import 'package:climbing_diary/components/common/my_skeleton.dart';
 
 class ImageListViewAdd extends StatelessWidget {
   ImageListViewAdd({super.key, required this.onDelete, required this.mediaIds, required this.getImage});

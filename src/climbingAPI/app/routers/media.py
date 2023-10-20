@@ -55,10 +55,17 @@ async def retrieve_media_of_ids(medium_ids: List[str] = Body(...), user: Auth0Us
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Media not found")
 
 
-@router.get('', description="Retrieve all media", response_model=List[SmallMediumModel], dependencies=[Depends(auth.implicit_scheme)])
-async def retrieve_all_media(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+@router.get('-small', description="Retrieve all media without the actual image", response_model=List[SmallMediumModel], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_all_media_small(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
     db = await get_db()
     media = await db["medium"].find({"user_id": user.id}, {"image": 0}).to_list(None)
+    return media
+
+
+@router.get('', description="Retrieve all media", response_model=List[MediumModel], dependencies=[Depends(auth.implicit_scheme)])
+async def retrieve_all_media(user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    db = await get_db()
+    media = await db["medium"].find({"user_id": user.id}).to_list(None)
     return media
 
 

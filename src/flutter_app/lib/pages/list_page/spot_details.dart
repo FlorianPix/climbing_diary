@@ -52,7 +52,7 @@ class _SpotDetailsState extends State<SpotDetails>{
           createdAt: DateTime.now().toIso8601String(),
           image: await file.readAsBytes(),
         );
-        var mediaId = await mediaService.createMedium(medium);
+        String mediaId = await mediaService.createMedium(medium);
         Spot spot = widget.spot;
         spot.mediaIds.add(mediaId);
         spotService.editSpot(spot.toUpdateSpot());

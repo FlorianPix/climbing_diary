@@ -282,7 +282,8 @@ class ArchiveService {
   void writeImages(List<dynamic> elements) async {
     for(dynamic e in elements){
       for(String mediaId in e.mediaIds){
-        Media medium = await mediaService.getMedium(mediaId);
+        Media? medium = await mediaService.getMedium(mediaId);
+        if (medium == null) continue;
         String? directoryPath = await _externalPath;
         if (directoryPath != null) {
           directoryPath += '/img';
