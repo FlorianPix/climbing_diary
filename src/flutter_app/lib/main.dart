@@ -110,8 +110,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     auth0 = Auth0(
-        'climbing-diary.eu.auth0.com',
-        'FnK5PkMpjuoH5uJ64X70dlNBuBzPVynE'
+      'climbing-diary.eu.auth0.com',
+      'FnK5PkMpjuoH5uJ64X70dlNBuBzPVynE'
     );
     checkConnection();
   }

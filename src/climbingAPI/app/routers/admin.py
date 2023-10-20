@@ -7,7 +7,7 @@ from app.core.db import get_db
 from app.core.auth import auth
 
 router = APIRouter()
-collection_names = ["trip", "spot", "single_pitch_route", "multi_pitch_route", "pitch", "ascent"]
+collection_names = ["trip", "spot", "single_pitch_route", "multi_pitch_route", "pitch", "ascent", "medium"]
 
 
 @router.delete('/migrate', description="Migrate db from v0.0.4-alpha to v0.1.0-alpha", dependencies=[Depends(auth.implicit_scheme)])
@@ -53,3 +53,9 @@ async def delete_pitches(user: Auth0User = Security(auth.get_user, scopes=["writ
 async def delete_ascents(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     delete_result = await db["ascent"].delete_many({"user_id": user.id})
+
+
+@router.delete('/media', description="Delete all media from all users", dependencies=[Depends(auth.implicit_scheme)])
+async def delete_media(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    db = await get_db()
+    delete_result = await db["medium"].delete_many({"user_id": user.id})

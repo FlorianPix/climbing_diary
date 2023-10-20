@@ -1,6 +1,7 @@
 import 'package:climbing_diary/services/error_service.dart';
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
+import 'package:uuid/uuid.dart';
 import 'package:climbing_diary/components/common/my_notifications.dart';
 import 'package:climbing_diary/config/environment.dart';
 import 'package:climbing_diary/interfaces/trip/create_trip.dart';
@@ -25,18 +26,10 @@ class TripService {
     if (online == null || !online) return Trip.fromCache(box.get(tripId));
     // request trip from server
     try {
-      // request when the trip was updated the last time
-      final Response tripIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/tripUpdated/$tripId');
-      if (tripIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of trip id updated");
-      String serverUpdated = tripIdUpdatedResponse.data['updated'];
-      // request the trip from the server if it was updated more recently than the one in the cache
-      if (!box.containsKey(tripId) || CacheService.isStale(box.get(tripId), serverUpdated)) {
-        final Response missingTripResponse = await netWorkLocator.dio.post('$climbingApiHost/trip/$tripId');
-        if (missingTripResponse.statusCode != 200) throw Exception("Error during request of missing trip");
-        return Trip.fromJson(missingTripResponse.data);
-      } else {
-        return Trip.fromCache(box.get(tripId));
-      }
+      final Response missingTripResponse = await netWorkLocator.dio.post('$climbingApiHost/trip/$tripId');
+      if (missingTripResponse.statusCode != 200) throw Exception("Error during request of trip");
+      // TODO check if cache is up to date
+      return Trip.fromJson(missingTripResponse.data);
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
     }
@@ -50,27 +43,12 @@ class TripService {
     if(online == null || !online) return CacheService.getTsFromCache<Trip>(Trip.boxName, Trip.fromCache);
     // request trips from the server
     try {
-      // request when the trips were updated the last time
-      final Response tripIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/tripUpdated');
-      if (tripIdsResponse.statusCode != 200) throw Exception("Error during request of trip ids");
-      // find missing or stale (updated more recently on the server than in the cache) trips
+      final Response tripsResponse = await netWorkLocator.dio.get('$climbingApiHost/trip');
+      if (tripsResponse.statusCode != 200) throw Exception("Error during request of trips");
       List<Trip> trips = [];
-      List<String> missingTripIds = [];
       Box box = Hive.box(Trip.boxName);
-      tripIdsResponse.data.forEach((idWithDatetime) {
-        String id = idWithDatetime['_id'];
-        String serverUpdated = idWithDatetime['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          missingTripIds.add(id);
-        } else {
-          trips.add(Trip.fromCache(box.get(id)));
-        }
-      });
-      if (missingTripIds.isEmpty) return trips;
-      // request missing or stale trips from the server
-      final Response missingTripsResponse = await netWorkLocator.dio.post('$climbingApiHost/trip/ids', data: missingTripIds);
-      if (missingTripsResponse.statusCode != 200) throw Exception("Error during request of missing trips");
-      Future.forEach(missingTripsResponse.data, (dynamic s) async {
+      // TODO check if cache is up to date
+      Future.forEach(tripsResponse.data, (dynamic s) async {
         Trip trip = Trip.fromJson(s);
         await box.put(trip.id, trip.toJson());
         trips.add(trip);
@@ -85,28 +63,19 @@ class TripService {
   /// Create a trip in cache and optionally on the server.
   /// If the parameter [online] is null or false the trip is added to the cache and uploaded later at the next sync.
   /// Otherwise it is added to the cache and to the server.
-  Future<Trip> createTrip(CreateTrip createTrip, {bool? online}) async {
-    CreateTrip trip = CreateTrip(
-      comment: (createTrip.comment != null) ? createTrip.comment! : "",
-      endDate: createTrip.endDate,
-      name: createTrip.name,
-      rating: createTrip.rating,
-      startDate: createTrip.startDate,
-    );
+  Future<Trip> createTrip(Trip trip, {bool? online}) async {
     // add to cache
     Box tripBox = Hive.box(Trip.boxName);
     Box createTripBox = Hive.box(CreateTrip.boxName);
-    Trip tmpTrip = trip.toTrip();
-    await tripBox.put(trip.hashCode, tmpTrip.toJson());
-    await createTripBox.put(trip.hashCode, trip.toJson());
-    if (online == null || !online) return tmpTrip;
+    await tripBox.put(trip.id, trip.toJson());
+    await createTripBox.put(trip.id, trip.toJson());
+    if (online == null || !online) return trip;
     // try to upload and update cache if successful
     Map data = trip.toJson();
     Trip? uploadedTrip = await uploadTrip(data);
-    if (uploadedTrip == null) return tmpTrip;
-    await tripBox.delete(trip.hashCode);
-    await createTripBox.delete(trip.hashCode);
-    await tripBox.put(uploadedTrip.id, uploadedTrip.toJson());
+    if (uploadedTrip == null) return trip;
+    await tripBox.put(trip.id, trip.toJson());
+    await createTripBox.delete(trip.id);
     return uploadedTrip;
   }
 

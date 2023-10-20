@@ -15,6 +15,8 @@ import 'package:climbing_diary/components/common/my_button_styles.dart';
 import 'package:climbing_diary/components/add/add_route.dart';
 import 'package:climbing_diary/components/edit/edit_spot.dart';
 import 'package:climbing_diary/components/common/rating.dart';
+import 'package:uuid/uuid.dart';
+import '../../interfaces/media/media.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
 import '../../services/media_service.dart';
@@ -41,17 +43,31 @@ class _SpotDetailsState extends State<SpotDetails>{
 
   Future<void> getImage(ImageSource media) async {
     if (media == ImageSource.camera) {
-      var img = await picker.pickImage(source: media);
-      if (img != null) {
-        var mediaId = await mediaService.uploadMedium(img);
+      XFile? file = await picker.pickImage(source: media);
+      if (file != null) {
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Spot spot = widget.spot;
         spot.mediaIds.add(mediaId);
         await spotService.editSpot(spot.toUpdateSpot());
       }
     } else {
-      List<XFile> images = await picker.pickMultiImage();
-      for (XFile img in images){
-        var mediaId = await mediaService.uploadMedium(img);
+      List<XFile> files = await picker.pickMultiImage();
+      for (XFile file in files){
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Spot spot = widget.spot;
         spot.mediaIds.add(mediaId);
         await spotService.editSpot(spot.toUpdateSpot());

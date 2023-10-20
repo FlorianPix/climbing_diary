@@ -10,12 +10,30 @@ import 'package:climbing_diary/data/sharedprefs/shared_preference_helper.dart';
 import 'package:climbing_diary/interfaces/media/media.dart';
 import 'package:climbing_diary/services/cache_service.dart';
 import 'package:climbing_diary/services/locator.dart';
+import 'package:uuid/uuid.dart';
 
 
 class MediaService {
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
-  final String mediaApiHost = Environment().config.mediaApiHost;
+  final String climbingApiHost = Environment().config.climbingApiHost;
+
+  /// Upload a medium to the server.
+  Future<String> createMedium(Media medium, {bool? online}) async {
+    // add to cache
+    Box mediaBox = Hive.box(Media.boxName);
+    Box createMediaBox = Hive.box(Media.createBoxName);
+    await mediaBox.put(medium.id, medium.toJson());
+    await createMediaBox.put(medium.id, medium.toJson());
+    if (online == null || !online) return medium.id;
+    final Response response = await netWorkLocator.dio.post('$climbingApiHost/media', data: medium.toJson());
+    if (response.statusCode != 200) throw Exception('Failed to upload medium');
+    Media createdMedium = Media.fromJson(response.data);
+    await mediaBox.put(createdMedium.id, createdMedium);
+    await createMediaBox.delete(medium.id);
+    MyNotifications.showPositiveNotification('Added new image');
+    return createdMedium.id;
+  }
 
   /// Get all media from cache and optionally from the server.
   /// If the parameter [online] is null or false the media is searched in cache,
@@ -24,16 +42,14 @@ class MediaService {
     if(online == null || !online) return CacheService.getMediaFromCache(Media.fromCache);
     // request media from the server
     try{
-      final Response response = await netWorkLocator.dio.get('$mediaApiHost/media');
+      final Response response = await netWorkLocator.dio.get('$climbingApiHost/media');
       if (response.statusCode != 200) throw Exception('Failed to load media');
       List<Media> media = [];
       Box box = Hive.box(Media.boxName);
       await Future.forEach(response.data, (dynamic s) async {
         if (!box.containsKey(s['id'])) {
-          String mediumUrl = await getMediumUrl(s['id']);
-          final mediumResponse = await http.get(Uri.parse(mediumUrl));
-          s['image'] = mediumResponse.bodyBytes;
-          Media medium = Media.fromJson(s);
+          Media medium = await getMedium(s['id']);
+          s['image'] = medium.image;
           await box.put(medium.id, medium.toJson());
           media.add(medium);
         } else {
@@ -48,44 +64,12 @@ class MediaService {
     return [];
   }
 
-  /// Get the url of a medium from the server.
-  Future<String> getMediumUrl(String mediaId) async {
-    final Response response = await netWorkLocator.dio.get('$mediaApiHost/media/$mediaId/access-url');
-    if (response.statusCode != 200) throw Exception('Failed to load spots');
-    return response.data['url'];
-  }
-
   /// Get a medium from cache and optionally from the server.
   /// If the parameter [online] is null or false the medium is searched in cache,
   /// otherwise it is requested from the server.
   Future<Media> getMedium(String mediaId, {bool? online}) async {
     return Media.fromCache(Hive.box(Media.boxName).get(mediaId));
     // TODO request from server if online
-  }
-
-  /// Upload a medium to the server.
-  Future<String> uploadMedium(XFile file, {bool? online}) async {
-    // add to cache
-    Box mediaBox = Hive.box(Media.boxName);
-    Box createSpotBox = Hive.box(Media.createBoxName);
-    Media tmpMedia = Media(
-      id: '',
-      userId: '',
-      title: file.name,
-      createdAt: DateTime.now().toIso8601String(),
-      image: await file.readAsBytes(),
-    );
-    await mediaBox.put(tmpMedia.hashCode.toString(), tmpMedia.toJson());
-    await createSpotBox.put(tmpMedia.hashCode.toString(), tmpMedia.toJson());
-    if (online == null || !online) return tmpMedia.hashCode.toString();
-    FormData formData = FormData.fromMap({"file": await MultipartFile.fromFile(file.path)});
-    final Response response = await netWorkLocator.dio.post('$mediaApiHost/media', data: formData);
-    if (response.statusCode != 200) throw Exception('Failed to upload medium');
-    await mediaBox.delete(tmpMedia.hashCode.toString());
-    await createSpotBox.delete(tmpMedia.hashCode.toString());
-    await mediaBox.put(response.data['id'], response.data);
-    MyNotifications.showPositiveNotification('Added new image');
-    return response.data['id'];
   }
 
   /// Delete a medium in cache and optionally on the server.
@@ -98,7 +82,7 @@ class MediaService {
     await deleteMediaBox.put(media.id, media.toJson());
     if (online == null || !online) return;
     try {
-      final Response response = await netWorkLocator.dio.delete('$mediaApiHost/media/${media.id}');
+      final Response response = await netWorkLocator.dio.delete('$climbingApiHost/media/${media.id}');
       if (response.statusCode != 204) throw Exception('Failed to load spots');
       await deleteMediaBox.delete(media.id);
       MyNotifications.showPositiveNotification('Image was deleted');

@@ -17,7 +17,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:uuid/uuid.dart';
 
+import '../interfaces/media/media.dart';
 import '../interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import '../interfaces/my_base_interface/my_base_interface.dart';
 import '../interfaces/spot/spot.dart';
@@ -170,7 +172,15 @@ class ArchiveService {
             String oldImageId = image.path;
             oldImageId = oldImageId.split('/').last;
             oldImageId = oldImageId.split('.')[0];
-            String newImageId = await mediaService.uploadMedium(XFile(image.path));
+            XFile file = XFile(image.path);
+            Media medium = Media(
+              id: const Uuid().v4(),
+              userId: '',
+              title: file.name,
+              createdAt: DateTime.now().toIso8601String(),
+              image: await file.readAsBytes(),
+            );
+            String newImageId = await mediaService.createMedium(medium);
             mediaIdTranslation[oldImageId] = newImageId;
           }
 
@@ -272,15 +282,14 @@ class ArchiveService {
   void writeImages(List<dynamic> elements) async {
     for(dynamic e in elements){
       for(String mediaId in e.mediaIds){
-        String imageURL = await mediaService.getMediumUrl(mediaId);
-        Response response = await get(Uri.parse(imageURL));
+        Media medium = await mediaService.getMedium(mediaId);
         String? directoryPath = await _externalPath;
         if (directoryPath != null) {
           directoryPath += '/img';
           String filePath = '$directoryPath/$mediaId.jpg';
           await Directory(directoryPath).create(recursive: true);
           File file = File(filePath);
-          file.writeAsBytesSync(response.bodyBytes);
+          file.writeAsString(medium.toJson().toString());
         }
         // TODO handle fail
       }

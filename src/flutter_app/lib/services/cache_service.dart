@@ -32,6 +32,7 @@ import 'package:climbing_diary/interfaces/trip/trip.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:climbing_diary/services/locator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
 class CacheService{
   final netWorkLocator = getIt.get<DioClient>();
@@ -98,7 +99,7 @@ class CacheService{
     Box createTripBox = Hive.box(CreateTrip.boxName);
     for (int i = 0; i < createTripBox.length; i++){
       Map el = createTripBox.getAt(i);
-      CreateTrip trip = CreateTrip.fromCache(el);
+      Trip trip = Trip.fromCache(el);
       await tripService.createTrip(trip, online: true);
     }
     // apply trip edits
@@ -191,8 +192,15 @@ class CacheService{
     for (int i = 0; i < createMediaBox.length; i++){
       Map el = createMediaBox.getAt(i);
       Media media = Media.fromCache(el);
-      XFile image = XFile.fromData(media.image);
-      await mediaService.uploadMedium(image, online: true);
+      XFile file = XFile.fromData(media.image);
+      Media medium = Media(
+        id: const Uuid().v4(),
+        userId: '',
+        title: file.name,
+        createdAt: DateTime.now().toIso8601String(),
+        image: await file.readAsBytes(),
+      );
+      await mediaService.createMedium(medium, online: true);
     }
     // apply media deletions
     Box deleteMediaBox = Hive.box(Media.deleteBoxName);

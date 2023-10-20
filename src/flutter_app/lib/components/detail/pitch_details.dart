@@ -1,7 +1,9 @@
 import 'package:climbing_diary/interfaces/route/route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../interfaces/media/media.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/pitch/update_pitch.dart';
 import '../../interfaces/spot/spot.dart';
@@ -37,10 +39,10 @@ class _PitchDetailsState extends State<PitchDetails>{
   final MediaService mediaService = MediaService();
   final PitchService pitchService = PitchService();
 
-  Future<List<String>> fetchURLs() {
-    List<Future<String>> futures = [];
+  Future<List<Media>> fetchMedia() {
+    List<Future<Media>> futures = [];
     for (var mediaId in widget.pitch.mediaIds) {
-      futures.add(mediaService.getMediumUrl(mediaId));
+      futures.add(mediaService.getMedium(mediaId));
     }
     return Future.wait(futures);
   }
@@ -49,17 +51,31 @@ class _PitchDetailsState extends State<PitchDetails>{
 
   Future<void> getImage(ImageSource media) async {
     if (media == ImageSource.camera) {
-      var img = await picker.pickImage(source: media);
-      if (img != null) {
-        var mediaId = await mediaService.uploadMedium(img);
+      XFile? file = await picker.pickImage(source: media);
+      if (file != null) {
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Pitch pitch = widget.pitch;
         pitch.mediaIds.add(mediaId);
         pitchService.editPitch(pitch.toUpdatePitch());
       }
     } else {
-      List<XFile> images = await picker.pickMultiImage();
-      for (XFile img in images){
-        var mediaId = await mediaService.uploadMedium(img);
+      List<XFile> files = await picker.pickMultiImage();
+      for (XFile file in files){
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Pitch pitch = widget.pitch;
         pitch.mediaIds.add(mediaId);
         pitchService.editPitch(pitch.toUpdatePitch());
