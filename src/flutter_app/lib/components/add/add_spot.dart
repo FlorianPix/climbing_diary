@@ -1,17 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 import 'package:climbing_diary/components/common/my_text_styles.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:climbing_diary/pages/map_page/location_picker.dart';
-import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:intl/intl.dart';
-
-import '../../interfaces/spot/create_spot.dart';
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
-import '../../services/spot_service.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
+import 'package:climbing_diary/services/spot_service.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-
-import '../../services/trip_service.dart';
+import 'package:climbing_diary/services/trip_service.dart';
 
 class AddSpot extends StatefulWidget {
   const AddSpot({super.key, this.trip, required this.onAdd, required this.onNetworkChange});
@@ -154,11 +151,10 @@ class _AddSpotState extends State<AddSpot>{
       actions: <Widget>[
         TextButton(
           onPressed: () async {
-            bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
               var valDistanceParking = int.tryParse(controllerCar.text);
               var valDistancePublicTransport = int.tryParse(controllerBus.text);
-              CreateSpot spot = CreateSpot(
+              Spot spot = Spot(
                 comment: controllerComment.text,
                 coordinates: [double.parse(controllerLat.text), double.parse(controllerLong.text)],
                 distanceParking: (valDistanceParking != null) ? valDistanceParking : 0,
@@ -166,6 +162,12 @@ class _AddSpotState extends State<AddSpot>{
                 location: controllerAddress.text,
                 name: controllerTitle.text,
                 rating: currentSliderValue.toInt(),
+                updated: DateTime.now().toIso8601String(),
+                mediaIds: [],
+                singlePitchRouteIds: [],
+                multiPitchRouteIds: [],
+                id: const Uuid().v4(),
+                userId: '',
               );
               Spot? createdSpot = await spotService.createSpot(spot);
               if (createdSpot != null) {
@@ -173,7 +175,7 @@ class _AddSpotState extends State<AddSpot>{
                   Trip trip = widget.trip!;
                   UpdateTrip editTrip = trip.toUpdateTrip();
                   editTrip.spotIds?.add(createdSpot.id);
-                  Trip editedTrip = await tripService.editTrip(editTrip);
+                  await tripService.editTrip(editTrip);
                 }
                 widget.onAdd.call(createdSpot);
               }

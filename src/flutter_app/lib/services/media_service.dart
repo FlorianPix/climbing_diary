@@ -1,8 +1,6 @@
-import 'package:climbing_diary/services/error_service.dart';
-import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:climbing_diary/services/error_service.dart';
 import 'package:climbing_diary/components/common/my_notifications.dart';
 import 'package:climbing_diary/config/environment.dart';
 import 'package:climbing_diary/data/network/dio_client.dart';
@@ -10,7 +8,6 @@ import 'package:climbing_diary/data/sharedprefs/shared_preference_helper.dart';
 import 'package:climbing_diary/interfaces/media/media.dart';
 import 'package:climbing_diary/services/cache_service.dart';
 import 'package:climbing_diary/services/locator.dart';
-import 'package:uuid/uuid.dart';
 
 
 class MediaService {

@@ -37,18 +37,9 @@ class SpotService {
     if (online == null || !online) return Spot.fromCache(box.get(spotId));
     // request spot from server
     try {
-      // request when the trip was updated the last time
-      final Response spotIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/spotUpdated/$spotId');
-      if (spotIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot id updated");
-      String serverUpdated = spotIdUpdatedResponse.data['updated'];
-      // request the spot from the server if it was updated more recently than the one in the cache
-      if (!box.containsKey(spotId) || CacheService.isStale(box.get(spotId), serverUpdated)) {
-        final Response missingSpotResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/$spotId');
-        if (missingSpotResponse.statusCode != 200) throw Exception("Error during request of missing spot");
-        return Spot.fromJson(missingSpotResponse.data);
-      } else {
-        return Spot.fromCache(box.get(spotId));
-      }
+      final Response spotResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/$spotId');
+      if (spotResponse.statusCode != 200) throw Exception("Error during request of missing spot");
+      return Spot.fromJson(spotResponse.data);
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
     }
@@ -63,25 +54,9 @@ class SpotService {
     if(online == null || !online) return spots.where((spot) => spotIds.contains(spot.id)).toList();
     // request spots from the server
     try {
-      // request when the spots were updated the last time
-      final Response spotIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/spotUpdated/ids', data: spotIds);
-      if (spotIdsUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot ids updated");
-      // find missing or stale (updated more recently on the server than in the cache) spots
       List<Spot> spots = [];
-      List<String> missingSpotIds = [];
       Box box = Hive.box(Spot.boxName);
-      spotIdsUpdatedResponse.data.forEach((idWithDatetime) {
-        String id = idWithDatetime['_id'];
-        String serverUpdated = idWithDatetime['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          missingSpotIds.add(id);
-        } else {
-          spots.add(Spot.fromCache(box.get(id)));
-        }
-      });
-      if (missingSpotIds.isEmpty) return spots;
-      // request missing or stale spots from the server
-      final Response missingSpotsResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/ids', data: missingSpotIds);
+      final Response missingSpotsResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/ids', data: spotIds);
       if (missingSpotsResponse.statusCode != 200) throw Exception("Error during request of missing spots");
       Future.forEach(missingSpotsResponse.data, (dynamic s) async {
         Spot spot = Spot.fromJson(s);
@@ -102,25 +77,9 @@ class SpotService {
     if(online == null || !online) return CacheService.getTsFromCache<Spot>(Spot.boxName, Spot.fromCache);
     // request spots from the server
     try {
-      // request when the spots were updated the last time
-      final Response spotIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/spotUpdated');
-      if (spotIdsResponse.statusCode != 200) throw Exception("Error during request of spot ids");
-      // find missing or stale (updated more recently on the server than in the cache) spots
       List<Spot> spots = [];
-      List<String> missingSpotIds = [];
       Box box = Hive.box(Spot.boxName);
-      spotIdsResponse.data.forEach((idWithDatetime) {
-        String id = idWithDatetime['_id'];
-        String serverUpdated = idWithDatetime['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          missingSpotIds.add(id);
-        } else {
-          spots.add(Spot.fromCache(box.get(id)));
-        }
-      });
-      if (missingSpotIds.isEmpty) return spots;
-      // request missing or stale spots from the server
-      final Response missingSpotsResponse = await netWorkLocator.dio.post('$climbingApiHost/spot/ids', data: missingSpotIds);
+      final Response missingSpotsResponse = await netWorkLocator.dio.get('$climbingApiHost/spot');
       if (missingSpotsResponse.statusCode != 200) throw Exception("Error during request of missing spots");
       Future.forEach(missingSpotsResponse.data, (dynamic s) async {
         Spot spot = Spot.fromJson(s);
@@ -181,29 +140,18 @@ class SpotService {
   /// Create a spot in cache and optionally on the server.
   /// If the parameter [online] is null or false the spot is added to the cache and uploaded later at the next sync.
   /// Otherwise it is added to the cache and to the server.
-  Future<Spot?> createSpot(CreateSpot createSpot, {bool? online}) async {
-    CreateSpot spot = CreateSpot(
-      name: createSpot.name,
-      coordinates: createSpot.coordinates,
-      location: createSpot.location,
-      rating: createSpot.rating,
-      comment: (createSpot.comment != null) ? createSpot.comment! : "",
-      distanceParking: (createSpot.distanceParking != null) ? createSpot.distanceParking! : 0,
-      distancePublicTransport: (createSpot.distancePublicTransport != null) ? createSpot.distancePublicTransport! : 0,
-    );
+  Future<Spot?> createSpot(Spot spot, {bool? online}) async {
     // add to cache
     Box spotBox = Hive.box(Spot.boxName);
     Box createSpotBox = Hive.box(CreateSpot.boxName);
-    Spot tmpSpot = spot.toSpot();
-    await spotBox.put(tmpSpot.hashCode, tmpSpot.toJson());
-    await createSpotBox.put(spot.hashCode, spot.toJson());
-    if (online == null || !online) return tmpSpot;
+    await spotBox.put(spot.id, spot.toJson());
+    await createSpotBox.put(spot.id, spot.toJson());
+    if (online == null || !online) return spot;
     // try to upload and update cache if successful
-    Map data = spot.toJson();
-    Spot? uploadedSpot = await uploadSpot(data);
-    if (uploadedSpot == null) return tmpSpot;
-    await spotBox.delete(tmpSpot.hashCode);
-    await createSpotBox.delete(spot.hashCode);
+    Spot? uploadedSpot = await uploadSpot(spot.toJson());
+    if (uploadedSpot == null) return spot;
+    await spotBox.delete(spot.id);
+    await createSpotBox.delete(spot.id);
     await spotBox.put(uploadedSpot.id, uploadedSpot.toJson());
     return uploadedSpot;
   }
@@ -267,6 +215,7 @@ class SpotService {
   /// Upload a spot to the server.
   Future<Spot?> uploadSpot(Map data) async {
     try {
+      print(data);
       final Response response = await netWorkLocator.dio.post('$climbingApiHost/spot', data: data);
       if (response.statusCode != 201) throw Exception('Failed to create spot');
       MyNotifications.showPositiveNotification('Created new spot: ${response.data['name']}');

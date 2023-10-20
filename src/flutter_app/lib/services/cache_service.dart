@@ -31,8 +31,6 @@ import 'package:climbing_diary/interfaces/trip/create_trip.dart';
 import 'package:climbing_diary/interfaces/trip/trip.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:climbing_diary/services/locator.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:uuid/uuid.dart';
 
 class CacheService{
   final netWorkLocator = getIt.get<DioClient>();
@@ -123,7 +121,7 @@ class CacheService{
     Box createSpotBox = Hive.box(CreateSpot.boxName);
     for (int i = 0; i < createSpotBox.length; i++){
       Map el = createSpotBox.getAt(i);
-      CreateSpot spot = CreateSpot.fromCache(el);
+      Spot spot = Spot.fromCache(el);
       await spotService.createSpot(spot, online: true);
     }
     // apply spot edits

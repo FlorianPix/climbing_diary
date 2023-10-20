@@ -1,7 +1,6 @@
 import 'package:climbing_diary/services/error_service.dart';
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
-import 'package:uuid/uuid.dart';
 import 'package:climbing_diary/components/common/my_notifications.dart';
 import 'package:climbing_diary/config/environment.dart';
 import 'package:climbing_diary/interfaces/trip/create_trip.dart';
@@ -134,6 +133,7 @@ class TripService {
   /// Upload trip to the server.
   Future<Trip?> uploadTrip(Map data) async {
     try {
+      print(data);
       final Response response = await netWorkLocator.dio.post('$climbingApiHost/trip', data: data);
       if (response.statusCode != 201) throw Exception('Failed to create trip');
       MyNotifications.showPositiveNotification('Created new trip: ${response.data['name']}');
