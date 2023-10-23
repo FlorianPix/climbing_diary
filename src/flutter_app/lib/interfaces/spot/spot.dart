@@ -3,6 +3,7 @@ import 'package:climbing_diary/interfaces/spot/update_spot.dart';
 
 class Spot extends MyBaseInterface{
   static const String boxName = 'spots';
+  static const String createBoxName = 'create_spots';
   static const String deleteBoxName = 'delete_spots';
 
   final List<String> singlePitchRouteIds;

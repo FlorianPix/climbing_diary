@@ -137,6 +137,18 @@ class _SettingsState extends State<Settings>{
                 semanticLabel: 'print cache',
               ),
               label: const Text("print cache"),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                CacheService.printCacheVerbose();
+              },
+              icon: const Icon(
+                Icons.print,
+                color: Colors.black,
+                size: 30.0,
+                semanticLabel: 'print cache verbose',
+              ),
+              label: const Text("print cache verbose"),
             )
           ])),
           Card(child: Column(children: [

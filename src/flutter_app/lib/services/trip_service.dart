@@ -1,5 +1,4 @@
 import 'package:climbing_diary/services/error_service.dart';
-import 'package:climbing_diary/services/media_service.dart';
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
 import 'package:climbing_diary/components/common/my_notifications.dart';
@@ -19,7 +18,6 @@ class TripService {
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
-  final MediaService mediaService = MediaService();
 
   /// Get a trip by its id from cache and optionally from the server.
   /// If the parameter [online] is null or false the trip is searched in cache,
@@ -31,7 +29,6 @@ class TripService {
     try {
       final Response missingTripResponse = await netWorkLocator.dio.post('$climbingApiHost/trip/$tripId');
       if (missingTripResponse.statusCode != 200) throw Exception("Error during request of trip");
-      // TODO check if cache is up to date
       return Trip.fromJson(missingTripResponse.data);
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
@@ -50,7 +47,6 @@ class TripService {
       if (tripsResponse.statusCode != 200) throw Exception("Error during request of trips");
       List<Trip> trips = [];
       Box box = Hive.box(Trip.boxName);
-      // TODO check if cache is up to date
       Future.forEach(tripsResponse.data, (dynamic s) async {
         Trip trip = Trip.fromJson(s);
         await box.put(trip.id, trip.toJson());
@@ -120,9 +116,9 @@ class TripService {
     Box createTripBox = Hive.box(Trip.createBoxName);
     await createTripBox.delete(trip.id);
     // delete media of trip locally (deleted automatically on the server when trip is deleted)
-    List<Media> media = await mediaService.getMedia();
-    for (Media medium in media){
-      await mediaService.deleteMediumLocal(medium);
+    Box mediaBox = Hive.box(Media.boxName);
+    for (String mediaId in trip.mediaIds){
+      await mediaBox.delete(mediaId);
     }
     if (online == null || !online) return;
     try {
@@ -139,7 +135,6 @@ class TripService {
   /// Upload trip to the server.
   Future<Trip?> uploadTrip(Map data) async {
     try {
-      print(data);
       final Response response = await netWorkLocator.dio.post('$climbingApiHost/trip', data: data);
       if (response.statusCode != 201) throw Exception('Failed to create trip');
       MyNotifications.showPositiveNotification('Created new trip: ${response.data['name']}');

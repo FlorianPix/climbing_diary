@@ -74,20 +74,28 @@ class CacheService{
     print('--- End ---');
   }
 
+  static void printCacheVerbose() {
+    print('--- Cache ---');
+    for (var boxName in boxNames) {
+      print('$boxName ${Hive.box(boxName).length}: ${Hive.box(boxName).values}');
+    }
+    print('--- End ---');
+  }
+
   /// Apply all changes that were made locally to the server.
   Future<void> applyChanges() async {
-    await applyAscentChanges();
-    MyNotifications.showPositiveNotification("synced your ascent changes");
-    await applyPitchChanges();
-    MyNotifications.showPositiveNotification("synced your pitch changes");
+    await applyTripChanges();
+    MyNotifications.showPositiveNotification("synced your trip changes");
+    await applySpotChanges();
+    MyNotifications.showPositiveNotification("synced your spot changes");
     await applySinglePitchRouteChanges();
     MyNotifications.showPositiveNotification("synced your single pitch route changes");
     await applyMultiPitchRouteChanges();
     MyNotifications.showPositiveNotification("synced your multi pitch route changes");
-    await applySpotChanges();
-    MyNotifications.showPositiveNotification("synced your spot changes");
-    await applyTripChanges();
-    MyNotifications.showPositiveNotification("synced your trip changes");
+    await applyPitchChanges();
+    MyNotifications.showPositiveNotification("synced your pitch changes");
+    await applyAscentChanges();
+    MyNotifications.showPositiveNotification("synced your ascent changes");
     await applyMediaChanges();
     MyNotifications.showPositiveNotification("synced your media changes");
   }
@@ -141,15 +149,75 @@ class CacheService{
   }
 
   Future<void> applySinglePitchRouteChanges() async {
-
+    // apply spot creations
+    Box createSinglePitchRouteBox = Hive.box(SinglePitchRoute.createBoxName);
+    for (int i = 0; i < createSinglePitchRouteBox.length; i++){
+      Map el = createSinglePitchRouteBox.getAt(i);
+      SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromCache(el);
+      await singlePitchRouteService.createSinglePitchRoute(singlePitchRoute, el['spotId'], online: true);
+    }
+    // apply singlePitchRoute edits
+    Box updateSinglePitchRouteBox = Hive.box(UpdateSinglePitchRoute.boxName);
+    for (int i = 0; i < updateSinglePitchRouteBox.length; i++) {
+      Map el = updateSinglePitchRouteBox.getAt(i);
+      UpdateSinglePitchRoute singlePitchRoute = UpdateSinglePitchRoute.fromCache(el);
+      await singlePitchRouteService.editSinglePitchRoute(singlePitchRoute, online: true);
+    }
+    // apply singlePitchRoute deletions
+    Box deleteSinglePitchRouteBox = Hive.box(SinglePitchRoute.deleteBoxName);
+    for (int i = 0; i < deleteSinglePitchRouteBox.length; i++) {
+      Map el = deleteSinglePitchRouteBox.getAt(i);
+      SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromCache(el);
+      await singlePitchRouteService.deleteSinglePitchRoute(singlePitchRoute, el['spotId'], online: true);
+    }
   }
 
   Future<void> applyMultiPitchRouteChanges() async {
-
+    // apply multiPitchRoute creations
+    Box createMultiPitchRouteBox = Hive.box(CreateMultiPitchRoute.boxName);
+    for (int i = 0; i < createMultiPitchRouteBox.length; i++){
+      Map el = createMultiPitchRouteBox.getAt(i);
+      MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromCache(el);
+      await multiPitchRouteService.createMultiPitchRoute(multiPitchRoute, el['spotId'], online: true);
+    }
+    // apply multiPitchRoute edits
+    Box updateMultiPitchRouteBox = Hive.box(UpdateMultiPitchRoute.boxName);
+    for (int i = 0; i < updateMultiPitchRouteBox.length; i++) {
+      Map el = updateMultiPitchRouteBox.getAt(i);
+      UpdateMultiPitchRoute multiPitchRoute = UpdateMultiPitchRoute.fromCache(el);
+      await multiPitchRouteService.editMultiPitchRoute(multiPitchRoute, online: true);
+    }
+    // apply multiPitchRoute deletions
+    Box deleteMultiPitchRouteBox = Hive.box(MultiPitchRoute.deleteBoxName);
+    for (int i = 0; i < deleteMultiPitchRouteBox.length; i++) {
+      Map el = deleteMultiPitchRouteBox.getAt(i);
+      MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromCache(el);
+      await multiPitchRouteService.deleteMultiPitchRoute(multiPitchRoute, el['spotId'], online: true);
+    }
   }
 
   Future<void> applyPitchChanges() async {
-
+    // apply pitch creations
+    Box createPitchBox = Hive.box(CreatePitch.boxName);
+    for (int i = 0; i < createPitchBox.length; i++){
+      Map el = createPitchBox.getAt(i);
+      Pitch pitch = Pitch.fromCache(el);
+      await pitchService.createPitch(pitch, el['routeId'], online: true);
+    }
+    // apply pitch edits
+    Box updatePitchBox = Hive.box(UpdatePitch.boxName);
+    for (int i = 0; i < updatePitchBox.length; i++) {
+      Map el = updatePitchBox.getAt(i);
+      UpdatePitch pitch = UpdatePitch.fromCache(el);
+      await pitchService.editPitch(pitch, online: true);
+    }
+    // apply pitch deletions
+    Box deletePitchBox = Hive.box(Pitch.deleteBoxName);
+    for (int i = 0; i < deletePitchBox.length; i++) {
+      Map el = deletePitchBox.getAt(i);
+      Pitch pitch = Pitch.fromCache(el);
+      await pitchService.deletePitch(pitch, el['routeId'], online: true);
+    }
   }
 
   Future<void> applyAscentChanges() async {

@@ -15,6 +15,9 @@ import 'package:climbing_diary/services/ascent_service.dart';
 import 'package:climbing_diary/services/cache_service.dart';
 import 'package:climbing_diary/services/locator.dart';
 
+import '../interfaces/media/media.dart';
+import '../interfaces/spot/spot.dart';
+
 class MultiPitchRouteService {
   final PitchService pitchService = PitchService();
   final AscentService ascentService = AscentService();
@@ -118,25 +121,26 @@ class MultiPitchRouteService {
   /// Create a multi-pitch-route in cache and optionally on the server.
   /// If the parameter [online] is null or false the multi-pitch-route is added to the cache and uploaded later at the next sync.
   /// Otherwise it is added to the cache and to the server.
-  Future<MultiPitchRoute?> createMultiPitchRoute(CreateMultiPitchRoute createRoute, String spotId, {bool? online}) async {
-    CreateMultiPitchRoute multiPitchRoute = CreateMultiPitchRoute(
-      comment: createRoute.comment != null ? createRoute.comment! : "",
-      location: createRoute.location,
-      name: createRoute.name,
-      rating: createRoute.rating,
-    );
+  Future<MultiPitchRoute?> createMultiPitchRoute(MultiPitchRoute multiPitchRoute, String spotId, {bool? online}) async {
     // add to cache
-    // TODO save to which spot it will be added
     Box multiPitchRouteBox = Hive.box(MultiPitchRoute.boxName);
     Box createMultiPitchRouteBox = Hive.box(CreateMultiPitchRoute.boxName);
-    MultiPitchRoute tmpMultiPitchRoute = multiPitchRoute.toMultiPitchRoute();
-    await multiPitchRouteBox.put(multiPitchRoute.hashCode, tmpMultiPitchRoute.toJson());
-    await createMultiPitchRouteBox.put(multiPitchRoute.hashCode, multiPitchRoute.toJson());
-    if (online == null || !online) return tmpMultiPitchRoute;
+    await multiPitchRouteBox.put(multiPitchRoute.id, multiPitchRoute.toJson());
+    // add spotId as well so we later know to which spot to add it on the server
+    Map<dynamic, dynamic> route = multiPitchRoute.toJson();
+    route['spotId'] = spotId;
+    await createMultiPitchRouteBox.put(multiPitchRoute.id, route);
+    // add to multiPitchRouteIds of spot locally
+    Box spotBox = Hive.box(Spot.boxName);
+    Map spotMap = spotBox.get(spotId);
+    Spot spot = Spot.fromCache(spotMap);
+    spot.singlePitchRouteIds.add(multiPitchRoute.id);
+    await spotBox.put(spotId, spot.toJson());
+    if (online == null || !online) return multiPitchRoute;
     // try to upload and update cache if successful
     Map data = multiPitchRoute.toJson();
     MultiPitchRoute? uploadedMultiPitchRoute = await uploadMultiPitchRoute(spotId, data);
-    if (uploadedMultiPitchRoute == null) return tmpMultiPitchRoute;
+    if (uploadedMultiPitchRoute == null) return multiPitchRoute;
     await multiPitchRouteBox.delete(multiPitchRoute.hashCode);
     await createMultiPitchRouteBox.delete(multiPitchRoute.hashCode);
     await multiPitchRouteBox.put(uploadedMultiPitchRoute.id, uploadedMultiPitchRoute.toJson());
@@ -176,11 +180,44 @@ class MultiPitchRouteService {
   Future<void> deleteMultiPitchRoute(MultiPitchRoute multiPitchRoute, String spotId, {bool? online}) async {
     Box multiPitchRouteBox = Hive.box(MultiPitchRoute.boxName);
     Box deleteMultiPitchRouteBox = Hive.box(MultiPitchRoute.deleteBoxName);
+    // delete multi pitch route locally
     await multiPitchRouteBox.delete(multiPitchRoute.id);
-    await deleteMultiPitchRouteBox.put(multiPitchRoute.id, multiPitchRoute.toJson());
-    // TODO delete media from cache
-    // TODO delete pitch from cache
-    // TODO delete ascents from cache
+    // add multi pitch route to deletion queue for later sync
+    // add spotId as well so we later know from which spot to remove it on the server
+    Map<dynamic, dynamic> route = multiPitchRoute.toJson();
+    route['spotId'] = spotId;
+    await deleteMultiPitchRouteBox.put(multiPitchRoute.id, route);
+    // remove from create queue (if no sync since)
+    Box createMultiPitchRouteBox = Hive.box(MultiPitchRoute.createBoxName);
+    await createMultiPitchRouteBox.delete(multiPitchRoute.id);
+    // delete multi pitch route id from spot
+    Box spotBox = Hive.box(Spot.boxName);
+    Spot spot = Spot.fromCache(spotBox.get(spotId));
+    spot.singlePitchRouteIds.remove(multiPitchRoute.id);
+    await spotBox.put(spot.id, spot.toJson());
+    // delete media of multi pitch route locally (deleted automatically on the server when multi pitch route is deleted)
+    Box mediaBox = Hive.box(Media.boxName);
+    for (String mediaId in multiPitchRoute.mediaIds){
+      await mediaBox.delete(mediaId);
+    }
+    // delete pitches of multi pitch route locally (deleted automatically on the server when multi pitch route is deleted)
+    Box pitchBox = Hive.box(Pitch.boxName);
+    for (String pitchId in multiPitchRoute.pitchIds){
+      // delete ascents of pitch locally (deleted automatically on the server when multi pitch route is deleted)
+      Pitch pitch = Pitch.fromCache(pitchBox.get(pitchId));
+      Box ascentBox = Hive.box(Ascent.boxName);
+      for (String ascentId in pitch.ascentIds){
+        Ascent ascent = Ascent.fromCache(ascentBox.get(ascentId));
+        for (String mediaId in ascent.mediaIds){
+          await mediaBox.delete(mediaId);
+        }
+        await ascentBox.delete(ascentId);
+      }
+      for (String mediaId in pitch.mediaIds){
+        await mediaBox.delete(mediaId);
+      }
+      await pitchBox.delete(pitchId);
+    }
     if (online == null || !online) return;
     try {
       // delete media

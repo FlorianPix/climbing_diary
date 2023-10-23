@@ -5,6 +5,7 @@ import '../grade.dart';
 
 class SinglePitchRoute extends ClimbingRoute{
   static const String boxName = 'single_pitch_routes';
+  static const String createBoxName = 'create_single_pitch_routes';
   static const String deleteBoxName = 'delete_single_pitch_routes';
 
   final List<String> ascentIds;

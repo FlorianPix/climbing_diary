@@ -1,6 +1,6 @@
-import 'package:climbing_diary/services/error_service.dart';
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
+import 'package:climbing_diary/services/error_service.dart';
 import 'package:climbing_diary/services/pitch_service.dart';
 import 'package:climbing_diary/services/single_pitch_route_service.dart';
 import 'package:climbing_diary/components/common/my_notifications.dart';
@@ -19,8 +19,7 @@ import 'package:climbing_diary/services/cache_service.dart';
 import 'package:climbing_diary/services/locator.dart';
 import 'package:climbing_diary/services/multi_pitch_route_service.dart';
 import 'package:climbing_diary/interfaces/media/media.dart';
-
-import '../interfaces/trip/trip.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
 
 class SpotService {
   final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
@@ -195,6 +194,9 @@ class SpotService {
     await spotBox.delete(spot.id);
     // add spot to deletion queue for later sync
     await deleteSpotBox.put(spot.id, spot.toJson());
+    // remove from create queue (if no sync since)
+    Box createSpotBox = Hive.box(Spot.createBoxName);
+    await createSpotBox.delete(spot.id);
     // delete spot id from trips
     Box tripBox = Hive.box(Trip.boxName);
     for (var el in tripBox.values) {
@@ -204,15 +206,57 @@ class SpotService {
         await tripBox.put(trip.id, trip.toJson());
       }
     }
-    // delete media of spot from cache
+    // delete media of spot locally (deleted automatically on the server when trip is deleted)
     Box mediaBox = Hive.box(Media.boxName);
     for (String mediaId in spot.mediaIds){
       await mediaBox.delete(mediaId);
     }
-    // TODO delete single pitch routes from cache
-    // TODO delete multi pitch routes from cache
-    // TODO delete pitches from cache
-    // TODO delete ascents from cache
+    // delete multi pitch routes of spot locally (deleted automatically on the server when spot is deleted)
+    Box multiPitchRouteBox = Hive.box(MultiPitchRoute.boxName);
+    for (String multiPitchRouteId in spot.multiPitchRouteIds){
+      // delete pitches of multi pitch route locally (deleted automatically on the server when spot is deleted)
+      Map multiPitchRouteMap = multiPitchRouteBox.get(multiPitchRouteId);
+      MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromCache(multiPitchRouteMap);
+      for (String mediaId in multiPitchRoute.mediaIds){
+        await mediaBox.delete(mediaId);
+      }
+      Box pitchBox = Hive.box(Pitch.boxName);
+      for (String pitchId in multiPitchRoute.pitchIds){
+        // delete ascents of pitches locally (deleted automatically on the server when spot is deleted)
+        Pitch pitch = Pitch.fromCache(pitchBox.get(pitchId));
+        for (String mediaId in pitch.mediaIds){
+          await mediaBox.delete(mediaId);
+        }
+        Box ascentBox = Hive.box(Ascent.boxName);
+        for (String ascentId in pitch.ascentIds){
+          Ascent ascent = Ascent.fromCache(ascentBox.get(ascentId));
+          for (String mediaId in ascent.mediaIds){
+            await mediaBox.delete(mediaId);
+          }
+          await ascentBox.delete(ascentId);
+        }
+        await pitchBox.delete(pitchId);
+      }
+      await multiPitchRouteBox.delete(multiPitchRouteId);
+    }
+    // delete single pitch routes of spot locally (deleted automatically on the server when spot is deleted)
+    Box singlePitchRouteBox = Hive.box(SinglePitchRoute.boxName);
+    for (String singlePitchRouteId in spot.singlePitchRouteIds){
+      // delete ascents of single pitch route locally (deleted automatically on the server when spot is deleted)
+      SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromCache(singlePitchRouteBox.get(singlePitchRouteId));
+      for (String mediaId in singlePitchRoute.mediaIds){
+        await mediaBox.delete(mediaId);
+      }
+      Box ascentBox = Hive.box(Ascent.boxName);
+      for (String ascentId in singlePitchRoute.ascentIds){
+        Ascent ascent = Ascent.fromCache(ascentBox.get(ascentId));
+        for (String mediaId in ascent.mediaIds){
+          await mediaBox.delete(mediaId);
+        }
+        await ascentBox.delete(ascentId);
+      }
+      await singlePitchRouteBox.delete(singlePitchRouteId);
+    }
     if (online == null || !online) return;
     try {
       // delete spot

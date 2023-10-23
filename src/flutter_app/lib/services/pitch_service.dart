@@ -93,26 +93,17 @@ class PitchService {
   /// Create a pitch in cache and optionally on the server.
   /// If the parameter [online] is null or false the pitch is added to the cache and uploaded later at the next sync.
   /// Otherwise it is added to the cache and to the server.
-  Future<Pitch?> createPitch(CreatePitch createPitch, String routeId, {bool? online}) async {
-    CreatePitch pitch = CreatePitch(
-      comment: (createPitch.comment != null) ? createPitch.comment! : "",
-      grade: createPitch.grade,
-      length: createPitch.length,
-      name: createPitch.name,
-      num: createPitch.num,
-      rating: createPitch.rating,
-    );
+  Future<Pitch?> createPitch(Pitch pitch, String routeId, {bool? online}) async {
     // add to cache
     Box pitchBox = Hive.box(Pitch.boxName);
     Box createPitchBox = Hive.box(CreatePitch.boxName);
-    Pitch tmpPitch = pitch.toPitch();
-    await pitchBox.put(pitch.hashCode, tmpPitch.toJson());
-    await createPitchBox.put(pitch.hashCode, pitch.toJson());
-    if (online == null || !online) return tmpPitch;
+    await pitchBox.put(pitch.id, pitch.toJson());
+    await createPitchBox.put(pitch.id, pitch.toJson());
+    if (online == null || !online) return pitch;
     // try to upload and update cache if successful
     Map data = pitch.toJson();
     Pitch? uploadedPitch = await uploadPitch(routeId, data);
-    if (uploadedPitch == null) return tmpPitch;
+    if (uploadedPitch == null) return pitch;
     await pitchBox.delete(pitch.hashCode);
     await createPitchBox.delete(pitch.hashCode);
     await pitchBox.put(uploadedPitch.id, uploadedPitch.toJson());
@@ -148,7 +139,7 @@ class PitchService {
   /// Delete a pitch its media, and ascents in cache and optionally on the server.
   /// If the parameter [online] is null or false the data is deleted only from the cache and later from the server at the next sync.
   /// Otherwise it is deleted from cache and from the server immediately.
-  Future<void> deletePitch(String routeId, Pitch pitch, {bool? online}) async {
+  Future<void> deletePitch(Pitch pitch, String routeId, {bool? online}) async {
     Box pitchBox = Hive.box(Pitch.boxName);
     Box deletePitchBox = Hive.box(Pitch.deleteBoxName);
     await pitchBox.delete(pitch.id);

@@ -154,7 +154,7 @@ class _PitchDetailsState extends State<PitchDetails>{
         IconButton(
           onPressed: () {
             Navigator.pop(context);
-            pitchService.deletePitch(widget.route.id, pitch);
+            pitchService.deletePitch(pitch, widget.route.id);
             widget.onDelete.call(pitch);
           },
           icon: const Icon(Icons.delete),
