@@ -69,7 +69,7 @@ class CacheService{
   static void printCache() {
     print('--- Cache ---');
     for (var boxName in boxNames) {
-      print('$boxName ${Hive.box(boxName).length}: ${Hive.box(boxName).values}');
+      print('$boxName ${Hive.box(boxName).length}: ${Hive.box(boxName).keys}');
     }
     print('--- End ---');
   }

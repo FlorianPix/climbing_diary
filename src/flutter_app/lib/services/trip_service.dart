@@ -1,4 +1,5 @@
 import 'package:climbing_diary/services/error_service.dart';
+import 'package:climbing_diary/services/media_service.dart';
 import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
 import 'package:climbing_diary/components/common/my_notifications.dart';
@@ -11,11 +12,14 @@ import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 import 'package:climbing_diary/services/cache_service.dart';
 import 'package:climbing_diary/services/locator.dart';
 
+import '../interfaces/media/media.dart';
+
 class TripService {
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
+  final MediaService mediaService = MediaService();
 
   /// Get a trip by its id from cache and optionally from the server.
   /// If the parameter [online] is null or false the trip is searched in cache,
@@ -112,14 +116,16 @@ class TripService {
     Box deleteTripBox = Hive.box(Trip.deleteBoxName);
     await tripBox.delete(trip.id);
     await deleteTripBox.put(trip.id, trip.toJson());
-    // TODO delete media from cache
+    // remove from create queue (if no sync since)
+    Box createTripBox = Hive.box(Trip.createBoxName);
+    await createTripBox.delete(trip.id);
+    // delete media of trip locally (deleted automatically on the server when trip is deleted)
+    List<Media> media = await mediaService.getMedia();
+    for (Media medium in media){
+      await mediaService.deleteMediumLocal(medium);
+    }
     if (online == null || !online) return;
     try {
-      // delete media
-      for (var id in trip.mediaIds) {
-        final Response mediaResponse = await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-        if (mediaResponse.statusCode != 204) throw Exception('Failed to delete medium');
-      }
       // delete trip
       final Response tripResponse = await netWorkLocator.dio.delete('$climbingApiHost/trip/${trip.id}');
       if (tripResponse.statusCode != 200) throw Exception('Failed to delete trip');

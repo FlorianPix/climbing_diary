@@ -77,15 +77,25 @@ class MediaService {
   /// If the parameter [online] is null or false the data is deleted only from the cache and later from the server at the next sync.
   /// Otherwise it is deleted from cache and from the server immediately.
   Future<void> deleteMedium(Media media, {bool? online}) async {
-    Box mediaBox = Hive.box(Media.boxName);
     Box deleteMediaBox = Hive.box(Media.deleteBoxName);
-    await mediaBox.delete(media.id);
+    await deleteMediumLocal(media);
     await deleteMediaBox.put(media.id, media.toJson());
     if (online == null || !online) return;
+    await deleteMediumRemote(media);
+    await deleteMediaBox.delete(media.id);
+  }
+
+  /// Delete a medium in cache only.
+  Future<void> deleteMediumLocal(Media media) async {
+    Box mediaBox = Hive.box(Media.boxName);
+    await mediaBox.delete(media.id);
+  }
+
+  /// Delete a medium on the server only.
+  Future<void> deleteMediumRemote(Media media) async {
     try {
       final Response response = await netWorkLocator.dio.delete('$climbingApiHost/media/${media.id}');
       if (response.statusCode != 204) throw Exception('Failed to delete medium');
-      await deleteMediaBox.delete(media.id);
       MyNotifications.showPositiveNotification('Image was deleted');
     } catch (e) {
       ErrorService.handleConnectionErrors(e);

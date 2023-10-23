@@ -5,6 +5,7 @@ import 'create_trip.dart';
 
 class Trip extends MyBaseInterface{
   static const String boxName = 'trips';
+  static const String createBoxName = 'create_trips';
   static const String deleteBoxName = 'delete_trips';
 
   final List<String> spotIds;

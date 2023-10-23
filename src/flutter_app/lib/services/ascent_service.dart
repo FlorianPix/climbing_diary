@@ -69,8 +69,8 @@ class AscentService {
     try {
       List<Ascent> ascents = [];
       Box box = Hive.box(Ascent.boxName);
-      final Response ascentsResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent/ids');
-      if (ascentsResponse.statusCode != 200) throw Exception("Error during request of missing ascents");
+      final Response ascentsResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent');
+      if (ascentsResponse.statusCode != 200) throw Exception("Error during request of ascents");
       Future.forEach(ascentsResponse.data, (dynamic s) async {
         Ascent ascent = Ascent.fromJson(s);
         box.put(ascent.id, ascent.toJson());
