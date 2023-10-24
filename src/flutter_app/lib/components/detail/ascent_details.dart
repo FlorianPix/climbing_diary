@@ -120,9 +120,9 @@ class _AscentDetailsState extends State<AscentDetails>{
           onPressed: () async {
             Navigator.pop(context);
             if (widget.ofMultiPitch) {
-              await ascentService.deleteAscentOfPitch(widget.pitchId, ascent);
+              await ascentService.deleteAscentOfPitch(ascent, widget.pitchId);
             } else {
-              await ascentService.deleteAscentOfSinglePitchRoute(widget.pitchId, ascent);
+              await ascentService.deleteAscentOfSinglePitchRoute(ascent, widget.pitchId);
             }
             widget.onDelete.call(ascent);
           },

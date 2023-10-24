@@ -5,6 +5,7 @@ import '../grade.dart';
 
 class Pitch extends MyBaseInterface{
   static const String boxName = 'pitches';
+  static const String createBoxName = 'create_pitches';
   static const String deleteBoxName = 'delete_pitches';
 
   final List<String> ascentIds;

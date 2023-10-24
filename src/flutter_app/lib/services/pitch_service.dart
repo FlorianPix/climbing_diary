@@ -11,6 +11,10 @@ import 'package:climbing_diary/interfaces/pitch/update_pitch.dart';
 import 'package:climbing_diary/services/cache_service.dart';
 import 'package:climbing_diary/services/locator.dart';
 
+import '../interfaces/ascent/ascent.dart';
+import '../interfaces/media/media.dart';
+import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
+
 class PitchService {
   final netWorkLocator = getIt.get<DioClient>();
   final sharedPrefLocator = getIt.get<SharedPreferenceHelper>();
@@ -93,19 +97,29 @@ class PitchService {
   /// Create a pitch in cache and optionally on the server.
   /// If the parameter [online] is null or false the pitch is added to the cache and uploaded later at the next sync.
   /// Otherwise it is added to the cache and to the server.
-  Future<Pitch?> createPitch(Pitch pitch, String routeId, {bool? online}) async {
+  Future<Pitch?> createPitch(Pitch createPitch, String routeId, {bool? online}) async {
     // add to cache
     Box pitchBox = Hive.box(Pitch.boxName);
+    await pitchBox.put(createPitch.id, createPitch.toJson());
+    // add pitch to creation queue for later sync
+    // add routeId as well so we later know to which spot to add it on the server
     Box createPitchBox = Hive.box(CreatePitch.boxName);
-    await pitchBox.put(pitch.id, pitch.toJson());
-    await createPitchBox.put(pitch.id, pitch.toJson());
-    if (online == null || !online) return pitch;
+    Map<dynamic, dynamic> pitch = createPitch.toJson();
+    pitch['routeId'] = routeId;
+    await createPitchBox.put(createPitch.id, pitch);
+    // add to pitchIds of multi pitch route locally
+    Box multiPitchRouteBox = Hive.box(MultiPitchRoute.boxName);
+    Map multiPitchRouteMap = multiPitchRouteBox.get(routeId);
+    MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromCache(multiPitchRouteMap);
+    multiPitchRoute.pitchIds.add(createPitch.id);
+    await multiPitchRouteBox.put(multiPitchRoute.id, multiPitchRoute.toJson());
+    if (online == null || !online) return createPitch;
     // try to upload and update cache if successful
-    Map data = pitch.toJson();
+    Map data = createPitch.toJson();
     Pitch? uploadedPitch = await uploadPitch(routeId, data);
-    if (uploadedPitch == null) return pitch;
-    await pitchBox.delete(pitch.hashCode);
-    await createPitchBox.delete(pitch.hashCode);
+    if (uploadedPitch == null) return createPitch;
+    await pitchBox.delete(createPitch.id);
+    await createPitchBox.delete(createPitch.id);
     await pitchBox.put(uploadedPitch.id, uploadedPitch.toJson());
     return uploadedPitch;
   }
@@ -139,27 +153,53 @@ class PitchService {
   /// Delete a pitch its media, and ascents in cache and optionally on the server.
   /// If the parameter [online] is null or false the data is deleted only from the cache and later from the server at the next sync.
   /// Otherwise it is deleted from cache and from the server immediately.
-  Future<void> deletePitch(Pitch pitch, String routeId, {bool? online}) async {
+  Future<void> deletePitch(Pitch deletePitch, String routeId, {bool? online}) async {
+    // delete pitch locally
     Box pitchBox = Hive.box(Pitch.boxName);
+    await pitchBox.delete(deletePitch.id);
+    // add pitch to deletion queue for later sync
+    // add routeId as well so we later know from which multi pitch route to remove it on the server
     Box deletePitchBox = Hive.box(Pitch.deleteBoxName);
-    await pitchBox.delete(pitch.id);
-    await deletePitchBox.put(pitch.id, pitch.toJson());
-    // TODO delete media from cache
-    // TODO delete ascents from cache
+    Map<dynamic, dynamic> pitch = deletePitch.toJson();
+    pitch['routeId'] = routeId;
+    await deletePitchBox.put(deletePitch.id, pitch);
+    // remove from create queue (if no sync since)
+    Box createPitchBox = Hive.box(Pitch.createBoxName);
+    await createPitchBox.delete(deletePitch.id);
+    // delete pitch id from multi pitch route
+    Box multiPitchRouteBox = Hive.box(MultiPitchRoute.boxName);
+    MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromCache(multiPitchRouteBox.get(routeId));
+    multiPitchRoute.pitchIds.remove(deletePitch.id);
+    await multiPitchRouteBox.put(multiPitchRoute.id, multiPitchRoute.toJson());
+    // delete media of pitch locally (deleted automatically on the server when multi pitch route is deleted)
+    Box mediaBox = Hive.box(Media.boxName);
+    for (String mediaId in deletePitch.mediaIds){
+      await mediaBox.delete(mediaId);
+    }
+    // delete ascents of pitch locally (deleted automatically on the server when multi pitch route is deleted)
+    Box ascentBox = Hive.box(Ascent.boxName);
+    for (String ascentId in deletePitch.ascentIds){
+      Ascent ascent = Ascent.fromCache(ascentBox.get(ascentId));
+      for (String mediaId in ascent.mediaIds){
+        await mediaBox.delete(mediaId);
+      }
+      await ascentBox.delete(ascentId);
+    }
     if (online == null || !online) return;
     try {
-      // delete media
-      for (var id in pitch.mediaIds) {
-        final Response mediaResponse = await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-        if (mediaResponse.statusCode != 204) throw Exception('Failed to delete medium');
-      }
       // delete pitch
-      final Response pitchResponse = await netWorkLocator.dio.delete('$climbingApiHost/pitch/${pitch.id}');
+      final Response pitchResponse = await netWorkLocator.dio.delete('$climbingApiHost/pitch/${deletePitch.id}/route/$routeId');
       if (pitchResponse.statusCode != 200) throw Exception('Failed to delete pitch');
-      await deletePitchBox.delete(pitch.id);
+      await deletePitchBox.delete(deletePitch.id);
       MyNotifications.showPositiveNotification('Pitch was deleted: ${pitchResponse.data['name']}');
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
+      if (e is DioError) {
+        // if the pitch can't be found on the server then we can safely remove it locally as well
+        if (e.error == "Http status error [404]"){
+          await deletePitchBox.delete(deletePitch.id);
+        }
+      }
     }
   }
 

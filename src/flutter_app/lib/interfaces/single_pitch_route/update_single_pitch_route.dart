@@ -48,8 +48,8 @@ class UpdateSinglePitchRoute extends UpdateClimbingRoute{
       location: cache['location'],
       name: cache['name'],
       rating: cache['rating'],
-      grade: cache['rating'],
-      length: cache['rating'],
+      grade: cache['grade'] != null ? Grade.fromCache(cache['grade']) : null,
+      length: cache['length'],
     );
   }
 

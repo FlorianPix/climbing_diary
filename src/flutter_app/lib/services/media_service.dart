@@ -95,7 +95,7 @@ class MediaService {
   Future<void> deleteMediumRemote(Media media) async {
     try {
       final Response response = await netWorkLocator.dio.delete('$climbingApiHost/media/${media.id}');
-      if (response.statusCode != 204) throw Exception('Failed to delete medium');
+      if (response.statusCode != 200) throw Exception('Failed to delete medium');
       MyNotifications.showPositiveNotification('Image was deleted');
     } catch (e) {
       ErrorService.handleConnectionErrors(e);

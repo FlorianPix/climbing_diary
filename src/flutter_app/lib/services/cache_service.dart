@@ -1,4 +1,3 @@
-import 'package:climbing_diary/interfaces/ascent/delete_ascent.dart';
 import 'package:climbing_diary/services/media_service.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:climbing_diary/services/ascent_service.dart';
@@ -225,10 +224,12 @@ class CacheService{
     Box createAscentBox = Hive.box(CreateAscent.boxName);
     for (int i = 0; i < createAscentBox.length; i++){
       Map el = createAscentBox.getAt(i);
-      String id = createAscentBox.keyAt(i);
-      CreateAscent ascent = CreateAscent.fromCache(el);
-      await ascentService.createAscentForPitch(id, ascent, online: true);
-      await ascentService.createAscentForSinglePitchRoute(id, ascent, online: true);
+      Ascent ascent = Ascent.fromCache(el);
+      if (el['ofPitch']) {
+        await ascentService.createAscentForPitch(ascent, el['parentId'], online: true);
+      } else {
+        await ascentService.createAscentForSinglePitchRoute(ascent, el['parentId'], online: true);
+      }
     }
     // apply ascent edits
     Box updateAscentBox = Hive.box(UpdateAscent.boxName);
@@ -241,13 +242,11 @@ class CacheService{
     Box deleteAscentBox = Hive.box(Ascent.deleteBoxName);
     for (int i = 0; i < deleteAscentBox.length; i++) {
       Map el = deleteAscentBox.getAt(i);
-      DeleteAscent deleteAscent = DeleteAscent.fromCache(el);
-      String pitchId = deleteAscent.pitchId;
-      Ascent ascent = deleteAscent.ascent;
-      if (deleteAscent.ofPitch) {
-        await ascentService.deleteAscentOfPitch(pitchId, ascent, online: true);
+      Ascent ascent = Ascent.fromCache(el);
+      if (el['ofPitch']) {
+        await ascentService.deleteAscentOfPitch(ascent, el['parentId'], online: true);
       } else {
-        await ascentService.deleteAscentOfSinglePitchRoute(pitchId, ascent, online: true);
+        await ascentService.deleteAscentOfSinglePitchRoute(ascent, el['parentId'], online: true);
       }
     }
   }

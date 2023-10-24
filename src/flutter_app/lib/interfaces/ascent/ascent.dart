@@ -3,6 +3,7 @@ import 'package:climbing_diary/interfaces/my_base_interface/my_base_interface.da
 
 class Ascent extends MyBaseInterface {
   static const String boxName = 'ascents';
+  static const String createBoxName = 'create_ascents';
   static const String deleteBoxName = 'delete_ascents';
 
   final String comment;

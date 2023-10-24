@@ -134,15 +134,15 @@ class MultiPitchRouteService {
     Box spotBox = Hive.box(Spot.boxName);
     Map spotMap = spotBox.get(spotId);
     Spot spot = Spot.fromCache(spotMap);
-    spot.singlePitchRouteIds.add(multiPitchRoute.id);
+    spot.multiPitchRouteIds.add(multiPitchRoute.id);
     await spotBox.put(spotId, spot.toJson());
     if (online == null || !online) return multiPitchRoute;
     // try to upload and update cache if successful
     Map data = multiPitchRoute.toJson();
     MultiPitchRoute? uploadedMultiPitchRoute = await uploadMultiPitchRoute(spotId, data);
     if (uploadedMultiPitchRoute == null) return multiPitchRoute;
-    await multiPitchRouteBox.delete(multiPitchRoute.hashCode);
-    await createMultiPitchRouteBox.delete(multiPitchRoute.hashCode);
+    await multiPitchRouteBox.delete(multiPitchRoute.id);
+    await createMultiPitchRouteBox.delete(multiPitchRoute.id);
     await multiPitchRouteBox.put(uploadedMultiPitchRoute.id, uploadedMultiPitchRoute.toJson());
     return uploadedMultiPitchRoute;
   }
@@ -178,12 +178,12 @@ class MultiPitchRouteService {
   /// If the parameter [online] is null or false the data is deleted only from the cache and later from the server at the next sync.
   /// Otherwise it is deleted from cache and from the server immediately.
   Future<void> deleteMultiPitchRoute(MultiPitchRoute multiPitchRoute, String spotId, {bool? online}) async {
-    Box multiPitchRouteBox = Hive.box(MultiPitchRoute.boxName);
-    Box deleteMultiPitchRouteBox = Hive.box(MultiPitchRoute.deleteBoxName);
     // delete multi pitch route locally
+    Box multiPitchRouteBox = Hive.box(MultiPitchRoute.boxName);
     await multiPitchRouteBox.delete(multiPitchRoute.id);
     // add multi pitch route to deletion queue for later sync
     // add spotId as well so we later know from which spot to remove it on the server
+    Box deleteMultiPitchRouteBox = Hive.box(MultiPitchRoute.deleteBoxName);
     Map<dynamic, dynamic> route = multiPitchRoute.toJson();
     route['spotId'] = spotId;
     await deleteMultiPitchRouteBox.put(multiPitchRoute.id, route);
@@ -220,18 +220,19 @@ class MultiPitchRouteService {
     }
     if (online == null || !online) return;
     try {
-      // delete media
-      for (var id in multiPitchRoute.mediaIds) {
-        final Response mediaResponse = await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-        if (mediaResponse.statusCode != 204) throw Exception('Failed to delete medium');
-      }
       // delete multi-pitch-route
       final Response routeResponse = await netWorkLocator.dio.delete('$climbingApiHost/multi_pitch_route/${multiPitchRoute.id}/spot/$spotId');
-      if (routeResponse.statusCode != 204) throw Exception('Failed to delete route');
+      if (routeResponse.statusCode != 200) throw Exception('Failed to delete route');
       await deleteMultiPitchRouteBox.delete(multiPitchRoute.id);
       MyNotifications.showPositiveNotification('Multi pitch route was deleted: ${routeResponse.data['name']}');
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
+      if (e is DioError) {
+        // if the multi pitch route can't be found on the server then we can safely remove it locally as well
+        if (e.error == "Http status error [404]"){
+          await deleteMultiPitchRouteBox.delete(multiPitchRoute.id);
+        }
+      }
     }
   }
 

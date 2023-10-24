@@ -118,9 +118,10 @@ class SinglePitchRouteService {
   Future<SinglePitchRoute?> createSinglePitchRoute(SinglePitchRoute createRoute, String spotId, {bool? online}) async {
     // add to cache
     Box singlePitchRouteBox = Hive.box(SinglePitchRoute.boxName);
-    Box createSinglePitchRouteBox = Hive.box(CreateSinglePitchRoute.boxName);
     await singlePitchRouteBox.put(createRoute.id, createRoute.toJson());
+    // add single pitch route to creation queue for later sync
     // add spotId as well so we later know to which spot to add it on the server
+    Box createSinglePitchRouteBox = Hive.box(CreateSinglePitchRoute.boxName);
     Map<dynamic, dynamic> route = createRoute.toJson();
     route['spotId'] = spotId;
     await createSinglePitchRouteBox.put(createRoute.id, route);
@@ -207,11 +208,17 @@ class SinglePitchRouteService {
     try {
       // delete single-pitch-route
       final Response routeResponse = await netWorkLocator.dio.delete('$climbingApiHost/single_pitch_route/${singlePitchRoute.id}/spot/$spotId');
-      if (routeResponse.statusCode != 204) throw Exception('Failed to delete route');
+      if (routeResponse.statusCode != 200) throw Exception('Failed to delete route');
       await deleteSinglePitchRouteBox.delete(singlePitchRoute.id);
       MyNotifications.showPositiveNotification('Single pitch route was deleted: ${routeResponse.data['name']}');
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
+      if (e is DioError) {
+        // if the single pitch route can't be found on the server then we can savely remove it locally as well
+        if (e.error == "Http status error [404]"){
+          await deleteSinglePitchRouteBox.delete(singlePitchRoute.id);
+        }
+      }
     }
   }
 
