@@ -146,6 +146,8 @@ class TripService {
           switch (response.statusCode) {
             case 409:
               MyNotifications.showNegativeNotification('This trip already exists!');
+              Box createTripBox = Hive.box(CreateTrip.boxName);
+              await createTripBox.delete(data['_id']);
               break;
             default:
               throw Exception('Failed to create trip');

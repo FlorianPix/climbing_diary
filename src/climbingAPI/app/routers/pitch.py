@@ -19,8 +19,8 @@ router = APIRouter()
 async def create_pitch(route_id: str, pitch: PitchModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     pitch = jsonable_encoder(pitch)
     pitch["user_id"] = user.id
-    pitch["ascent_ids"] = []
-    pitch["media_ids"] = []
+    if not pitch["ascent_ids"]: pitch["ascent_ids"] = []
+    if not pitch["media_ids"]: pitch["media_ids"] = []
     pitch["updated"] = datetime.datetime.now()
     db = await get_db()
     route = await db["multi_pitch_route"].find_one({"_id": route_id, "user_id": user.id})

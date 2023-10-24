@@ -19,8 +19,8 @@ router = APIRouter()
 async def create_trip(trip: TripModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     trip = jsonable_encoder(trip)
     trip["user_id"] = user.id
-    trip["spot_ids"] = []
-    trip["media_ids"] = []
+    if not trip["spot_ids"]: trip["spot_ids"] = []
+    if not trip["media_ids"]: trip["media_ids"] = []
     trip["updated"] = datetime.datetime.now()
     db = await get_db()
     # check if trip already exists

@@ -23,12 +23,10 @@ class MediaService {
     await mediaBox.put(medium.id, medium.toJson());
     await createMediaBox.put(medium.id, medium.toJson());
     if (online == null || !online) return medium.id;
-    final Response response = await netWorkLocator.dio.post('$climbingApiHost/media', data: medium.toJson());
-    if (response.statusCode != 201) throw Exception('Failed to upload medium');
-    Media createdMedium = Media.fromJson(response.data);
+    Media? createdMedium = await uploadMedium(medium.toJson());
+    if (createdMedium == null) return medium.id;
     await mediaBox.put(createdMedium.id, createdMedium.toJson());
     await createMediaBox.delete(medium.id);
-    MyNotifications.showPositiveNotification('Added new image');
     return createdMedium.id;
   }
 
@@ -100,5 +98,31 @@ class MediaService {
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
     }
+  }
+
+  /// Upload a medium to the server.
+  Future<Media?> uploadMedium(Map data) async {
+    try {
+      final Response response = await netWorkLocator.dio.post('$climbingApiHost/media', data: data);
+      if (response.statusCode != 201) throw Exception('Failed to create medium');
+      MyNotifications.showPositiveNotification('Added a new image');
+      return Media.fromJson(response.data);
+    } catch (e) {
+      if (e is DioError) {
+        final response = e.response;
+        if (response != null) {
+          switch (response.statusCode) {
+            case 409:
+              MyNotifications.showNegativeNotification('This medium already exists!');
+              Box createMediaBox = Hive.box(Media.createBoxName);
+              await createMediaBox.delete(data['_id']);
+              break;
+            default:
+              throw Exception('Failed to create medium');
+          }
+        }
+      }
+    }
+    return null;
   }
 }

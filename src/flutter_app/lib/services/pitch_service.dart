@@ -211,7 +211,20 @@ class PitchService {
       MyNotifications.showPositiveNotification('Created new pitch: ${response.data['name']}');
       return Pitch.fromJson(response.data);
     } catch (e) {
-      ErrorService.handleCreationErrors(e, 'pitch');
+      if (e is DioError) {
+        final response = e.response;
+        if (response != null) {
+          switch (response.statusCode) {
+            case 409:
+              MyNotifications.showNegativeNotification('This pitch already exists!');
+              Box createPitchBox = Hive.box(CreatePitch.boxName);
+              await createPitchBox.delete(data['_id']);
+              break;
+            default:
+              throw Exception('Failed to create pitch');
+          }
+        }
+      }
     }
     return null;
   }

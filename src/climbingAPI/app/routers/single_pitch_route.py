@@ -20,8 +20,8 @@ router = APIRouter()
 async def create_route(spot_id: str, route: SinglePitchRouteModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     route = jsonable_encoder(route)
     route["user_id"] = user.id
-    route["ascent_ids"] = []
-    route["media_ids"] = []
+    if not route["ascent_ids"]: route["ascent_ids"] = []
+    if not route["media_ids"]: route["media_ids"] = []
     route["updated"] = datetime.datetime.now()
     db = await get_db()
     spot = await db["spot"].find_one({"_id": spot_id, "user_id": user.id})

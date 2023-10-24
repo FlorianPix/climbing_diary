@@ -244,7 +244,20 @@ class MultiPitchRouteService {
       MyNotifications.showPositiveNotification('Created new multi pitch route: ${response.data['name']}');
       return MultiPitchRoute.fromJson(response.data);
     } catch (e) {
-      ErrorService.handleCreationErrors(e, 'multi pitch route');
+      if (e is DioError) {
+        final response = e.response;
+        if (response != null) {
+          switch (response.statusCode) {
+            case 409:
+              MyNotifications.showNegativeNotification('This multi pitch route already exists!');
+              Box createSpotBox = Hive.box(CreateMultiPitchRoute.boxName);
+              await createSpotBox.delete(data['_id']);
+              break;
+            default:
+              throw Exception('Failed to create multi pitch route');
+          }
+        }
+      }
     }
     return null;
   }

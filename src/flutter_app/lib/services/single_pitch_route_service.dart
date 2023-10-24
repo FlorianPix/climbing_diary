@@ -230,7 +230,20 @@ class SinglePitchRouteService {
       MyNotifications.showPositiveNotification('Created new single pitch route: ${response.data['name']}');
       return SinglePitchRoute.fromJson(response.data);
     } catch (e) {
-      ErrorService.handleCreationErrors(e, 'single pitch route');
+      if (e is DioError) {
+        final response = e.response;
+        if (response != null) {
+          switch (response.statusCode) {
+            case 409:
+              MyNotifications.showNegativeNotification('This single pitch route already exists!');
+              Box createSpotBox = Hive.box(CreateSinglePitchRoute.boxName);
+              await createSpotBox.delete(data['_id']);
+              break;
+            default:
+              throw Exception('Failed to create single pitch route');
+          }
+        }
+      }
     }
     return null;
   }

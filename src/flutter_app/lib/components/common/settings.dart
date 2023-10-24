@@ -72,40 +72,24 @@ class _SettingsState extends State<Settings>{
               child: Text("Import", style: MyTextStyles.title)
             ),
             ElevatedButton.icon(
-              onPressed: () {archiveService.readPicked();},
+              onPressed: () {archiveService.import();},
               icon: const Icon(
-                Icons.upload,
+                Icons.download_rounded,
                 color: Colors.black,
                 size: 30.0,
-                semanticLabel: 'load',
+                semanticLabel: 'import',
               ),
-              label: const Text("pick a .json file to import"),
-            )
-          ])),
-          Card(child: Column(children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 5),
-              child: Text("Backup", style: MyTextStyles.title)
+              label: const Text("import"),
             ),
             ElevatedButton.icon(
-              onPressed: () {archiveService.readBackup();},
+              onPressed: () {archiveService.export();},
               icon: const Icon(
-                Icons.upload,
+                Icons.upload_rounded,
                 color: Colors.black,
                 size: 30.0,
-                semanticLabel: 'load',
+                semanticLabel: 'export',
               ),
-              label: const Text("load climbing data\nfrom this device"),
-            ),
-            ElevatedButton.icon(
-              onPressed: () {archiveService.writeBackup();},
-              icon: const Icon(
-                Icons.download,
-                color: Colors.black,
-                size: 30.0,
-                semanticLabel: 'save',
-              ),
-              label: const Text("save your climbing data\nto this device"),
+              label: const Text("export"),
             )
           ])),
           Card(child: Column(children: [

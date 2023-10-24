@@ -271,7 +271,20 @@ class AscentService {
       MyNotifications.showPositiveNotification('Created new ascent: ${response.data['comment']}');
       return Ascent.fromJson(response.data);
     } catch (e) {
-      ErrorService.handleCreationErrors(e, 'ascent');
+      if (e is DioError) {
+        final response = e.response;
+        if (response != null) {
+          switch (response.statusCode) {
+            case 409:
+              MyNotifications.showNegativeNotification('This ascent already exists!');
+              Box createAscentBox = Hive.box(CreateAscent.boxName);
+              await createAscentBox.delete(data['_id']);
+              break;
+            default:
+              throw Exception('Failed to create ascent');
+          }
+        }
+      }
     }
     return null;
   }
@@ -284,7 +297,20 @@ class AscentService {
       MyNotifications.showPositiveNotification('Created new ascent: ${response.data['comment']}');
       return Ascent.fromJson(response.data);
     } catch (e) {
-      ErrorService.handleCreationErrors(e, 'spot');
+      if (e is DioError) {
+        final response = e.response;
+        if (response != null) {
+          switch (response.statusCode) {
+            case 409:
+              MyNotifications.showNegativeNotification('This ascent already exists!');
+              Box createAscentBox = Hive.box(CreateAscent.boxName);
+              await createAscentBox.delete(data['_id']);
+              break;
+            default:
+              throw Exception('Failed to create ascent');
+          }
+        }
+      }
     }
     return null;
   }

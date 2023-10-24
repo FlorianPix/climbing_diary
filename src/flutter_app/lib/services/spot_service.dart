@@ -277,7 +277,20 @@ class SpotService {
       MyNotifications.showPositiveNotification('Created new spot: ${response.data['name']}');
       return Spot.fromJson(response.data);
     } catch (e) {
-      ErrorService.handleCreationErrors(e, 'spot');
+      if (e is DioError) {
+        final response = e.response;
+        if (response != null) {
+          switch (response.statusCode) {
+            case 409:
+              MyNotifications.showNegativeNotification('This spot already exists!');
+              Box createSpotBox = Hive.box(CreateSpot.boxName);
+              await createSpotBox.delete(data['_id']);
+              break;
+            default:
+              throw Exception('Failed to create spot');
+          }
+        }
+      }
     }
     return null;
   }

@@ -19,7 +19,7 @@ router = APIRouter()
 async def create_ascent_for_pitch(pitch_id: str, ascent: AscentModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     ascent = jsonable_encoder(ascent)
     ascent["user_id"] = user.id
-    ascent["media_ids"] = []
+    if not ascent["media_ids"]: ascent["media_ids"] = []
     ascent["updated"] = datetime.datetime.now()
     db = await get_db()
     pitch = await db["pitch"].find_one({"_id": pitch_id, "user_id": user.id})
