@@ -103,8 +103,10 @@ class AscentService {
     Box pitchBox = Hive.box(Pitch.boxName);
     Map pitchMap = pitchBox.get(pitchId);
     Pitch pitch = Pitch.fromCache(pitchMap);
-    pitch.ascentIds.add(createAscent.id);
-    await pitchBox.put(pitch.id, pitch.toJson());
+    if (!pitch.ascentIds.contains(createAscent.id)){
+      pitch.ascentIds.add(createAscent.id);
+      await pitchBox.put(pitch.id, pitch.toJson());
+    }
     if (online == null || !online) return createAscent;
     // try to upload and update cache if successful
     Map data = createAscent.toJson();
@@ -134,8 +136,10 @@ class AscentService {
     Box singlePitchRouteBox = Hive.box(SinglePitchRoute.boxName);
     Map singlePitchRouteMap = singlePitchRouteBox.get(singlePitchRouteId);
     SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromCache(singlePitchRouteMap);
-    singlePitchRoute.ascentIds.add(createAscent.id);
-    await singlePitchRouteBox.put(singlePitchRoute.id, singlePitchRoute.toJson());
+    if (!singlePitchRoute.ascentIds.contains(createAscent.id)){
+      singlePitchRoute.ascentIds.add(createAscent.id);
+      await singlePitchRouteBox.put(singlePitchRoute.id, singlePitchRoute.toJson());
+    }
     if (online == null || !online) return createAscent;
     // try to upload and update cache if successful
     Map data = createAscent.toJson();

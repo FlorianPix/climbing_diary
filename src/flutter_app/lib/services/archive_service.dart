@@ -77,6 +77,7 @@ class ArchiveService {
     MyNotifications.showPositiveNotification("exported to $directoryPath");
   }
 
+  /// import data from a user picked directory
   Future<void> import() async{
     if (! await _requestPermission(Permission.storage)) return;
     // pick a directory to export to

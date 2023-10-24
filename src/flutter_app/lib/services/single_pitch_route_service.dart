@@ -129,8 +129,10 @@ class SinglePitchRouteService {
     Box spotBox = Hive.box(Spot.boxName);
     Map spotMap = spotBox.get(spotId);
     Spot spot = Spot.fromCache(spotMap);
-    spot.singlePitchRouteIds.add(createRoute.id);
-    await spotBox.put(spotId, spot.toJson());
+    if (!spot.singlePitchRouteIds.contains(createRoute.id)) {
+      spot.singlePitchRouteIds.add(createRoute.id);
+      await spotBox.put(spotId, spot.toJson());
+    }
     if (online == null || !online) return createRoute;
     // try to upload and update cache if successful
     Map data = createRoute.toJson();

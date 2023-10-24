@@ -134,8 +134,10 @@ class MultiPitchRouteService {
     Box spotBox = Hive.box(Spot.boxName);
     Map spotMap = spotBox.get(spotId);
     Spot spot = Spot.fromCache(spotMap);
-    spot.multiPitchRouteIds.add(multiPitchRoute.id);
-    await spotBox.put(spotId, spot.toJson());
+    if (!spot.multiPitchRouteIds.contains(multiPitchRoute.id)) {
+      spot.multiPitchRouteIds.add(multiPitchRoute.id);
+      await spotBox.put(spotId, spot.toJson());
+    }
     if (online == null || !online) return multiPitchRoute;
     // try to upload and update cache if successful
     Map data = multiPitchRoute.toJson();

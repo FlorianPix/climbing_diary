@@ -137,6 +137,22 @@ class _SettingsState extends State<Settings>{
           ])),
           Card(child: Column(children: [
             const Padding(
+                padding: EdgeInsets.only(top: 5),
+                child: Text("Migrate", style: MyTextStyles.title)
+            ),
+            ElevatedButton.icon(
+              onPressed: () {adminService.migrateMedia();},
+              icon: const Icon(
+                Icons.update_rounded,
+                color: Colors.black,
+                size: 30.0,
+                semanticLabel: 'migrate images',
+              ),
+              label: const Text("migrate images"),
+            )
+          ])),
+          Card(child: Column(children: [
+            const Padding(
               padding: EdgeInsets.only(top: 5),
               child: Text("Delete", style: MyTextStyles.title)
             ),
@@ -146,9 +162,9 @@ class _SettingsState extends State<Settings>{
                 Icons.delete,
                 color: Colors.black,
                 size: 30.0,
-                semanticLabel: 'delete all data incl. images',
+                semanticLabel: 'delete all data',
               ),
-              label: const Text("delete all data incl. images"),
+              label: const Text("delete all data"),
             )
           ])),
         ],

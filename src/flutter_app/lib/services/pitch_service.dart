@@ -111,8 +111,10 @@ class PitchService {
     Box multiPitchRouteBox = Hive.box(MultiPitchRoute.boxName);
     Map multiPitchRouteMap = multiPitchRouteBox.get(routeId);
     MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromCache(multiPitchRouteMap);
-    multiPitchRoute.pitchIds.add(createPitch.id);
-    await multiPitchRouteBox.put(multiPitchRoute.id, multiPitchRoute.toJson());
+    if (!multiPitchRoute.pitchIds.contains(createPitch.id)) {
+      multiPitchRoute.pitchIds.add(createPitch.id);
+      await multiPitchRouteBox.put(multiPitchRoute.id, multiPitchRoute.toJson());
+    }
     if (online == null || !online) return createPitch;
     // try to upload and update cache if successful
     Map data = createPitch.toJson();
