@@ -157,7 +157,7 @@ class AscentService {
     Ascent oldAscent = Ascent.fromCache(ascentBox.get(updateAscent.id));
     Ascent tmpAscent = updateAscent.toAscent(oldAscent);
     await ascentBox.put(updateAscent.id, tmpAscent.toJson());
-    await updateAscentBox.put(updateAscent.id, updateAscent.toJson());
+    await updateAscentBox.put(updateAscent.id, tmpAscent.toJson());
     if (online == null || !online) return tmpAscent;
     // try to upload and update cache if successful
     try {

@@ -152,7 +152,7 @@ class SinglePitchRouteService {
     SinglePitchRoute oldSinglePitchRoute = SinglePitchRoute.fromCache(singlePitchRouteBox.get(updateSinglePitchRoute.id));
     SinglePitchRoute tmpSinglePitchRoute = updateSinglePitchRoute.toSinglePitchRoute(oldSinglePitchRoute);
     await singlePitchRouteBox.put(updateSinglePitchRoute.id, tmpSinglePitchRoute.toJson());
-    await updateSinglePitchRouteBox.put(updateSinglePitchRoute.id, updateSinglePitchRoute.toJson());
+    await updateSinglePitchRouteBox.put(updateSinglePitchRoute.id, tmpSinglePitchRoute.toJson());
     if (online == null || !online) return tmpSinglePitchRoute;
     // try to upload and update cache if successful
     try {

@@ -134,7 +134,7 @@ class PitchService {
     Pitch oldPitch = Pitch.fromCache(pitchBox.get(updatePitch.id));
     Pitch tmpPitch = updatePitch.toPitch(oldPitch);
     await pitchBox.put(updatePitch.id, tmpPitch.toJson());
-    await updatePitchBox.put(updatePitch.id, updatePitch.toJson());
+    await updatePitchBox.put(updatePitch.id, tmpPitch.toJson());
     if (online == null || !online) return tmpPitch;
     // try to upload and update cache if successful
     try {

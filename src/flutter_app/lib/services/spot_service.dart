@@ -168,7 +168,7 @@ class SpotService {
     Spot oldSpot = Spot.fromCache(spotBox.get(updateSpot.id));
     Spot tmpSpot = updateSpot.toSpot(oldSpot);
     await spotBox.put(updateSpot.id, tmpSpot.toJson());
-    await updateSpotBox.put(updateSpot.id, updateSpot.toJson());
+    await updateSpotBox.put(updateSpot.id, tmpSpot.toJson());
     if (online == null || !online) return tmpSpot;
     // try to upload and update cache if successful
     try {

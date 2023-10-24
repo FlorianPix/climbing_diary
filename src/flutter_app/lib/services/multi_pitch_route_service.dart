@@ -157,7 +157,7 @@ class MultiPitchRouteService {
     MultiPitchRoute oldMultiPitchRoute = MultiPitchRoute.fromCache(multiPitchRouteBox.get(updateMultiPitchRoute.id));
     MultiPitchRoute tmpMultiPitchRoute = updateMultiPitchRoute.toMultiPitchRoute(oldMultiPitchRoute);
     await multiPitchRouteBox.put(updateMultiPitchRoute.id, tmpMultiPitchRoute.toJson());
-    await updateMultiPitchRouteBox.put(updateMultiPitchRoute.id, updateMultiPitchRoute.toJson());
+    await updateMultiPitchRouteBox.put(updateMultiPitchRoute.id, tmpMultiPitchRoute.toJson());
     if (online == null || !online) return tmpMultiPitchRoute;
     // try to upload and update cache if successful
     try {

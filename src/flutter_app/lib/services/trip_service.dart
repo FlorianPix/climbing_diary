@@ -88,7 +88,7 @@ class TripService {
     Trip oldTrip = Trip.fromCache(tripBox.get(updateTrip.id));
     Trip tmpTrip = updateTrip.toTrip(oldTrip);
     await tripBox.put(updateTrip.id, tmpTrip.toJson());
-    await updateTripBox.put(updateTrip.id, updateTrip.toJson());
+    await updateTripBox.put(updateTrip.id, tmpTrip.toJson());
     if (online == null || !online) return tmpTrip;
     // try to upload and update cache if successful
     try {
