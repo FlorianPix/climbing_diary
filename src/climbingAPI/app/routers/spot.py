@@ -25,15 +25,13 @@ async def create_spot(spot: SpotModel = Body(...), user: Auth0User = Security(au
     spot["updated"] = datetime.datetime.now()
     db = await get_db()
 
-    # check if spot already exists
+    # check if similar spot already exists
     if (spots := await db["spot"].find({
         "name": spot["name"],
         "user_id": user.id,
         "coordinates.0": {"$gt": spot["coordinates"][0] - 0.001, "$lt": spot["coordinates"][0] + 0.001},
         "coordinates.1": {"$gt": spot["coordinates"][1] - 0.001, "$lt": spot["coordinates"][1] + 0.001},
-    }).to_list(None)):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                            detail="Spot already exists")
+    }).to_list(None)): raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Spot already exists")
 
     new_spot = await db["spot"].insert_one(spot)
     created_spot = await db["spot"].find_one({"_id": new_spot.inserted_id})
