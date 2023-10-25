@@ -27,10 +27,7 @@ class AdminService {
       await CacheService.clearCache();
       MyNotifications.showPositiveNotification('All your data was deleted');
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-        }
-      }
+      ErrorService.handleConnectionErrors(e);
     }
   }
 
@@ -57,6 +54,7 @@ class AdminService {
         );
         await mediaService.createMedium(createMedium);
       }
+      MyNotifications.showPositiveNotification('Migrated media');
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
     }

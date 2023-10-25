@@ -75,14 +75,21 @@ class MultiPitchRouteService {
     // request multi-pitch-routes from the server
     try {
       List<MultiPitchRoute> multiPitchRoutes = [];
-      Box box = Hive.box(MultiPitchRoute.boxName);
+      Box multiPitchRouteBox = Hive.box(MultiPitchRoute.boxName);
       final Response missingMultiPitchRoutesResponse = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route');
       if (missingMultiPitchRoutesResponse.statusCode != 200) throw Exception("Error during request of missing multiPitchRoutes");
-      Future.forEach(missingMultiPitchRoutesResponse.data, (dynamic s) async {
+      await Future.forEach(missingMultiPitchRoutesResponse.data, (dynamic s) async {
         MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromJson(s);
-        box.put(multiPitchRoute.id, multiPitchRoute.toJson());
+        await multiPitchRouteBox.put(multiPitchRoute.id, multiPitchRoute.toJson());
         multiPitchRoutes.add(multiPitchRoute);
       });
+      // delete multiPitchRoutes that were deleted on the server
+      List<MultiPitchRoute> cachedMultiPitchRoutes = CacheService.getTsFromCache<MultiPitchRoute>(MultiPitchRoute.boxName, MultiPitchRoute.fromCache);
+      for (MultiPitchRoute cachedMultiPitchRoute in cachedMultiPitchRoutes){
+        if (!multiPitchRoutes.contains(cachedMultiPitchRoute)){
+          await multiPitchRouteBox.delete(cachedMultiPitchRoute.id);
+        }
+      }
       return multiPitchRoutes;
     } catch (e) {
       ErrorService.handleConnectionErrors(e);

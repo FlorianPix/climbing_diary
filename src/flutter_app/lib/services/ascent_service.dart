@@ -70,14 +70,21 @@ class AscentService {
     // request ascents from the server
     try {
       List<Ascent> ascents = [];
-      Box box = Hive.box(Ascent.boxName);
+      Box ascentBox = Hive.box(Ascent.boxName);
       final Response ascentsResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent');
       if (ascentsResponse.statusCode != 200) throw Exception("Error during request of ascents");
       Future.forEach(ascentsResponse.data, (dynamic s) async {
         Ascent ascent = Ascent.fromJson(s);
-        box.put(ascent.id, ascent.toJson());
+        ascentBox.put(ascent.id, ascent.toJson());
         ascents.add(ascent);
       });
+      // delete ascents that were deleted on the server
+      List<Ascent> cachedAscents = CacheService.getTsFromCache<Ascent>(Ascent.boxName, Ascent.fromCache);
+      for (Ascent cachedAscent in cachedAscents){
+        if (!ascents.contains(cachedAscent)){
+          await ascentBox.delete(cachedAscent.id);
+        }
+      }
       return ascents;
     } catch (e) {
       ErrorService.handleConnectionErrors(e);

@@ -80,14 +80,21 @@ class SpotService {
     // request spots from the server
     try {
       List<Spot> spots = [];
-      Box box = Hive.box(Spot.boxName);
+      Box spotBox = Hive.box(Spot.boxName);
       final Response missingSpotsResponse = await netWorkLocator.dio.get('$climbingApiHost/spot');
       if (missingSpotsResponse.statusCode != 200) throw Exception("Error during request of missing spots");
-      Future.forEach(missingSpotsResponse.data, (dynamic s) async {
+      await Future.forEach(missingSpotsResponse.data, (dynamic s) async {
         Spot spot = Spot.fromJson(s);
-        box.put(spot.id, spot.toJson());
+        await spotBox.put(spot.id, spot.toJson());
         spots.add(spot);
       });
+      // delete spots that were deleted on the server
+      List<Spot> cachedSpots = CacheService.getTsFromCache<Spot>(Spot.boxName, Spot.fromCache);
+      for (Spot cachedSpot in cachedSpots){
+        if (!spots.contains(cachedSpot)){
+          await spotBox.delete(cachedSpot.id);
+        }
+      }
       return spots;
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
@@ -276,21 +283,21 @@ class SpotService {
       if (response.statusCode != 201) throw Exception('Failed to create spot');
       MyNotifications.showPositiveNotification('Created new spot: ${response.data['name']}');
       return Spot.fromJson(response.data);
-    } catch (e) {
-      if (e is DioError) {
-        final response = e.response;
-        if (response != null) {
-          switch (response.statusCode) {
-            case 409:
-              MyNotifications.showNegativeNotification('This spot already exists!');
-              Box createSpotBox = Hive.box(CreateSpot.boxName);
-              await createSpotBox.delete(data['_id']);
-              break;
-            default:
-              throw Exception('Failed to create spot');
-          }
+    } on DioError catch (e) {
+      final response = e.response;
+      if (response != null) {
+        switch (response.statusCode) {
+          case 409:
+            MyNotifications.showNegativeNotification('This spot already exists!');
+            Box createSpotBox = Hive.box(CreateSpot.boxName);
+            await createSpotBox.delete(data['_id']);
+            break;
+          default:
+            throw Exception('Failed to create spot');
         }
       }
+    } catch (e) {
+      print(e);
     }
     return null;
   }

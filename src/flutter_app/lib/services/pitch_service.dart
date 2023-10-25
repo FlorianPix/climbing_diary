@@ -70,14 +70,21 @@ class PitchService {
     // request pitches from the server
     try {
       List<Pitch> pitches = [];
-      Box box = Hive.box(Pitch.boxName);
+      Box pitchBox = Hive.box(Pitch.boxName);
       final Response missingPitchesResponse = await netWorkLocator.dio.get('$climbingApiHost/pitch');
       if (missingPitchesResponse.statusCode != 200) throw Exception("Error during request of missing pitches");
-      Future.forEach(missingPitchesResponse.data, (dynamic s) async {
+      await Future.forEach(missingPitchesResponse.data, (dynamic s) async {
         Pitch pitch = Pitch.fromJson(s);
-        await box.put(pitch.id, pitch.toJson());
+        await pitchBox.put(pitch.id, pitch.toJson());
         pitches.add(pitch);
       });
+      // delete pitches that were deleted on the server
+      List<Pitch> cachedPitches = CacheService.getTsFromCache<Pitch>(Pitch.boxName, Pitch.fromCache);
+      for (Pitch cachedPitch in cachedPitches){
+        if (!pitches.contains(cachedPitch)){
+          await pitchBox.delete(cachedPitch.id);
+        }
+      }
       return pitches;
     } catch (e) {
       ErrorService.handleConnectionErrors(e);

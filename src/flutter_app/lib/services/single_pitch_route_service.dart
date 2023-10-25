@@ -72,14 +72,21 @@ class SinglePitchRouteService {
     // request single-pitch-routes from the server
     try {
       List<SinglePitchRoute> singlePitchRoutes = [];
-      Box box = Hive.box(SinglePitchRoute.boxName);
+      Box singlePitchRouteBox = Hive.box(SinglePitchRoute.boxName);
       final Response singlePitchRoutesResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route');
       if (singlePitchRoutesResponse.statusCode != 200) throw Exception("Error during request of single pitch routes");
-      Future.forEach(singlePitchRoutesResponse.data, (dynamic s) {
+      await Future.forEach(singlePitchRoutesResponse.data, (dynamic s) async {
         SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(s);
-        box.put(singlePitchRoute.id, singlePitchRoute.toJson());
+        await singlePitchRouteBox.put(singlePitchRoute.id, singlePitchRoute.toJson());
         singlePitchRoutes.add(singlePitchRoute);
       });
+      // delete singlePitchRoutes that were deleted on the server
+      List<SinglePitchRoute> cachedSinglePitchRoutes = CacheService.getTsFromCache<SinglePitchRoute>(SinglePitchRoute.boxName, SinglePitchRoute.fromCache);
+      for (SinglePitchRoute cachedSinglePitchRoute in cachedSinglePitchRoutes){
+        if (!singlePitchRoutes.contains(cachedSinglePitchRoute)){
+          await singlePitchRouteBox.delete(cachedSinglePitchRoute.id);
+        }
+      }
       return singlePitchRoutes;
     } catch (e) {
       ErrorService.handleConnectionErrors(e);

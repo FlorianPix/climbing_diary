@@ -46,12 +46,19 @@ class TripService {
       final Response tripsResponse = await netWorkLocator.dio.get('$climbingApiHost/trip');
       if (tripsResponse.statusCode != 200) throw Exception("Error during request of trips");
       List<Trip> trips = [];
-      Box box = Hive.box(Trip.boxName);
-      Future.forEach(tripsResponse.data, (dynamic s) async {
+      Box tripBox = Hive.box(Trip.boxName);
+      await Future.forEach(tripsResponse.data, (dynamic s) async {
         Trip trip = Trip.fromJson(s);
-        await box.put(trip.id, trip.toJson());
+        await tripBox.put(trip.id, trip.toJson());
         trips.add(trip);
       });
+      // delete trips that were deleted on the server
+      List<Trip> cachedTrips = CacheService.getTsFromCache<Trip>(Trip.boxName, Trip.fromCache);
+      for (Trip cachedTrip in cachedTrips){
+        if (!trips.contains(cachedTrip)){
+          await tripBox.delete(cachedTrip.id);
+        }
+      }
       return trips;
     } catch (e) {
       ErrorService.handleConnectionErrors(e);

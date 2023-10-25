@@ -40,12 +40,19 @@ class MediaService {
       final Response response = await netWorkLocator.dio.get('$climbingApiHost/media');
       if (response.statusCode != 200) throw Exception('Failed to load media');
       List<Media> media = [];
-      Box box = Hive.box(Media.boxName);
+      Box mediaBox = Hive.box(Media.boxName);
       await Future.forEach(response.data, (dynamic s) async {
         Media medium = await getMedium(s['_id'], online: online);
-        await box.put(medium.id, medium.toJson());
+        await mediaBox.put(medium.id, medium.toJson());
         media.add(medium);
       });
+      // delete media that were deleted on the server
+      List<Media> cachedMedia = CacheService.getTsFromCache<Media>(Media.boxName, Media.fromCache);
+      for (Media cachedMedium in cachedMedia){
+        if (!media.contains(cachedMedium)){
+          await mediaBox.delete(cachedMedium.id);
+        }
+      }
       return media;
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
