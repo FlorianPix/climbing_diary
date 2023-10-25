@@ -40,17 +40,24 @@ class _MainPageState extends State<MainPage>{
   MediaService mediaService = MediaService();
 
   Future<void> sync() async {
-    // setState(() => syncing = true);
+    setState(() => syncing = true);
     await cacheService.applyChanges();
+    MyNotifications.showPositiveNotification("applied your changes");
     await tripService.getTrips(online: widget.online);
+    MyNotifications.showPositiveNotification("synced trips");
     await spotService.getSpots(online: widget.online);
+    MyNotifications.showPositiveNotification("synced spots");
     await multiPitchRouteService.getMultiPitchRoutes(online: widget.online);
+    MyNotifications.showPositiveNotification("synced multi pitch routes");
     await singlePitchRouteService.getSinglePitchRoutes(online: widget.online);
+    MyNotifications.showPositiveNotification("synced single pitch routes");
     await pitchService.getPitches(online: widget.online);
+    MyNotifications.showPositiveNotification("synced pitches");
     await ascentService.getAscents(online: widget.online);
+    MyNotifications.showPositiveNotification("synced ascents");
     await mediaService.getMedia(online: widget.online);
     MyNotifications.showPositiveNotification("synced");
-    // setState(() => syncing = false);
+    setState(() => syncing = false);
   }
 
   @override

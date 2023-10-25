@@ -37,7 +37,7 @@ class MediaService {
     if(online == null || !online) return CacheService.getMediaFromCache(Media.fromCache);
     // request media from the server
     try{
-      final Response response = await netWorkLocator.dio.get('$climbingApiHost/media');
+      final Response response = await netWorkLocator.dio.get('$climbingApiHost/media-small');
       if (response.statusCode != 200) throw Exception('Failed to load media');
       List<Media> media = [];
       Box mediaBox = Hive.box(Media.boxName);

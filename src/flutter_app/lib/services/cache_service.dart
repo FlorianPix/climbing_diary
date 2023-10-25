@@ -84,19 +84,19 @@ class CacheService{
   /// Apply all changes that were made locally to the server.
   Future<void> applyChanges() async {
     await applyTripChanges();
-    MyNotifications.showPositiveNotification("synced your trip changes");
+    MyNotifications.showPositiveNotification("applied your trip changes");
     await applySpotChanges();
-    MyNotifications.showPositiveNotification("synced your spot changes");
+    MyNotifications.showPositiveNotification("applied your spot changes");
     await applySinglePitchRouteChanges();
-    MyNotifications.showPositiveNotification("synced your single pitch route changes");
+    MyNotifications.showPositiveNotification("applied your single pitch route changes");
     await applyMultiPitchRouteChanges();
-    MyNotifications.showPositiveNotification("synced your multi pitch route changes");
+    MyNotifications.showPositiveNotification("applied your multi pitch route changes");
     await applyPitchChanges();
-    MyNotifications.showPositiveNotification("synced your pitch changes");
+    MyNotifications.showPositiveNotification("applied your pitch changes");
     await applyAscentChanges();
-    MyNotifications.showPositiveNotification("synced your ascent changes");
+    MyNotifications.showPositiveNotification("applied your ascent changes");
     await applyMediaChanges();
-    MyNotifications.showPositiveNotification("synced your media changes");
+    MyNotifications.showPositiveNotification("applied your media changes");
   }
 
   Future<void> applyTripChanges() async {
