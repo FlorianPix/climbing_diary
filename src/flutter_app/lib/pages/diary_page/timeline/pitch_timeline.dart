@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
-
-import '../../../components/detail/pitch_details.dart';
-import '../../../components/image_list_view.dart';
-import '../../../components/info/pitch_info.dart';
-import '../../../components/rating.dart';
-import '../../../interfaces/pitch/pitch.dart';
-import '../../../interfaces/route/route.dart';
-import '../../../interfaces/spot/spot.dart';
-import '../../../interfaces/trip/trip.dart';
-import '../../../services/pitch_service.dart';
-import 'ascent_timeline.dart';
-import 'my_timeline_theme_data.dart';
+import 'package:climbing_diary/components/detail/pitch_details.dart';
+import 'package:climbing_diary/components/common/image_list_view.dart';
+import 'package:climbing_diary/components/info/pitch_info.dart';
+import 'package:climbing_diary/components/common/rating.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:climbing_diary/interfaces/route/route.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/ascent_timeline.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/my_timeline_theme_data.dart';
 
 class PitchTimeline extends StatefulWidget {
   const PitchTimeline({super.key, this.trip, required this.spot, required this.route, required this.pitchIds, required this.onNetworkChange});
@@ -49,10 +48,10 @@ class PitchTimelineState extends State<PitchTimeline> {
   Widget build(BuildContext context) {
     List<String> pitchIds = widget.pitchIds;
     return FutureBuilder<List<Pitch>>(
-      future: pitchService.getPitchesOfIds(online, pitchIds),
+      future: pitchService.getPitchesOfIds(pitchIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Pitch> pitches = snapshot.data!;
         pitches.sort((a, b) {
           if (a.num > b.num) return 1;
@@ -111,7 +110,7 @@ class PitchTimelineState extends State<PitchTimeline> {
                         pitchId: pitches[index].id,
                         ascentIds: pitches[index].ascentIds,
                         onUpdate: (ascent) {
-                          // TODO
+                          setState(() {});
                         },
                         onDelete: (ascent) {
                           pitches[index].ascentIds.remove(ascent.id);

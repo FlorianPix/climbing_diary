@@ -1,22 +1,25 @@
-import 'package:climbing_diary/components/my_button_styles.dart';
-import 'package:climbing_diary/components/my_text_styles.dart';
-import 'package:climbing_diary/components/select_spot.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
+import 'package:climbing_diary/components/common/select_spot.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
-import '../../interfaces/spot/spot.dart';
-import '../../interfaces/trip/trip.dart';
-import '../../interfaces/trip/update_trip.dart';
-import '../../pages/diary_page/timeline/spot_timeline.dart';
-import '../../services/media_service.dart';
-import '../../services/trip_service.dart';
-import '../add/add_image.dart';
-import '../add/add_spot.dart';
-import '../comment.dart';
-import '../edit/edit_trip.dart';
-import '../image_list_view_add.dart';
-import '../rating.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
+import 'package:climbing_diary/interfaces/trip/update_trip.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/spot_timeline.dart';
+import 'package:climbing_diary/services/media_service.dart';
+import 'package:climbing_diary/services/trip_service.dart';
+import 'package:climbing_diary/components/add/add_image.dart';
+import 'package:climbing_diary/components/add/add_spot.dart';
+import 'package:climbing_diary/components/common/comment.dart';
+import 'package:climbing_diary/components/edit/edit_trip.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import 'package:climbing_diary/components/common/rating.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../interfaces/media/media.dart';
 
 class TripDetails extends StatefulWidget {
   const TripDetails({super.key, required this.trip, required this.onTripDelete, required this.onTripUpdate, required this.onSpotAdd, required this.onNetworkChange });
@@ -34,31 +37,46 @@ class _TripDetailsState extends State<TripDetails>{
   final MediaService mediaService = MediaService();
   final TripService tripService = TripService();
 
-  Future<List<String>> fetchURLs() {
-    List<Future<String>> futures = [];
+  Future<List<Media>> fetchMedia() {
+    List<Future<Media>> futures = [];
     for (var mediaId in widget.trip.mediaIds) {
-      futures.add(mediaService.getMediumUrl(mediaId));
+      futures.add(mediaService.getMedium(mediaId));
     }
     return Future.wait(futures);
   }
+
   final ImagePicker picker = ImagePicker();
 
   Future<void> getImage(ImageSource media) async {
     if (media == ImageSource.camera) {
-      var img = await picker.pickImage(source: media);
-      if (img != null) {
-        var mediaId = await mediaService.uploadMedia(img);
+      XFile? file = await picker.pickImage(source: media);
+      if (file != null) {
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Trip trip = widget.trip;
         trip.mediaIds.add(mediaId);
-        tripService.editTrip(trip.toUpdateTrip(), online);
+        await tripService.editTrip(trip.toUpdateTrip());
       }
     } else {
-      List<XFile> images = await picker.pickMultiImage();
-      for (XFile img in images){
-        var mediaId = await mediaService.uploadMedia(img);
+      List<XFile> files = await picker.pickMultiImage();
+      for (XFile file in files){
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Trip trip = widget.trip;
         trip.mediaIds.add(mediaId);
-        tripService.editTrip(trip.toUpdateTrip(), online);
+        await tripService.editTrip(trip.toUpdateTrip());
       }
     }
     setState(() {});
@@ -110,14 +128,13 @@ class _TripDetailsState extends State<TripDetails>{
     if (trip.comment.isNotEmpty) elements.add(Comment(comment: trip.comment));
     elements.add(Rating(rating: trip.rating));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.trip.mediaIds.remove(mediumId);
-      tripService.editTrip(
+      await tripService.editTrip(
         UpdateTrip(
           id: widget.trip.id,
           mediaIds: widget.trip.mediaIds
-        ),
-        online
+        )
       );
       setState(() {});
     }
@@ -171,9 +188,9 @@ class _TripDetailsState extends State<TripDetails>{
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
-            tripService.deleteTrip(trip);
+            await tripService.deleteTrip(trip);
             widget.onTripDelete.call(trip);
           },
           icon: const Icon(Icons.delete),

@@ -14,6 +14,19 @@ class MyColors{
     900:Color.fromRGBO(255,127,90, 1),
   };
 
+  static const Map<int, Color> inverse = {
+    50:Color.fromRGBO(0,128,165, .1),
+    100:Color.fromRGBO(0,128,165, .2),
+    200:Color.fromRGBO(0,128,165, .3),
+    300:Color.fromRGBO(0,128,165, .4),
+    400:Color.fromRGBO(0,128,165, .5),
+    500:Color.fromRGBO(0,128,165, .6),
+    600:Color.fromRGBO(0,128,165, .7),
+    700:Color.fromRGBO(0,128,165, .8),
+    800:Color.fromRGBO(0,128,165, .9),
+    900:Color.fromRGBO(0,128,165, 1),
+  };
+
   static const Map<int, Color> heatMap = {
     1:Color.fromRGBO(255,127,90, .1),
     2:Color.fromRGBO(255,127,90, .2),

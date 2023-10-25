@@ -1,14 +1,15 @@
 import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/my_timeline_theme_data.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
 
 import '../../../interfaces/spot/spot.dart';
 import '../../../interfaces/trip/trip.dart';
-import '../../components/detail/single_pitch_route_details.dart';
-import '../../components/info/single_pitch_route_info.dart';
-import '../../components/rating.dart';
-import '../../components/image_list_view.dart';
+import 'package:climbing_diary/components/detail/single_pitch_route_details.dart';
+import 'package:climbing_diary/components/info/single_pitch_route_info.dart';
+import 'package:climbing_diary/components/common/rating.dart';
+import 'package:climbing_diary/components/common/image_list_view.dart';
 import '../../services/single_pitch_route_service.dart';
 import '../diary_page/timeline/ascent_timeline.dart';
 
@@ -27,12 +28,10 @@ class SinglePitchRouteList extends StatefulWidget {
 class SinglePitchRouteListState extends State<SinglePitchRouteList> {
   final SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
 
-  bool online = false;
-
   void checkConnection() async {
     await InternetConnectionChecker().hasConnection.then((value) {
       widget.onNetworkChange.call(value);
-      setState(() => online = value);
+      setState(() {});
     });
   }
 
@@ -47,14 +46,14 @@ class SinglePitchRouteListState extends State<SinglePitchRouteList> {
     List<String> singlePitchRouteIds = widget.singlePitchRouteIds;
 
     return FutureBuilder<List<SinglePitchRoute?>>(
-      future: singlePitchRouteService.getSinglePitchRoutesOfIds(online, singlePitchRouteIds),
+      future: singlePitchRouteService.getSinglePitchRoutesOfIds(singlePitchRouteIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<SinglePitchRoute> singlePitchRoutes = snapshot.data!.whereType<SinglePitchRoute>().toList();
         singlePitchRoutes.sort((a, b) => a.name.compareTo(b.name));
 
-        updateSinglePitchRouteCallback(SinglePitchRoute route) {
+        void updateSinglePitchRouteCallback(SinglePitchRoute route) {
           var index = -1;
           for (int i = 0; i < singlePitchRoutes.length; i++) {
             if (singlePitchRoutes[i].id == route.id) index = i;
@@ -64,7 +63,7 @@ class SinglePitchRouteListState extends State<SinglePitchRouteList> {
           setState(() {});
         }
 
-        deleteSinglePitchRouteCallback(SinglePitchRoute route) {
+        void deleteSinglePitchRouteCallback(SinglePitchRoute route) {
           singlePitchRoutes.remove(route);
           singlePitchRouteIds.remove(route.id);
           setState(() {});
@@ -72,12 +71,7 @@ class SinglePitchRouteListState extends State<SinglePitchRouteList> {
 
         if (singlePitchRoutes.isNotEmpty){
           return FixedTimeline.tileBuilder(
-            theme: TimelineThemeData(
-              nodePosition: 0,
-              color: const Color(0xff989898),
-              indicatorTheme: const IndicatorThemeData(position: 0, size: 20.0),
-              connectorTheme: const ConnectorThemeData(thickness: 2.5),
-            ),
+            theme: MyTimeLineThemeData.defaultTheme,
             builder: TimelineTileBuilder.connected(
               connectionDirection: ConnectionDirection.before,
               itemCount: singlePitchRoutes.length,
@@ -101,26 +95,26 @@ class SinglePitchRouteListState extends State<SinglePitchRouteList> {
                     DateTime.parse(widget.trip!.endDate);
                   }
                   elements.add(ExpansionTile(
-                      leading: const Icon(Icons.flag),
-                      title: const Text("ascents"),
-                      children: [AscentTimeline(
-                        trip: widget.trip,
-                        spot: widget.spot,
-                        route: singlePitchRoute,
-                        pitchId: singlePitchRoute.id,
-                        ascentIds: singlePitchRoute.ascentIds,
-                        onUpdate: (ascent) {
-                          // TODO
-                        },
-                        onDelete: (ascent) {
-                          singlePitchRoute.ascentIds.remove(ascent.id);
-                          setState(() {});
-                        },
-                        startDate: startDate,
-                        endDate: endDate,
-                        ofMultiPitch: false,
-                        onNetworkChange: widget.onNetworkChange,
-                      )]
+                    leading: const Icon(Icons.flag),
+                    title: const Text("ascents"),
+                    children: [AscentTimeline(
+                      trip: widget.trip,
+                      spot: widget.spot,
+                      route: singlePitchRoute,
+                      pitchId: singlePitchRoute.id,
+                      ascentIds: singlePitchRoute.ascentIds,
+                      onUpdate: (ascent) {
+                        setState(() {});
+                      },
+                      onDelete: (ascent) {
+                        singlePitchRoute.ascentIds.remove(ascent.id);
+                        setState(() {});
+                      },
+                      startDate: startDate,
+                      endDate: endDate,
+                      ofMultiPitch: false,
+                      onNetworkChange: widget.onNetworkChange,
+                    )]
                   ));
                 }
                 return InkWell(

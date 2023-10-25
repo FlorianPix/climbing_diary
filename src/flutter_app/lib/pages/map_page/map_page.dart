@@ -13,24 +13,32 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  bool online = false;
-
-  void checkConnection() async {
-    await InternetConnectionChecker().hasConnection.then((value) {
+  Future<bool> checkConnection() async {
+    return await InternetConnectionChecker().hasConnection.then((value) {
       widget.onNetworkChange.call(value);
-      setState(() => online = value);
+      return value;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    checkConnection();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (online) return MapPageOnline(onNetworkChange: (bool value) => setState(() => online = value));
-    return MapPageOffline(onNetworkChange: (bool value) => setState(() => online = value));
+    return FutureBuilder<bool>(
+      future: checkConnection(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) return Text(snapshot.error.toString());
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+        bool online = snapshot.data!;
+        return online ? MapPageOnline(
+            onNetworkChange: (bool value) => setState(() => online = value)
+        ) : MapPageOffline(
+            onNetworkChange: (bool value) => setState(() => online = value)
+        );
+      }
+    );
   }
 }

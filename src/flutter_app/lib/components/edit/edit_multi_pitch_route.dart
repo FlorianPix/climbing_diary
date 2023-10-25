@@ -1,4 +1,4 @@
-import 'package:climbing_diary/components/my_validators.dart';
+import 'package:climbing_diary/components/common/my_validators.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

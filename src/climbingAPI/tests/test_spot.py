@@ -11,29 +11,31 @@ def test_create_spot(headers, a_create_spot):
     assert response.status_code == 201
     # Then the response contains the created spot
     data = json.loads(response.text)
-    for key in a_create_spot.keys():
+    keys = list(a_create_spot.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
         assert data[key] == a_create_spot[key]
 
 
-def test_create_two_spots_with_same_name_and_location(headers, a_create_spot):
+def test_create_two_spots_with_same_name_and_location(headers, a_create_spot, a_create_spot2):
     # Given an empty db, authentication and a 'CreateSpot'
     # When two post requests with the same 'CreateSpot' are sent to /spot
     url = 'http://localhost:8000/spot'
     response = requests.post(url, json=a_create_spot, headers=headers)
     assert response.status_code == 201
-    response = requests.post(url, json=a_create_spot, headers=headers)
+    response = requests.post(url, json=a_create_spot2, headers=headers)
     # Then the second response status code should be '409 Conflict'
     assert response.status_code == 409
 
 
-def test_create_two_spots_with_same_name_but_different_location(headers, a_create_spot):
+def test_create_two_spots_with_same_name_but_different_location(headers, a_create_spot, a_create_spot3):
     # Given an empty db, authentication and a 'CreateSpot'
     # When two post requests with the same 'CreateSpot' are sent to /spot
     url = 'http://localhost:8000/spot'
     response = requests.post(url, json=a_create_spot, headers=headers)
     assert response.status_code == 201
-    a_create_spot['coordinates'] = [51.746036, 11.642666]
-    response = requests.post(url, json=a_create_spot, headers=headers)
+    response = requests.post(url, json=a_create_spot3, headers=headers)
     # Then the second response status code should be '201 Created'
     assert response.status_code == 201
 
@@ -64,7 +66,10 @@ def test_retrieve_spot(headers, a_create_spot):
     # Then the response is the spot with that id
     data = json.loads(response.text)
     assert data['_id'] == spot_id
-    for key in a_create_spot.keys():
+    keys = list(a_create_spot.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
         assert data[key] == a_create_spot[key]
 
 
@@ -84,7 +89,10 @@ def test_retrieve_spots(headers, a_create_spot):
     assert response.status_code == 201
     data = json.loads(response.text)
     spot_id = data['_id']
-    for key in a_create_spot.keys():
+    keys = list(a_create_spot.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
         assert data[key] == a_create_spot[key]
     # Given authentication and a db with one spot
     # When a get request is sent to /spot
@@ -95,7 +103,7 @@ def test_retrieve_spots(headers, a_create_spot):
     data = json.loads(response.text)
     assert len(data) == 1
     assert data[0]['_id'] == spot_id
-    for key in a_create_spot.keys():
+    for key in keys:
         assert data[0][key] == a_create_spot[key]
 
 
@@ -106,7 +114,10 @@ def test_update_spot(headers, a_create_spot, a_update_spot):
     assert response.status_code == 201
     data = json.loads(response.text)
     spot_id = data['_id']
-    for key in a_create_spot.keys():
+    keys = list(a_create_spot.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
         assert data[key] == a_create_spot[key]
     # Given authentication and a db with one spot
     # When a put request is sent to /spot/{spot_id}
@@ -125,7 +136,10 @@ def test_delete_spot(headers, a_create_spot):
     assert response.status_code == 201
     data = json.loads(response.text)
     spot_id = data['_id']
-    for key in a_create_spot.keys():
+    keys = list(a_create_spot.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
         assert data[key] == a_create_spot[key]
     # Given authentication and a db with one spot
     # When a delete request is sent to /spot/{spot_id}
@@ -135,7 +149,7 @@ def test_delete_spot(headers, a_create_spot):
     # Then the response is the deleted spot
     data = json.loads(response.text)
     assert data['_id'] == spot_id
-    for key in a_create_spot.keys():
+    for key in keys:
         assert data[key] == a_create_spot[key]
 
 
@@ -169,7 +183,10 @@ def test_delete_spot_and_id_from_trip(headers, a_create_trip, a_update_trip, a_c
     # Then the response is the deleted spot
     data = json.loads(response.text)
     assert data['_id'] == spot_id
-    for key in a_create_spot.keys():
+    keys = list(a_create_spot.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
         assert data[key] == a_create_spot[key]
     # Then spot is not in the db anymore
     response = requests.get(spot_url + f"/{spot_id}", headers=headers)
@@ -181,7 +198,7 @@ def test_delete_spot_and_id_from_trip(headers, a_create_trip, a_update_trip, a_c
     assert data['spot_ids'] == []
 
 
-def test_delete_spot_and_all_its_multi_pitch_routes_pitches_ascents(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch_1, a_create_pitch_2, a_create_ascent):
+def test_delete_spot_and_all_its_multi_pitch_routes_pitches_ascents(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch, a_create_pitch_2, a_create_ascent, a_create_ascent2):
     # Given authentication and a db with one spot that has one multi pitch route with two pitches and one ascent each
     # create a spot
     spot_url = 'http://localhost:8000/spot'
@@ -193,9 +210,10 @@ def test_delete_spot_and_all_its_multi_pitch_routes_pitches_ascents(headers, a_c
     response = requests.post(multi_pitch_route_url + f'/spot/{spot_id}', json=a_create_multi_pitch_route, headers=headers)
     data = json.loads(response.text)
     multi_pitch_route_id = data['_id']
+    a_create_spot['multi_pitch_route_ids'] = [multi_pitch_route_id]
     # create two pitches
     pitch_url = 'http://localhost:8000/pitch'
-    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch_1, headers=headers)
+    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch, headers=headers)
     data = json.loads(response.text)
     pitch_1_id = data['_id']
     response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch_2, headers=headers)
@@ -206,7 +224,7 @@ def test_delete_spot_and_all_its_multi_pitch_routes_pitches_ascents(headers, a_c
     response = requests.post(ascent_url + f"/pitch/{pitch_1_id}", json=a_create_ascent, headers=headers)
     data = json.loads(response.text)
     ascent_1_id = data['_id']
-    response = requests.post(ascent_url + f"/pitch/{pitch_2_id}", json=a_create_ascent, headers=headers)
+    response = requests.post(ascent_url + f"/pitch/{pitch_2_id}", json=a_create_ascent2, headers=headers)
     data = json.loads(response.text)
     ascent_2_id = data['_id']
     # When a delete request is sent to /spot/{spot_id}
@@ -216,7 +234,10 @@ def test_delete_spot_and_all_its_multi_pitch_routes_pitches_ascents(headers, a_c
     # Then the response is the deleted spot
     data = json.loads(response.text)
     assert data['_id'] == spot_id
-    for key in a_create_spot.keys():
+    keys = list(a_create_spot.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
         assert data[key] == a_create_spot[key]
     response = requests.get(spot_url + f"/{spot_id}", headers=headers)
     assert response.status_code == 404

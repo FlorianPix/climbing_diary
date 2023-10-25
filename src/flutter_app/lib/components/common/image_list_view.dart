@@ -1,8 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:climbing_diary/components/my_skeleton.dart';
 import 'package:flutter/material.dart';
-
-import '../services/media_service.dart';
+import 'package:climbing_diary/components/common/my_skeleton.dart';
+import 'package:climbing_diary/interfaces/media/media.dart';
+import 'package:climbing_diary/services/media_service.dart';
 
 class ImageListView extends StatelessWidget {
   ImageListView({super.key, required this.mediaIds});
@@ -10,19 +9,18 @@ class ImageListView extends StatelessWidget {
   final List<String> mediaIds;
   final MediaService mediaService = MediaService();
 
-  Future<List<String>> fetchURLs(mediaIds) {
-    List<Future<String>> futures = [];
+  Future<List<Media>> fetchMedia(mediaIds) {
+    List<Future<Media>> futures = [];
     for (var mediaId in mediaIds) {
-      futures.add(mediaService.getMediumUrl(mediaId));
+      futures.add(mediaService.getMedium(mediaId));
     }
     return Future.wait(futures);
   }
 
   @override
   Widget build(BuildContext context) {
-    Future<List<String>> futureMediaUrls = fetchURLs(mediaIds);
-    Widget images = FutureBuilder<List<String>>(
-      future: futureMediaUrls,
+    Widget images = FutureBuilder<List<Media>>(
+      future: fetchMedia(mediaIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
         if (!snapshot.hasData) {
@@ -38,18 +36,24 @@ class ImageListView extends StatelessWidget {
             )
           );
         }
-        List<String> urls = snapshot.data!;
+        List<Media> media = snapshot.data!;
         List<Widget> images = [];
-        for (var url in urls) {
+        for (var medium in media) {
           images.add(Padding(
             padding: const EdgeInsets.all(5.0),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
-              child: CachedNetworkImage(
-                imageUrl: url,
+              child: Image.memory(
+                medium.image,
                 fit: BoxFit.fitHeight,
-                placeholder: (context, url) => const MySkeleton(),
-                errorWidget: (context, url, error) => const Icon(Icons.error),
+                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                  if (wasSynchronouslyLoaded) return child;
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 2000),
+                    child: frame != null ? child : const MySkeleton(),
+                  );
+                },
+                errorBuilder: (context, object, error) => const Icon(Icons.error),
               )
             ),
           ));

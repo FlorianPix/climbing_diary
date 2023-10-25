@@ -5,9 +5,9 @@ import 'package:timelines/timelines.dart';
 
 import '../../../components/add/add_trip.dart';
 import '../../../components/detail/trip_details.dart';
-import '../../../components/image_list_view.dart';
+import 'package:climbing_diary/components/common/image_list_view.dart';
 import '../../../components/info/trip_info.dart';
-import '../../../components/rating.dart';
+import 'package:climbing_diary/components/common/rating.dart';
 import '../../../interfaces/trip/trip.dart';
 import '../../../services/trip_service.dart';
 import 'my_timeline_theme_data.dart';
@@ -40,10 +40,10 @@ class TripTimelineState extends State<TripTimeline> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Trip>>(
-      future: tripService.getTrips(online),
+      future: tripService.getTrips(),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Trip> trips = snapshot.data!;
         trips.sort((a, b) => DateTime.parse(b.startDate).compareTo(DateTime.parse(a.startDate)));
 
@@ -109,8 +109,10 @@ class TripTimelineState extends State<TripTimeline> {
                           onTripDelete: deleteTripCallback,
                           onTripUpdate: updateTripCallback,
                           onSpotAdd: (spot) {
-                            trips[index].spotIds.add(spot.id);
-                            setState(() {});
+                            if (!trips[index].spotIds.contains(spot.id)) {
+                              trips[index].spotIds.add(spot.id);
+                              setState(() {});
+                            }
                           },
                           onNetworkChange: widget.onNetworkChange,
                         )

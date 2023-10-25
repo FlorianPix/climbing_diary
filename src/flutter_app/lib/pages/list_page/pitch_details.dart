@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../components/add/add_image.dart';
-import '../../components/comment.dart';
-import '../../components/image_list_view_add.dart';
-import '../../components/info/pitch_info.dart';
-import '../../components/my_button_styles.dart';
-import '../../components/rating.dart';
+import 'package:climbing_diary/components/add/add_image.dart';
+import 'package:climbing_diary/components/common/comment.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import 'package:climbing_diary/components/info/pitch_info.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
+import 'package:climbing_diary/components/common/rating.dart';
+import 'package:uuid/uuid.dart';
+import '../../interfaces/media/media.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/pitch/update_pitch.dart';
 import '../../services/media_service.dart';
@@ -26,10 +28,10 @@ class _PitchDetailsState extends State<PitchDetails>{
   final MediaService mediaService = MediaService();
   final PitchService pitchService = PitchService();
 
-  Future<List<String>> fetchURLs() {
-    List<Future<String>> futures = [];
+  Future<List<Media>> fetchMedia() {
+    List<Future<Media>> futures = [];
     for (var mediaId in widget.pitch.mediaIds) {
-      futures.add(mediaService.getMediumUrl(mediaId));
+      futures.add(mediaService.getMedium(mediaId));
     }
     return Future.wait(futures);
   }
@@ -38,20 +40,34 @@ class _PitchDetailsState extends State<PitchDetails>{
 
   Future<void> getImage(ImageSource media) async {
     if (media == ImageSource.camera) {
-      var img = await picker.pickImage(source: media);
-      if (img != null) {
-        var mediaId = await mediaService.uploadMedia(img);
+      XFile? file = await picker.pickImage(source: media);
+      if (file != null) {
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Pitch pitch = widget.pitch;
         pitch.mediaIds.add(mediaId);
-        pitchService.editPitch(pitch.toUpdatePitch());
+        await pitchService.editPitch(pitch.toUpdatePitch());
       }
     } else {
-      List<XFile> images = await picker.pickMultiImage();
-      for (XFile img in images){
-        var mediaId = await mediaService.uploadMedia(img);
+      List<XFile> files = await picker.pickMultiImage();
+      for (XFile file in files){
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Pitch pitch = widget.pitch;
         pitch.mediaIds.add(mediaId);
-        pitchService.editPitch(pitch.toUpdatePitch());
+        await pitchService.editPitch(pitch.toUpdatePitch());
       }
     }
     setState(() {});
@@ -81,9 +97,9 @@ class _PitchDetailsState extends State<PitchDetails>{
 
     if (pitch.comment.isNotEmpty) elements.add(Comment(comment: pitch.comment));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.pitch.mediaIds.remove(mediumId);
-      pitchService.editPitch(UpdatePitch(
+      await pitchService.editPitch(UpdatePitch(
         id: widget.pitch.id,
         mediaIds: widget.pitch.mediaIds
       ));

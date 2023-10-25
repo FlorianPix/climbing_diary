@@ -1,18 +1,14 @@
-from bson import ObjectId
 from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import List
-
-from app.models.py_object_id import PyObjectId
-
 from ..grade import Grade
 
 
 class PitchModel(BaseModel):
     updated: datetime
-    ascent_ids: List[PyObjectId] = []
+    ascent_ids: List[str] = []
     media_ids: List[str] = []
-    pitch_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    pitch_id: str = Field(default_factory=str, alias="_id")
     user_id: str = Field(...)
 
     comment: str = Field(...)
@@ -25,7 +21,6 @@ class PitchModel(BaseModel):
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
                 "updated": "2022-10-06T20:13:16.816000",

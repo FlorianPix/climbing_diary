@@ -1,16 +1,18 @@
-import 'package:climbing_diary/components/info/ascent_info.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:climbing_diary/components/info/ascent_info.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:climbing_diary/interfaces/ascent/update_ascent.dart';
+import 'package:climbing_diary/services/media_service.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
+import 'package:climbing_diary/components/add/add_image.dart';
+import 'package:climbing_diary/components/common/comment.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
+import 'package:climbing_diary/components/edit/edit_ascent.dart';
+import 'package:uuid/uuid.dart';
 
-import '../../interfaces/ascent/ascent.dart';
-import '../../interfaces/ascent/update_ascent.dart';
-import '../../services/media_service.dart';
-import '../../services/ascent_service.dart';
-import '../add/add_image.dart';
-import '../comment.dart';
-import '../image_list_view_add.dart';
-import '../my_button_styles.dart';
-import '../edit/edit_ascent.dart';
+import '../../interfaces/media/media.dart';
 
 class AscentDetails extends StatefulWidget {
   const AscentDetails({super.key, required this.pitchId, required this.ascent, required this.onDelete, required this.onUpdate, required this.ofMultiPitch });
@@ -31,20 +33,34 @@ class _AscentDetailsState extends State<AscentDetails>{
 
   Future<void> getImage(ImageSource media) async {
     if (media == ImageSource.camera) {
-      var img = await picker.pickImage(source: media);
-      if (img != null) {
-        var mediaId = await mediaService.uploadMedia(img);
+      XFile? file = await picker.pickImage(source: media);
+      if (file != null) {
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Ascent ascent = widget.ascent;
         ascent.mediaIds.add(mediaId);
-        ascentService.editAscent(ascent.toUpdateAscent());
+        await ascentService.editAscent(ascent.toUpdateAscent());
       }
     } else {
-      List<XFile> images = await picker.pickMultiImage();
-      for (XFile img in images){
-        var mediaId = await mediaService.uploadMedia(img);
+      List<XFile> files = await picker.pickMultiImage();
+      for (XFile file in files){
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Ascent ascent = widget.ascent;
         ascent.mediaIds.add(mediaId);
-        ascentService.editAscent(ascent.toUpdateAscent());
+        await ascentService.editAscent(ascent.toUpdateAscent());
       }
     }
     setState(() {});
@@ -70,9 +86,9 @@ class _AscentDetailsState extends State<AscentDetails>{
     elements.add(AscentInfo(ascent: ascent));
     if (ascent.comment.isNotEmpty) elements.add(Comment(comment: ascent.comment));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.ascent.mediaIds.remove(mediumId);
-      ascentService.editAscent(UpdateAscent(
+      await ascentService.editAscent(UpdateAscent(
         id: widget.ascent.id,
         mediaIds: widget.ascent.mediaIds
       ));
@@ -101,9 +117,13 @@ class _AscentDetailsState extends State<AscentDetails>{
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
-            ascentService.deleteAscent(ascent, widget.pitchId, widget.ofMultiPitch);
+            if (widget.ofMultiPitch) {
+              await ascentService.deleteAscentOfPitch(ascent, widget.pitchId);
+            } else {
+              await ascentService.deleteAscentOfSinglePitchRoute(ascent, widget.pitchId);
+            }
             widget.onDelete.call(ascent);
           },
           icon: const Icon(Icons.delete),

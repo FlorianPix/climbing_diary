@@ -1,4 +1,4 @@
-import 'package:climbing_diary/components/my_text_styles.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'save_location_no_connection.dart';
 import '../../interfaces/spot/spot.dart';

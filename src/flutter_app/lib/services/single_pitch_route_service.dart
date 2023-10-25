@@ -1,18 +1,20 @@
-import 'package:hive/hive.dart';
-
-import '../components/my_notifications.dart';
-import '../config/environment.dart';
-import '../interfaces/ascent/ascent.dart';
 import 'package:dio/dio.dart';
+import 'package:hive/hive.dart';
+import 'package:climbing_diary/services/error_service.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
+import 'package:climbing_diary/config/environment.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:climbing_diary/data/network/dio_client.dart';
+import 'package:climbing_diary/data/sharedprefs/shared_preference_helper.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/create_single_pitch_route.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/update_single_pitch_route.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
+import 'package:climbing_diary/services/cache_service.dart';
+import 'package:climbing_diary/services/locator.dart';
 
-import '../data/network/dio_client.dart';
-import '../data/sharedprefs/shared_preference_helper.dart';
-import '../interfaces/single_pitch_route/create_single_pitch_route.dart';
-import '../interfaces/single_pitch_route/single_pitch_route.dart';
-import '../interfaces/single_pitch_route/update_single_pitch_route.dart';
-import 'ascent_service.dart';
-import 'cache_service.dart';
-import 'locator.dart';
+import '../interfaces/media/media.dart';
+import '../interfaces/spot/spot.dart';
 
 class SinglePitchRouteService {
   final AscentService ascentService = AscentService();
@@ -21,164 +23,93 @@ class SinglePitchRouteService {
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<SinglePitchRoute?> createSinglePitchRoute(CreateSinglePitchRoute createRoute, String spotId, bool hasConnection) async {
-    CreateSinglePitchRoute route = CreateSinglePitchRoute(
-        comment: (createRoute.comment != null) ? createRoute.comment! : "",
-        location: createRoute.location,
-        name: createRoute.name,
-        rating: createRoute.rating,
-        grade: createRoute.grade,
-        length: createRoute.length
-    );
-    if (hasConnection) {
-      var data = route.toJson();
-      return uploadSinglePitchRoute(spotId, data);
-    } else {
-      // save to cache
-      Box box = Hive.box('upload_later_routes');
-      Map routeJson = route.toJson();
-      box.put(routeJson.hashCode, routeJson);
+  /// Get a single-pitch-route by its id from cache and optionally from the server.
+  /// If the parameter [online] is null or false the single-pitch-route is searched in cache,
+  /// otherwise it is requested from the server.
+  Future<SinglePitchRoute?> getSinglePitchRoute(String singlePitchRouteId, {bool? online}) async {
+    Box box = Hive.box(SinglePitchRoute.boxName);
+    if (online == null || !online) return SinglePitchRoute.fromCache(box.get(singlePitchRouteId));
+    // request singlePitchRoute from server
+    try {
+      final Response singlePitchRouteResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$singlePitchRouteId');
+      if (singlePitchRouteResponse.statusCode != 200) throw Exception("Error during request of single pitch route");
+      return SinglePitchRoute.fromJson(singlePitchRouteResponse.data);
+    } catch (e) {
+      ErrorService.handleConnectionErrors(e);
     }
     return null;
   }
 
-  Future<SinglePitchRoute?> getSinglePitchRoute(String routeId, bool online) async {
+  /// Get single-pitch-routes with given ids from cache and optionally from the server.
+  /// If the parameter [online] is null or false the single-pitch-routes are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<List<SinglePitchRoute>> getSinglePitchRoutesOfIds(List<String> singlePitchRouteIds, {bool? online}) async {
+    List<SinglePitchRoute> singlePitchRoutes = CacheService.getTsFromCache<SinglePitchRoute>(SinglePitchRoute.boxName, SinglePitchRoute.fromCache);
+    if(online == null || !online) return singlePitchRoutes.where((singlePitchRoute) => singlePitchRouteIds.contains(singlePitchRoute.id)).toList();
+    // request singlePitchRoutes from the server
     try {
-      Box box = Hive.box('single_pitch_routes');
-      if (online) {
-        final Response singlePitchRouteIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_routeUpdated/$routeId');
-        if (singlePitchRouteIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of spot id updated");
-        String id = singlePitchRouteIdUpdatedResponse.data['_id'];
-        String serverUpdated = singlePitchRouteIdUpdatedResponse.data['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          final Response missingSinglePitchRouteResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route/$routeId');
-          if (missingSinglePitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing spot");
-          return SinglePitchRoute.fromJson(missingSinglePitchRouteResponse.data);
-        } else {
-          return SinglePitchRoute.fromCache(box.get(id));
-        }
-      }
-      return SinglePitchRoute.fromCache(box.get(routeId));
+      List<SinglePitchRoute> singlePitchRoutes = [];
+      Box box = Hive.box(SinglePitchRoute.boxName);
+      final Response singlePitchRoutesResponse = await netWorkLocator.dio.put('$climbingApiHost/single_pitch_route/ids', data: singlePitchRouteIds);
+      if (singlePitchRoutesResponse.statusCode != 200) throw Exception("Error during request of single pitch routes");
+      Future.forEach(singlePitchRoutesResponse.data, (dynamic s) async {
+        SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(s);
+        box.put(singlePitchRoute.id, singlePitchRoute.toJson());
+        singlePitchRoutes.add(singlePitchRoute);
+      });
+      return singlePitchRoutes;
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
-      print(e);
-    }
-    return null;
-  }
-
-  Future<List<SinglePitchRoute>> getSinglePitchRoutesOfIds(bool online, List<String> singlePitchRouteIds) async {
-    try {
-      if(online){
-        final Response singlePitchRouteIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_routeUpdated/ids', data: singlePitchRouteIds);
-        if (singlePitchRouteIdsUpdatedResponse.statusCode != 200) {
-          throw Exception("Error during request of singlePitchRoute ids updated");
-        }
-        List<SinglePitchRoute> singlePitchRoutes = [];
-        List<String> missingSinglePitchRouteIds = [];
-        Box box = Hive.box('single_pitch_routes');
-        singlePitchRouteIdsUpdatedResponse.data.forEach((idWithDatetime) {
-          String id = idWithDatetime['_id'];
-          String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-            missingSinglePitchRouteIds.add(id);
-          } else {
-            singlePitchRoutes.add(SinglePitchRoute.fromCache(box.get(id)));
-          }
-        });
-        if (missingSinglePitchRouteIds.isEmpty){
-          return singlePitchRoutes;
-        }
-        final Response missingSinglePitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_route/ids', data: missingSinglePitchRouteIds);
-        if (missingSinglePitchRoutesResponse.statusCode != 200) {
-          throw Exception("Error during request of missing singlePitchRoutes");
-        }
-        missingSinglePitchRoutesResponse.data.forEach((s) {
-          SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(s);
-          if (!box.containsKey(singlePitchRoute.id)) {
-            box.put(singlePitchRoute.id, singlePitchRoute.toJson());
-          }
-          singlePitchRoutes.add(singlePitchRoute);
-        });
-        return singlePitchRoutes;
-      } else {
-        // offline
-        List<SinglePitchRoute> singlePitchRoutes = CacheService.getTsFromCache<SinglePitchRoute>('single_pitch_routes', SinglePitchRoute.fromCache);
-        return singlePitchRoutes.where((element) => singlePitchRouteIds.contains(element.id)).toList();
-      }
-    } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
-      print(e);
+      ErrorService.handleConnectionErrors(e);
     }
     return [];
   }
 
-  Future<List<SinglePitchRoute>> getSinglePitchRoutes(bool online) async {
+  /// Get all single-pitch-routes from cache and optionally from the server.
+  /// If the parameter [online] is null or false the single-pitch-routes are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<List<SinglePitchRoute>> getSinglePitchRoutes({bool? online}) async {
+    if(online == null || !online) return CacheService.getTsFromCache<SinglePitchRoute>(SinglePitchRoute.boxName, SinglePitchRoute.fromCache);
+    // request single-pitch-routes from the server
     try {
-      if(online){
-        final Response singlePitchRouteIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_routeUpdated');
-        if (singlePitchRouteIdsResponse.statusCode != 200) {
-          throw Exception("Error during request of singlePitchRoute ids");
+      List<SinglePitchRoute> singlePitchRoutes = [];
+      Box singlePitchRouteBox = Hive.box(SinglePitchRoute.boxName);
+      final Response singlePitchRoutesResponse = await netWorkLocator.dio.get('$climbingApiHost/single_pitch_route');
+      if (singlePitchRoutesResponse.statusCode != 200) throw Exception("Error during request of single pitch routes");
+      await Future.forEach(singlePitchRoutesResponse.data, (dynamic s) async {
+        SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(s);
+        await singlePitchRouteBox.put(singlePitchRoute.id, singlePitchRoute.toJson());
+        singlePitchRoutes.add(singlePitchRoute);
+      });
+      // delete singlePitchRoutes that were deleted on the server
+      List<SinglePitchRoute> cachedSinglePitchRoutes = CacheService.getTsFromCache<SinglePitchRoute>(SinglePitchRoute.boxName, SinglePitchRoute.fromCache);
+      for (SinglePitchRoute cachedSinglePitchRoute in cachedSinglePitchRoutes){
+        if (!singlePitchRoutes.contains(cachedSinglePitchRoute)){
+          await singlePitchRouteBox.delete(cachedSinglePitchRoute.id);
         }
-        List<SinglePitchRoute> singlePitchRoutes = [];
-        List<String> missingSinglePitchRouteIds = [];
-        Box box = Hive.box('single_pitch_routes');
-        singlePitchRouteIdsResponse.data.forEach((idWithDatetime) {
-          String id = idWithDatetime['_id'];
-          String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-            missingSinglePitchRouteIds.add(id);
-          } else {
-            singlePitchRoutes.add(SinglePitchRoute.fromCache(box.get(id)));
-          }
-        });
-        if (missingSinglePitchRouteIds.isEmpty){
-          return singlePitchRoutes;
-        }
-        final Response missingSinglePitchRoutesResponse = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_route/ids', data: missingSinglePitchRouteIds);
-        if (missingSinglePitchRoutesResponse.statusCode != 200) {
-          throw Exception("Error during request of missing singlePitchRoutes");
-        }
-        missingSinglePitchRoutesResponse.data.forEach((s) {
-          SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(s);
-          if (!box.containsKey(singlePitchRoute.id)) {
-            box.put(singlePitchRoute.id, singlePitchRoute.toJson());
-          }
-          singlePitchRoutes.add(singlePitchRoute);
-        });
-        return singlePitchRoutes;
-      } else {
-        // offline
-        return CacheService.getTsFromCache<SinglePitchRoute>('single_pitch_routes', SinglePitchRoute.fromCache);
       }
+      return singlePitchRoutes;
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
-      print(e);
+      ErrorService.handleConnectionErrors(e);
     }
     return [];
   }
 
-  Future<List<SinglePitchRoute>> getSinglePitchRoutesByName(String name, bool online) async {
-    List<SinglePitchRoute> singlePitchRoutes = await getSinglePitchRoutes(online);
+  /// Get all single-pitch-routes from cache and optionally from the server by their name.
+  /// If the parameter [online] is null or false the single-pitch-routes are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<List<SinglePitchRoute>> getSinglePitchRoutesByName(String name, {bool? online}) async {
+    List<SinglePitchRoute> singlePitchRoutes = await getSinglePitchRoutes(online: online);
     if (name.isEmpty) return singlePitchRoutes;
     return singlePitchRoutes.where((singlePitchRoute) => singlePitchRoute.name.contains(name)).toList();
   }
 
-  Future<SinglePitchRoute?> getSinglePitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate, bool online) async {
-    SinglePitchRoute? singlePitchRoute = await getSinglePitchRoute(routeId, online);
+  /// Get all single-pitch-routes within a date range from cache and optionally from the server.
+  /// If the parameter [online] is null or false the single-pitch-routes are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<SinglePitchRoute?> getSinglePitchRouteIfWithinDateRange(String routeId, DateTime startDate, DateTime endDate, {bool? online}) async {
+    SinglePitchRoute? singlePitchRoute = await getSinglePitchRoute(routeId, online: online);
     if (singlePitchRoute == null) return null;
-    List<Ascent> ascents = await ascentService.getAscentsOfIds(online, singlePitchRoute.ascentIds);
+    List<Ascent> ascents = await ascentService.getAscentsOfIds(singlePitchRoute.ascentIds, online: online);
     for (Ascent ascent in ascents) {
       DateTime dateOfAscent = DateTime.parse(ascent.date);
       if ((dateOfAscent.isAfter(startDate) && dateOfAscent.isBefore(endDate)) || dateOfAscent.isAtSameMomentAs(startDate) || dateOfAscent.isAtSameMomentAs(endDate)){
@@ -188,87 +119,140 @@ class SinglePitchRouteService {
     return null;
   }
 
-  Future<SinglePitchRoute?> editSinglePitchRoute(UpdateSinglePitchRoute route) async {
+  /// Create a single-pitch-route in cache and optionally on the server.
+  /// If the parameter [online] is null or false the single-pitch-route is added to the cache and uploaded later at the next sync.
+  /// Otherwise it is added to the cache and to the server.
+  Future<SinglePitchRoute?> createSinglePitchRoute(SinglePitchRoute createRoute, String spotId, {bool? online}) async {
+    // add to cache
+    Box singlePitchRouteBox = Hive.box(SinglePitchRoute.boxName);
+    await singlePitchRouteBox.put(createRoute.id, createRoute.toJson());
+    // add single pitch route to creation queue for later sync
+    // add spotId as well so we later know to which spot to add it on the server
+    Box createSinglePitchRouteBox = Hive.box(CreateSinglePitchRoute.boxName);
+    Map<dynamic, dynamic> route = createRoute.toJson();
+    route['spotId'] = spotId;
+    await createSinglePitchRouteBox.put(createRoute.id, route);
+    // add to singlePitchRouteIds of spot locally
+    Box spotBox = Hive.box(Spot.boxName);
+    Map spotMap = spotBox.get(spotId);
+    Spot spot = Spot.fromCache(spotMap);
+    if (!spot.singlePitchRouteIds.contains(createRoute.id)) {
+      spot.singlePitchRouteIds.add(createRoute.id);
+      await spotBox.put(spotId, spot.toJson());
+    }
+    if (online == null || !online) return createRoute;
+    // try to upload and update cache if successful
+    Map data = createRoute.toJson();
+    SinglePitchRoute? uploadedSinglePitchRoute = await uploadSinglePitchRoute(spotId, data);
+    if (uploadedSinglePitchRoute == null) return createRoute;
+    await singlePitchRouteBox.delete(createRoute.id);
+    await createSinglePitchRouteBox.delete(createRoute.id);
+    await singlePitchRouteBox.put(uploadedSinglePitchRoute.id, uploadedSinglePitchRoute.toJson());
+    return uploadedSinglePitchRoute;
+  }
+
+  /// Edit a single-pitch-route in cache and optionally on the server.
+  /// If the parameter [online] is null or false the single-pitch-route is edited only in the cache and later on the server at the next sync.
+  /// Otherwise it is edited in cache and on the server immediately.
+  Future<SinglePitchRoute?> editSinglePitchRoute(UpdateSinglePitchRoute updateSinglePitchRoute, {bool? online}) async {
+    // add to cache
+    Box singlePitchRouteBox = Hive.box(SinglePitchRoute.boxName);
+    Box updateSinglePitchRouteBox = Hive.box(UpdateSinglePitchRoute.boxName);
+    SinglePitchRoute oldSinglePitchRoute = SinglePitchRoute.fromCache(singlePitchRouteBox.get(updateSinglePitchRoute.id));
+    SinglePitchRoute tmpSinglePitchRoute = updateSinglePitchRoute.toSinglePitchRoute(oldSinglePitchRoute);
+    await singlePitchRouteBox.put(updateSinglePitchRoute.id, tmpSinglePitchRoute.toJson());
+    await updateSinglePitchRouteBox.put(updateSinglePitchRoute.id, tmpSinglePitchRoute.toJson());
+    if (online == null || !online) return tmpSinglePitchRoute;
+    // try to upload and update cache if successful
     try {
-      final Response response = await netWorkLocator.dio.put('$climbingApiHost/single_pitch_route/${route.id}', data: route.toJson());
-      if (response.statusCode == 200) {
-        // TODO deleteRouteFromEditQueue(route.hashCode);
-        return SinglePitchRoute.fromJson(response.data);
-      } else {
-        throw Exception('Failed to edit route');
-      }
+      final Response response = await netWorkLocator.dio.put('$climbingApiHost/single_pitch_route/${updateSinglePitchRoute.id}', data: updateSinglePitchRoute.toJson());
+      if (response.statusCode != 200) throw Exception('Failed to edit route');
+      SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromJson(response.data);
+      await singlePitchRouteBox.put(updateSinglePitchRoute.id, updateSinglePitchRoute.toJson());
+      await updateSinglePitchRouteBox.delete(updateSinglePitchRoute.id);
+      return singlePitchRoute;
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this route and edit later
-          Box box = Hive.box('edit_later_routes');
-          Map routeJson = route.toJson();
-          box.put(routeJson.hashCode, routeJson);
-        }
-      }
-    } finally {
-      // TODO editRouteFromCache(route);
+      ErrorService.handleConnectionErrors(e);
     }
     return null;
   }
 
-  Future<void> deleteSinglePitchRoute(SinglePitchRoute route, String spotId) async {
+  /// Delete a single-pitch-route its media, pitch and ascents in cache and optionally on the server.
+  /// Also remove its id from the associated spot. 
+  /// If the parameter [online] is null or false the data is deleted only from the cache and later from the server at the next sync.
+  /// Otherwise it is deleted from cache and from the server immediately.
+  Future<void> deleteSinglePitchRoute(SinglePitchRoute singlePitchRoute, String spotId, {bool? online}) async {
+    Box singlePitchRouteBox = Hive.box(SinglePitchRoute.boxName);
+    Box deleteSinglePitchRouteBox = Hive.box(SinglePitchRoute.deleteBoxName);
+    // delete single pitch route locally
+    await singlePitchRouteBox.delete(singlePitchRoute.id);
+    // add single pitch route to deletion queue for later sync
+    // add spotId as well so we later know from which spot to remove it on the server
+    Map<dynamic, dynamic> route = singlePitchRoute.toJson();
+    route['spotId'] = spotId;
+    await deleteSinglePitchRouteBox.put(singlePitchRoute.id, route);
+    // remove from create queue (if no sync since)
+    Box createSinglePitchRouteBox = Hive.box(SinglePitchRoute.createBoxName);
+    await createSinglePitchRouteBox.delete(singlePitchRoute.id);
+    // delete single pitch route id from spot
+    Box spotBox = Hive.box(Spot.boxName);
+    Spot spot = Spot.fromCache(spotBox.get(spotId));
+    spot.singlePitchRouteIds.remove(singlePitchRoute.id);
+    await spotBox.put(spot.id, spot.toJson());
+    // delete media of single pitch route locally (deleted automatically on the server when single pitch route is deleted)
+    Box mediaBox = Hive.box(Media.boxName);
+    for (String mediaId in singlePitchRoute.mediaIds){
+      await mediaBox.delete(mediaId);
+    }
+    // delete ascents of single pitch route locally (deleted automatically on the server when single pitch route is deleted)
+    Box ascentBox = Hive.box(Ascent.boxName);
+    for (String ascentId in singlePitchRoute.ascentIds){
+      Ascent ascent = Ascent.fromCache(ascentBox.get(ascentId));
+      for (String mediaId in ascent.mediaIds){
+        await mediaBox.delete(mediaId);
+      }
+      await ascentBox.delete(ascentId);
+    }
+    if (online == null || !online) return;
     try {
-      for (var id in route.mediaIds) {
-        final Response mediaResponse =
-        await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-        if (mediaResponse.statusCode != 204) {
-          throw Exception('Failed to delete medium');
-        }
-      }
-
-      final Response routeResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/single_pitch_route/${route.id}/spot/$spotId');
-      if (routeResponse.statusCode != 204) {
-        throw Exception('Failed to delete route');
-      }
+      // delete single-pitch-route
+      final Response routeResponse = await netWorkLocator.dio.delete('$climbingApiHost/single_pitch_route/${singlePitchRoute.id}/spot/$spotId');
+      if (routeResponse.statusCode != 200) throw Exception('Failed to delete route');
+      await deleteSinglePitchRouteBox.delete(singlePitchRoute.id);
       MyNotifications.showPositiveNotification('Single pitch route was deleted: ${routeResponse.data['name']}');
-      // TODO deleteRouteFromDeleteQueue(route.toJson().hashCode);
-      return routeResponse.data;
     } catch (e) {
+      ErrorService.handleConnectionErrors(e);
       if (e is DioError) {
-        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this route and delete later
-          Box box = Hive.box('delete_later_routes');
-          Map routeJson = route.toJson();
-          box.put(routeJson.hashCode, routeJson);
+        // if the single pitch route can't be found on the server then we can savely remove it locally as well
+        if (e.error == "Http status error [404]"){
+          await deleteSinglePitchRouteBox.delete(singlePitchRoute.id);
         }
       }
-    } finally {
-      // TODO deleteRouteFromCache(route.id);
     }
   }
 
+  /// Upload a single-pitch-route to the server.
   Future<SinglePitchRoute?> uploadSinglePitchRoute(String spotId, Map data) async {
     try {
-      final Response response = await netWorkLocator.dio
-          .post('$climbingApiHost/single_pitch_route/spot/$spotId', data: data);
-      if (response.statusCode == 201) {
-        MyNotifications.showPositiveNotification('Created new single pitch route: ${response.data['name']}');
-        return SinglePitchRoute.fromJson(response.data);
-      } else {
-        throw Exception('Failed to create route');
-      }
+      final Response response = await netWorkLocator.dio.post('$climbingApiHost/single_pitch_route/spot/$spotId', data: data);
+      if (response.statusCode != 201) throw Exception('Failed to create single pitch route');
+      MyNotifications.showPositiveNotification('Created new single pitch route: ${response.data['name']}');
+      return SinglePitchRoute.fromJson(response.data);
     } catch (e) {
       if (e is DioError) {
         final response = e.response;
         if (response != null) {
           switch (response.statusCode) {
             case 409:
-              MyNotifications.showNegativeNotification('This route already exists!');
+              MyNotifications.showNegativeNotification('This single pitch route already exists!');
+              Box createSpotBox = Hive.box(CreateSinglePitchRoute.boxName);
+              await createSpotBox.delete(data['_id']);
               break;
             default:
-              throw Exception('Failed to create route');
+              throw Exception('Failed to create single pitch route');
           }
         }
       }
-    } finally {
-      // TODO deleteRouteFromUploadQueue(data.hashCode);
     }
     return null;
   }

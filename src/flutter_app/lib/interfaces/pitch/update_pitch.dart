@@ -1,4 +1,5 @@
 import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
 
 import '../grade.dart';
 
@@ -53,6 +54,22 @@ class UpdatePitch extends UpdateMyBaseInterface{
       name: cache['name'],
       num: cache['cache'],
       rating: cache['rating'],
+    );
+  }
+
+  Pitch toPitch(Pitch oldPitch){
+    return Pitch(
+      updated: DateTime.now().toIso8601String(),
+      mediaIds: mediaIds != null ? mediaIds! : oldPitch.mediaIds,
+      id: id,
+      userId: userId != null ? userId! : oldPitch.userId,
+      comment: comment != null ? comment! : oldPitch.comment,
+      name: name != null ? name! : oldPitch.name,
+      rating: rating != null ? rating! : oldPitch.rating,
+      ascentIds: ascentIds != null ? ascentIds! : oldPitch.ascentIds,
+      grade: grade != null ? grade! : oldPitch.grade,
+      length: length != null ? length! : oldPitch.length,
+      num: num != null ? num! : oldPitch.num,
     );
   }
 

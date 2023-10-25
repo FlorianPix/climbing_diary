@@ -1,18 +1,13 @@
-from pydantic import Field
-from bson import ObjectId
 from typing import List
-
-from app.models.py_object_id import PyObjectId
 from app.models.route.route_model import RouteModel
 
 
 class MultiPitchRouteModel(RouteModel):
-    pitch_ids: List[PyObjectId] = []
+    pitch_ids: List[str] = []
 
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
                 "updated": "2022-10-06T20:13:16.816000",

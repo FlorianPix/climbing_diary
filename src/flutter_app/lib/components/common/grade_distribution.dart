@@ -1,17 +1,16 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:math' as math;
-
-import '../interfaces/grade.dart';
-import '../interfaces/grading_system.dart';
-import '../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../interfaces/pitch/pitch.dart';
-import '../interfaces/single_pitch_route/single_pitch_route.dart';
-import '../services/multi_pitch_route_service.dart';
-import '../services/pitch_service.dart';
-import '../services/single_pitch_route_service.dart';
+import 'package:climbing_diary/interfaces/grade.dart';
+import 'package:climbing_diary/interfaces/grading_system.dart';
+import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
+import 'package:climbing_diary/services/multi_pitch_route_service.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
+import 'package:climbing_diary/services/single_pitch_route_service.dart';
 
 class GradeDistribution extends StatefulWidget{
   const GradeDistribution({super.key, required this.multiPitchRouteIds, required this.singlePitchRouteIds, required this.onNetworkChange});
@@ -53,16 +52,16 @@ class _GradeDistributionState extends State<GradeDistribution> {
       _distribution[i] = 0;
     }
 
-    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutesOfIds(online, widget.singlePitchRouteIds);
+    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutesOfIds(widget.singlePitchRouteIds);
     for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
       int gradeIndex = Grade.translationTable[singlePitchRoute.grade.system.index].indexOf(singlePitchRoute.grade.grade);
       _distribution[gradeIndex] = _distribution[gradeIndex]! + 1;
     }
 
-    List<MultiPitchRoute> multiPitchRoutes = await multiPitchRouteService.getMultiPitchRoutesOfIds(online, widget.multiPitchRouteIds);
+    List<MultiPitchRoute> multiPitchRoutes = await multiPitchRouteService.getMultiPitchRoutesOfIds(widget.multiPitchRouteIds);
     for (MultiPitchRoute multiPitchRoute in multiPitchRoutes) {
       int maxGradeIndex = -1;
-      List<Pitch> pitches = await pitchService.getPitchesOfIds(online, multiPitchRoute.pitchIds);
+      List<Pitch> pitches = await pitchService.getPitchesOfIds(multiPitchRoute.pitchIds);
       for (Pitch pitch in pitches) {
         int gradeIndex = Grade.translationTable[pitch.grade.system.index].indexOf(pitch.grade.grade);
         maxGradeIndex = math.max(maxGradeIndex, gradeIndex);

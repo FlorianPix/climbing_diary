@@ -1,22 +1,21 @@
-import 'package:climbing_diary/components/my_colors.dart';
-import 'package:climbing_diary/interfaces/ascent/ascent_style.dart';
-import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../interfaces/ascent/ascent.dart';
-import '../../interfaces/ascent/ascent_type.dart';
-import '../../interfaces/grade.dart';
-import '../../interfaces/grading_system.dart';
-import '../../interfaces/pitch/pitch.dart';
-import '../../services/ascent_service.dart';
-import '../../services/pitch_service.dart';
-import '../../interfaces/detailed_grade.dart';
-import '../../services/single_pitch_route_service.dart';
+import 'package:climbing_diary/components/common/my_colors.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent_style.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent_type.dart';
+import 'package:climbing_diary/interfaces/grade.dart';
+import 'package:climbing_diary/interfaces/grading_system.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
+import 'package:climbing_diary/interfaces/detailed_grade.dart';
+import 'package:climbing_diary/services/single_pitch_route_service.dart';
 
 class StatisticPage extends StatefulWidget {
   const StatisticPage({super.key, required this.onNetworkChange});
@@ -39,9 +38,9 @@ class StatisticPageState extends State<StatisticPage> {
 
   Future<List<DetailedGrade>> fetchDetailedGrade(bool online) async {
     List<DetailedGrade> detailedGrades = [];
-    List<Pitch> pitches = await pitchService.getPitches(online);
+    List<Pitch> pitches = await pitchService.getPitches();
     for (Pitch pitch in pitches) {
-      List<Ascent> ascents = await ascentService.getAscentsOfIds(online, pitch.ascentIds);
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(pitch.ascentIds);
       for (Ascent ascent in ascents){
         if (ascent.type != AscentType.bail.index){
           DetailedGrade detailedGrade = DetailedGrade(
@@ -54,9 +53,9 @@ class StatisticPageState extends State<StatisticPage> {
         }
       }
     }
-    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutes(online);
+    List<SinglePitchRoute> singlePitchRoutes = await singlePitchRouteService.getSinglePitchRoutes();
     for (SinglePitchRoute singlePitchRoute in singlePitchRoutes) {
-      List<Ascent> ascents = await ascentService.getAscentsOfIds(online, singlePitchRoute.ascentIds);
+      List<Ascent> ascents = await ascentService.getAscentsOfIds(singlePitchRoute.ascentIds);
       for (Ascent ascent in ascents){
         if (ascent.type != AscentType.bail.index){
           DetailedGrade detailedGrade = DetailedGrade(
@@ -114,10 +113,10 @@ class StatisticPageState extends State<StatisticPage> {
   @override
   Widget build(BuildContext context) {
     var heatMapBuilder = FutureBuilder<List<Ascent>>(
-      future: ascentService.getAscents(online),
+      future: ascentService.getAscents(),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Ascent> ascents = snapshot.data!;
         Map<DateTime, int> datasets = <DateTime, int>{};
         for (var ascent in ascents) {
@@ -222,7 +221,7 @@ class StatisticPageState extends State<StatisticPage> {
       future: fetchDetailedGrade(online),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<DetailedGrade> detailedGrades = snapshot.data!;
 
         bool noBetterDetailedGrade(List<DetailedGrade> list, DetailedGrade el){

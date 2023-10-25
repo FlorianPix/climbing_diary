@@ -1,4 +1,5 @@
 import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
 
 class UpdateTrip extends UpdateMyBaseInterface{
   static const String boxName = 'edit_trips';
@@ -47,6 +48,21 @@ class UpdateTrip extends UpdateMyBaseInterface{
       name: cache['name'],
       rating: cache['rating'],
       startDate: cache['start_date'],
+    );
+  }
+
+  Trip toTrip(Trip oldTrip){
+    return Trip(
+      updated: DateTime.now().toIso8601String(),
+      mediaIds: mediaIds != null ? mediaIds! : oldTrip.mediaIds,
+      spotIds: spotIds != null ? spotIds! : oldTrip.spotIds,
+      id: id,
+      userId: userId != null ? userId! : oldTrip.userId,
+      comment: comment != null ? comment! : oldTrip.comment,
+      endDate: endDate != null ? endDate! : oldTrip.endDate,
+      name: name != null ? name! : oldTrip.name,
+      rating: rating != null ? rating! : oldTrip.rating,
+      startDate: startDate != null ? startDate! : oldTrip.startDate,
     );
   }
 

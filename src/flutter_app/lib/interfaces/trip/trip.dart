@@ -1,8 +1,11 @@
 import 'package:climbing_diary/interfaces/my_base_interface/my_base_interface.dart';
 import 'package:climbing_diary/interfaces/trip/update_trip.dart';
 
+import 'create_trip.dart';
+
 class Trip extends MyBaseInterface{
   static const String boxName = 'trips';
+  static const String createBoxName = 'create_trips';
   static const String deleteBoxName = 'delete_trips';
 
   final List<String> spotIds;
@@ -70,6 +73,16 @@ class Trip extends MyBaseInterface{
     "start_date": startDate,
   };
 
+  CreateTrip toCreateTrip() {
+    return CreateTrip(
+      comment: comment,
+      endDate: endDate,
+      name: name,
+      rating: rating,
+      startDate: startDate,
+    );
+  }
+
   UpdateTrip toUpdateTrip() {
     return UpdateTrip(
       mediaIds: mediaIds,
@@ -82,5 +95,38 @@ class Trip extends MyBaseInterface{
       rating: rating,
       startDate: startDate,
     );
+  }
+
+  @override
+  int get hashCode {
+    int mediaIdsHashCode = 0;
+    for (String mediaId in mediaIds) {
+      if (mediaIdsHashCode == 0) {
+        mediaIdsHashCode = mediaId.hashCode;
+      } else {
+        mediaIdsHashCode = mediaIdsHashCode ^ mediaId.hashCode;
+      }
+    }
+    int spotIdsHashCode = 0;
+    for (String spotId in spotIds) {
+      if (spotIdsHashCode == 0) {
+        spotIdsHashCode = spotId.hashCode;
+      } else {
+        spotIdsHashCode = spotIdsHashCode ^ spotId.hashCode;
+      }
+    }
+    return
+      mediaIdsHashCode ^
+      spotIdsHashCode ^
+      comment.hashCode ^
+      endDate.hashCode ^
+      name.hashCode ^
+      rating.hashCode ^
+      startDate.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
   }
 }

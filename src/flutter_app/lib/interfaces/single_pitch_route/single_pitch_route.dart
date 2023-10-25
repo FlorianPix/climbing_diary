@@ -5,6 +5,7 @@ import '../grade.dart';
 
 class SinglePitchRoute extends ClimbingRoute{
   static const String boxName = 'single_pitch_routes';
+  static const String createBoxName = 'create_single_pitch_routes';
   static const String deleteBoxName = 'delete_single_pitch_routes';
 
   final List<String> ascentIds;
@@ -85,5 +86,38 @@ class SinglePitchRoute extends ClimbingRoute{
       grade: grade,
       length: length
     );
+  }
+
+  @override
+  int get hashCode {
+    int mediaIdsHashCode = 0;
+    for (String mediaId in mediaIds) {
+      if (mediaIdsHashCode == 0) {
+        mediaIdsHashCode = mediaId.hashCode;
+      } else {
+        mediaIdsHashCode = mediaIdsHashCode ^ mediaId.hashCode;
+      }
+    }
+    int ascentIdsHashCode = 0;
+    for (String ascentId in ascentIds) {
+      if (ascentIdsHashCode == 0) {
+        ascentIdsHashCode = ascentId.hashCode;
+      } else {
+        ascentIdsHashCode = ascentIdsHashCode ^ ascentId.hashCode;
+      }
+    }
+    return
+      mediaIdsHashCode ^
+      ascentIdsHashCode ^
+      comment.hashCode ^
+      location.hashCode ^
+      name.hashCode ^
+      rating.hashCode ^
+      length.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
   }
 }

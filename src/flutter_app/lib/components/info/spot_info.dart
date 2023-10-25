@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../interfaces/spot/spot.dart';
-import '../my_text_styles.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 
 class SpotInfo extends StatelessWidget {
   const SpotInfo({super.key, required this.spot});

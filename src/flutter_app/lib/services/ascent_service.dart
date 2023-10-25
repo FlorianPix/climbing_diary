@@ -1,16 +1,19 @@
-import 'package:hive/hive.dart';
-
-import '../components/my_notifications.dart';
-import '../config/environment.dart';
-import '../interfaces/ascent/create_ascent.dart';
 import 'package:dio/dio.dart';
+import 'package:hive/hive.dart';
+import 'package:climbing_diary/interfaces/media/media.dart';
+import 'package:climbing_diary/services/error_service.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
+import 'package:climbing_diary/config/environment.dart';
+import 'package:climbing_diary/interfaces/ascent/create_ascent.dart';
+import 'package:climbing_diary/data/network/dio_client.dart';
+import 'package:climbing_diary/data/sharedprefs/shared_preference_helper.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:climbing_diary/interfaces/ascent/update_ascent.dart';
+import 'package:climbing_diary/services/cache_service.dart';
+import 'package:climbing_diary/services/locator.dart';
 
-import '../data/network/dio_client.dart';
-import '../data/sharedprefs/shared_preference_helper.dart';
-import '../interfaces/ascent/ascent.dart';
-import '../interfaces/ascent/update_ascent.dart';
-import 'cache_service.dart';
-import 'locator.dart';
+import '../interfaces/pitch/pitch.dart';
+import '../interfaces/single_pitch_route/single_pitch_route.dart';
 
 class AscentService {
   final netWorkLocator = getIt.get<DioClient>();
@@ -18,266 +21,266 @@ class AscentService {
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<Ascent?> getAscent(String ascentId, bool online) async {
+  /// Get a ascent by its id from cache and optionally from the server.
+  /// If the parameter [online] is null or false the ascent is searched in cache,
+  /// otherwise it is requested from the server.
+  Future<Ascent?> getAscent(String ascentId, {bool? online}) async {
+    Box box = Hive.box(Ascent.boxName);
+    if (online == null || !online) return Ascent.fromCache(box.get(ascentId));
+    // request ascent from server
     try {
-      Box box = Hive.box('ascents');
-      if (online) {
-        final Response ascentIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/ascentUpdated/$ascentId');
-        if (ascentIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of ascent id updated");
-        String id = ascentIdUpdatedResponse.data['_id'];
-        String serverUpdated = ascentIdUpdatedResponse.data['updated'];
-        if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-          final Response missingMultiPitchRouteResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/$ascentId');
-          if (missingMultiPitchRouteResponse.statusCode != 200) throw Exception("Error during request of missing ascent");
-          return Ascent.fromJson(missingMultiPitchRouteResponse.data);
-        } else {
-          return Ascent.fromCache(box.get(id));
-        }
-      }
-      return Ascent.fromCache(box.get(ascentId));
+      final Response ascentResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/$ascentId');
+      if (ascentResponse.statusCode != 200) throw Exception("Error during request of missing ascent");
+      return Ascent.fromJson(ascentResponse.data);
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
-      print(e);
+      ErrorService.handleConnectionErrors(e);
     }
     return null;
   }
 
-  Future<List<Ascent>> getAscentsOfIds(bool online, List<String> ascentIds) async {
+  /// Get ascents with given ids from cache and optionally from the server.
+  /// If the parameter [online] is null or false the ascents are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<List<Ascent>> getAscentsOfIds(List<String> ascentIds, {bool? online}) async {
+    List<Ascent> ascents = CacheService.getTsFromCache<Ascent>(Ascent.boxName, Ascent.fromCache);
+    if(online == null || !online) return ascents.where((ascent) => ascentIds.contains(ascent.id)).toList();
+    // request ascents from the server
     try {
-      if(online){
-        final Response ascentIdsUpdatedResponse = await netWorkLocator.dio.post('$climbingApiHost/ascentUpdated/ids', data: ascentIds);
-        if (ascentIdsUpdatedResponse.statusCode != 200) {
-          throw Exception("Error during request of ascent ids updated");
-        }
-        List<Ascent> ascents = [];
-        List<String> missingAscentIds = [];
-        Box box = Hive.box('ascents');
-        ascentIdsUpdatedResponse.data.forEach((idWithDatetime) {
-          String id = idWithDatetime['_id'];
-          String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-            missingAscentIds.add(id);
-          } else {
-            ascents.add(Ascent.fromCache(box.get(id)));
-          }
-        });
-        if (missingAscentIds.isEmpty){
-          return ascents;
-        }
-        final Response missingAscentsResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/ids', data: missingAscentIds);
-        if (missingAscentsResponse.statusCode != 200) {
-          throw Exception("Error during request of missing ascents");
-        }
-        missingAscentsResponse.data.forEach((s) {
-          Ascent ascent = Ascent.fromJson(s);
-          if (!box.containsKey(ascent.id)) {
-            box.put(ascent.id, ascent.toJson());
-          }
-          ascents.add(ascent);
-        });
-        return ascents;
-      } else {
-        // offline
-        List<Ascent> ascents = CacheService.getTsFromCache<Ascent>('ascents', Ascent.fromCache);
-        return ascents.where((element) => ascentIds.contains(element.id)).toList();
-      }
+      List<Ascent> ascents = [];
+      Box box = Hive.box(Ascent.boxName);
+      final Response ascentsResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/ids', data: ascentIds);
+      if (ascentsResponse.statusCode != 200) throw Exception("Error during request of missing ascents");
+      Future.forEach(ascentsResponse.data, (dynamic s) async {
+        Ascent ascent = Ascent.fromJson(s);
+        await box.put(ascent.id, ascent.toJson());
+        ascents.add(ascent);
+      });
+      return ascents;
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
+      ErrorService.handleConnectionErrors(e);
     }
     return [];
   }
 
-  Future<List<Ascent>> getAscents(bool online) async {
+  /// Get all ascents from cache and optionally from the server.
+  /// If the parameter [online] is null or false the ascents are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<List<Ascent>> getAscents({bool? online}) async {
+    if(online == null || !online) return CacheService.getTsFromCache<Ascent>(Ascent.boxName, Ascent.fromCache);
+    // request ascents from the server
     try {
-      if(online){
-        final Response ascentIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/ascentUpdated');
-        if (ascentIdsResponse.statusCode != 200) {
-          throw Exception("Error during request of ascent ids");
+      List<Ascent> ascents = [];
+      Box ascentBox = Hive.box(Ascent.boxName);
+      final Response ascentsResponse = await netWorkLocator.dio.get('$climbingApiHost/ascent');
+      if (ascentsResponse.statusCode != 200) throw Exception("Error during request of ascents");
+      Future.forEach(ascentsResponse.data, (dynamic s) async {
+        Ascent ascent = Ascent.fromJson(s);
+        ascentBox.put(ascent.id, ascent.toJson());
+        ascents.add(ascent);
+      });
+      // delete ascents that were deleted on the server
+      List<Ascent> cachedAscents = CacheService.getTsFromCache<Ascent>(Ascent.boxName, Ascent.fromCache);
+      for (Ascent cachedAscent in cachedAscents){
+        if (!ascents.contains(cachedAscent)){
+          await ascentBox.delete(cachedAscent.id);
         }
-        List<Ascent> ascents = [];
-        List<String> missingAscentIds = [];
-        Box box = Hive.box('ascents');
-        ascentIdsResponse.data.forEach((idWithDatetime) {
-          String id = idWithDatetime['_id'];
-          String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-            missingAscentIds.add(id);
-          } else {
-            ascents.add(Ascent.fromCache(box.get(id)));
-          }
-        });
-        if (missingAscentIds.isEmpty){
-          return ascents;
-        }
-        final Response missingAscentsResponse = await netWorkLocator.dio.post('$climbingApiHost/ascent/ids', data: missingAscentIds);
-        if (missingAscentsResponse.statusCode != 200) {
-          throw Exception("Error during request of missing ascents");
-        }
-        missingAscentsResponse.data.forEach((s) {
-          Ascent ascent = Ascent.fromJson(s);
-          if (!box.containsKey(ascent.id)) {
-            box.put(ascent.id, ascent.toJson());
-          }
-          ascents.add(ascent);
-        });
-        return ascents;
-      } else {
-        // offline
-        return CacheService.getTsFromCache<Ascent>('ascents', Ascent.fromCache);
       }
+      return ascents;
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
+      ErrorService.handleConnectionErrors(e);
     }
     return [];
   }
 
-  Future<Ascent?> createAscent(String pitchId, CreateAscent createAscent, bool hasConnection) async {
-    CreateAscent ascent = CreateAscent(
-      comment: (createAscent.comment != null) ? createAscent.comment! : "",
-      date: createAscent.date,
-      style: createAscent.style,
-      type: createAscent.type,
-    );
-    if (hasConnection) {
-      var data = ascent.toJson();
-      return uploadAscent(pitchId, data);
-    } else {
-      // save to cache
-      Box box = Hive.box('upload_later_ascents');
-      Map ascentJson = ascent.toJson();
-      box.put(ascentJson.hashCode, ascentJson);
+  /// Create a ascent in cache and optionally on the server.
+  /// If the parameter [online] is null or false the ascent is added to the cache and uploaded later at the next sync.
+  /// Otherwise it is added to the cache and to the server.
+  Future<Ascent?> createAscentForPitch(Ascent createAscent, String pitchId, {bool? online}) async {
+    // add to cache
+    Box ascentBox = Hive.box(Ascent.boxName);
+    await ascentBox.put(createAscent.id, createAscent.toJson());
+    // add ascent to creation queue for later sync
+    // add pitchId as well so we later know to which pitch to add it on the server
+    Box createAscentBox = Hive.box(CreateAscent.boxName);
+    Map<dynamic, dynamic> ascent = createAscent.toJson();
+    ascent['ofPitch'] = true;
+    ascent['parentId'] = pitchId;
+    await createAscentBox.put(createAscent.id, ascent);
+    // add to ascentIds of pitch locally
+    Box pitchBox = Hive.box(Pitch.boxName);
+    Map pitchMap = pitchBox.get(pitchId);
+    Pitch pitch = Pitch.fromCache(pitchMap);
+    if (!pitch.ascentIds.contains(createAscent.id)){
+      pitch.ascentIds.add(createAscent.id);
+      await pitchBox.put(pitch.id, pitch.toJson());
     }
-    return null;
+    if (online == null || !online) return createAscent;
+    // try to upload and update cache if successful
+    Map data = createAscent.toJson();
+    Ascent? uploadedAscent = await uploadAscentForPitch(pitchId, data);
+    if (uploadedAscent == null) return createAscent;
+    await ascentBox.delete(createAscent.id);
+    await createAscentBox.delete(createAscent.id);
+    await ascentBox.put(uploadedAscent.id, uploadedAscent.toJson());
+    return uploadedAscent;
   }
 
-  Future<Ascent?> createAscentForSinglePitchRoute(String routeId, CreateAscent createAscent, bool hasConnection) async {
-    CreateAscent ascent = CreateAscent(
-      comment: (createAscent.comment != null) ? createAscent.comment! : "",
-      date: createAscent.date,
-      style: createAscent.style,
-      type: createAscent.type,
-    );
-    if (hasConnection) {
-      var data = ascent.toJson();
-      return uploadAscentForSinglePitchRoute(routeId, data);
-    } else {
-      // save to cache
-      Box box = Hive.box('upload_later_ascents');
-      Map ascentJson = ascent.toJson();
-      box.put(ascentJson.hashCode, ascentJson);
+  /// Create a ascent in cache and optionally on the server.
+  /// If the parameter [online] is null or false the ascent is added to the cache and uploaded later at the next sync.
+  /// Otherwise it is added to the cache and to the server.
+  Future<Ascent?> createAscentForSinglePitchRoute(Ascent createAscent, String singlePitchRouteId, {bool? online}) async {
+    // add to cache
+    Box ascentBox = Hive.box(Ascent.boxName);
+    await ascentBox.put(createAscent.id, createAscent.toJson());
+    // add ascent to creation queue for later sync
+    // add singlePitchRouteId as well so we later know to which pitch to add it on the server
+    Box createAscentBox = Hive.box(CreateAscent.boxName);
+    Map<dynamic, dynamic> ascent = createAscent.toJson();
+    ascent['ofPitch'] = false;
+    ascent['parentId'] = singlePitchRouteId;
+    await createAscentBox.put(createAscent.id, ascent);
+    // add to ascentIds of single pitch route locally
+    Box singlePitchRouteBox = Hive.box(SinglePitchRoute.boxName);
+    Map singlePitchRouteMap = singlePitchRouteBox.get(singlePitchRouteId);
+    SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromCache(singlePitchRouteMap);
+    if (!singlePitchRoute.ascentIds.contains(createAscent.id)){
+      singlePitchRoute.ascentIds.add(createAscent.id);
+      await singlePitchRouteBox.put(singlePitchRoute.id, singlePitchRoute.toJson());
     }
-    return null;
+    if (online == null || !online) return createAscent;
+    // try to upload and update cache if successful
+    Map data = createAscent.toJson();
+    Ascent? uploadedAscent = await uploadAscentForSinglePitchRoute(singlePitchRouteId, data);
+    if (uploadedAscent == null) return createAscent;
+    await ascentBox.delete(createAscent.id);
+    await createAscentBox.delete(createAscent.id);
+    await ascentBox.put(uploadedAscent.id, uploadedAscent.toJson());
+    return uploadedAscent;
   }
 
-  Future<Ascent?> editAscent(UpdateAscent ascent) async {
+  /// Edit an ascent in cache and optionally on the server.
+  /// If the parameter [online] is null or false the ascent is edited only in the cache and later on the server at the next sync.
+  /// Otherwise it is edited in cache and on the server immediately.
+  Future<Ascent?> editAscent(UpdateAscent updateAscent, {bool? online}) async {
+    // add to cache
+    Box ascentBox = Hive.box(Ascent.boxName);
+    Box updateAscentBox = Hive.box(UpdateAscent.boxName);
+    Ascent oldAscent = Ascent.fromCache(ascentBox.get(updateAscent.id));
+    Ascent tmpAscent = updateAscent.toAscent(oldAscent);
+    await ascentBox.put(updateAscent.id, tmpAscent.toJson());
+    await updateAscentBox.put(updateAscent.id, tmpAscent.toJson());
+    if (online == null || !online) return tmpAscent;
+    // try to upload and update cache if successful
     try {
-      final Response response = await netWorkLocator.dio
-          .put('$climbingApiHost/ascent/${ascent.id}', data: ascent.toJson());
-      if (response.statusCode == 200) {
-        // TODO deleteAscentFromEditQueue(ascent.hashCode);
-        return Ascent.fromJson(response.data);
-      } else {
-        throw Exception('Failed to edit ascent');
-      }
+      final Response response = await netWorkLocator.dio.put('$climbingApiHost/ascent/${updateAscent.id}', data: updateAscent.toJson());
+      if (response.statusCode != 200) throw Exception('Failed to edit ascent');
+      Ascent ascent = Ascent.fromJson(response.data);
+      await ascentBox.put(updateAscent.id, updateAscent.toJson());
+      await updateAscentBox.delete(updateAscent.id);
+      return ascent;
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // this means we are offline so queue this ascent and edit later
-          Box box = Hive.box('edit_later_ascents');
-          Map ascentJson = ascent.toJson();
-          box.put(ascentJson.hashCode, ascentJson);
-        }
-      }
-    } finally {
-      // TODO editAscentFromCache(ascent);
+      ErrorService.handleConnectionErrors(e);
     }
     return null;
   }
 
-  Future<void> deleteAscent(Ascent ascent, String pitchId, bool isMultiPitch) async {
-    if (isMultiPitch){
-      try {
-        for (var id in ascent.mediaIds) {
-          final Response mediaResponse =
-          await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-          if (mediaResponse.statusCode != 204) {
-            throw Exception('Failed to delete medium');
-          }
+  /// Delete an ascent its media in cache and optionally on the server.
+  /// If the parameter [online] is null or false the data is deleted only from the cache and later from the server at the next sync.
+  /// Otherwise it is deleted from cache and from the server immediately.
+  Future<void> deleteAscentOfPitch(Ascent deleteAscent, String pitchId, {bool? online}) async {
+    // delete ascent locally
+    Box ascentBox = Hive.box(Ascent.boxName);
+    await ascentBox.delete(deleteAscent.id);
+    // add ascent to deletion queue for later sync
+    // add pitchId as well so we later know from which pitch to remove it on the server
+    Box deleteAscentBox = Hive.box(Ascent.deleteBoxName);
+    Map<dynamic, dynamic> ascent = deleteAscent.toJson();
+    ascent['ofPitch'] = true;
+    ascent['parentId'] = pitchId;
+    await deleteAscentBox.put(deleteAscent.id, ascent);
+    // remove from create queue (if no sync since)
+    Box createAscentBox = Hive.box(Ascent.createBoxName);
+    await createAscentBox.delete(deleteAscent.id);
+    // delete ascent id from pitch
+    Box pitchBox = Hive.box(Pitch.boxName);
+    Pitch pitch = Pitch.fromCache(pitchBox.get(pitchId));
+    pitch.ascentIds.remove(deleteAscent.id);
+    await pitchBox.put(pitch.id, pitch.toJson());
+    // delete media of ascent locally (deleted automatically on the server when multi pitch route is deleted)
+    Box mediaBox = Hive.box(Media.boxName);
+    for (String id in deleteAscent.mediaIds) {
+      await mediaBox.delete(id);
+    }
+    if (online == null || !online) return;
+    try {
+      // delete ascent
+      final Response ascentResponse = await netWorkLocator.dio.delete('$climbingApiHost/ascent/${deleteAscent.id}/pitch/$pitchId');
+      if (ascentResponse.statusCode != 200) throw Exception('Failed to delete ascent');
+      await deleteAscentBox.delete(deleteAscent.id);
+      MyNotifications.showPositiveNotification('Ascent was deleted: ${ascentResponse.data['name']}');
+    } catch (e) {
+      ErrorService.handleConnectionErrors(e);
+      if (e is DioError) {
+        // if the ascent can't be found on the server then we can safely remove it locally as well
+        if (e.error == "Http status error [404]"){
+          await deleteAscentBox.delete(deleteAscent.id);
         }
-        final Response ascentResponse =
-        await netWorkLocator.dio.delete('$climbingApiHost/ascent/${ascent.id}/pitch/$pitchId');
-        if (ascentResponse.statusCode != 200) {
-          MyNotifications.showNegativeNotification('Failed to delete ascent: ${ascent.comment}');
-        }
-        MyNotifications.showPositiveNotification('Ascent was deleted: ${ascentResponse.data['comment']}');
-        // TODO deleteAscentFromDeleteQueue(ascent.toJson().hashCode);
-        return ascentResponse.data;
-      } catch (e) {
-        if (e is DioError) {
-          if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-            // this means we are offline so queue this ascent and delete later
-            Box box = Hive.box('delete_later_ascents');
-            Map ascentJson = ascent.toJson();
-            box.put(ascentJson.hashCode, ascentJson);
-          }
-        }
-      } finally {
-        // TODO deleteAscentFromCache(ascent.id);
-      }
-    } else {
-      try {
-        for (var id in ascent.mediaIds) {
-          final Response mediaResponse =
-          await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-          if (mediaResponse.statusCode != 204) {
-            throw Exception('Failed to delete medium');
-          }
-        }
-
-        final Response ascentResponse = await netWorkLocator.dio.delete('$climbingApiHost/ascent/${ascent.id}/route/$pitchId');
-        if (ascentResponse.statusCode != 200) {
-          MyNotifications.showNegativeNotification('Failed to delete ascent: ${ascent.comment}');
-        }
-        MyNotifications.showPositiveNotification('Ascent was deleted: ${ascentResponse.data['comment']}');
-        // TODO deleteAscentFromDeleteQueue(ascent.toJson().hashCode);
-        return ascentResponse.data;
-      } catch (e) {
-        if (e is DioError) {
-          if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-            // this means we are offline so queue this ascent and delete later
-            Box box = Hive.box('delete_later_ascents');
-            Map ascentJson = ascent.toJson();
-            box.put(ascentJson.hashCode, ascentJson);
-          }
-        }
-      } finally {
-        // TODO deleteAscentFromCache(ascent.id);
       }
     }
   }
 
-  Future<Ascent?> uploadAscent(String pitchId, Map data) async {
+  /// Delete a ascent its media in cache and optionally on the server.
+  /// If the parameter [online] is null or false the data is deleted only from the cache and later from the server at the next sync.
+  /// Otherwise it is deleted from cache and from the server immediately.
+  Future<void> deleteAscentOfSinglePitchRoute(Ascent deleteAscent, String singlePitchRouteId, {bool? online}) async {
+    // delete ascent locally
+    Box ascentBox = Hive.box(Ascent.boxName);
+    await ascentBox.delete(deleteAscent.id);
+    // add ascent to deletion queue for later sync
+    // add singlePitchRouteId as well so we later know from which single pitch route to remove it on the server
+    Box deleteAscentBox = Hive.box(Ascent.deleteBoxName);
+    Map<dynamic, dynamic> ascent = deleteAscent.toJson();
+    ascent['ofPitch'] = false;
+    ascent['parentId'] = singlePitchRouteId;
+    await deleteAscentBox.put(deleteAscent.id, ascent);
+    // remove from create queue (if no sync since)
+    Box createAscentBox = Hive.box(Ascent.createBoxName);
+    await createAscentBox.delete(deleteAscent.id);
+    // delete ascent id from single pitch route
+    Box singlePitchRouteBox = Hive.box(SinglePitchRoute.boxName);
+    SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromCache(singlePitchRouteBox.get(singlePitchRouteId));
+    singlePitchRoute.ascentIds.remove(deleteAscent.id);
+    await singlePitchRouteBox.put(singlePitchRoute.id, singlePitchRoute.toJson());
+    // delete media of ascent locally (deleted automatically on the server when multi pitch route is deleted)
+    Box mediaBox = Hive.box(Media.boxName);
+    for (String id in deleteAscent.mediaIds) {
+      await mediaBox.delete(id);
+    }
+    if (online == null || !online) return;
     try {
-      final Response response = await netWorkLocator.dio
-          .post('$climbingApiHost/ascent/pitch/$pitchId', data: data);
-      if (response.statusCode == 201) {
-        MyNotifications.showPositiveNotification('Created new ascent: ${response.data['comment']}');
-        return Ascent.fromJson(response.data);
-      } else {
-        throw Exception('Failed to create ascent');
+      // delete ascent
+      final Response ascentResponse = await netWorkLocator.dio.delete('$climbingApiHost/ascent/${deleteAscent.id}/route/$singlePitchRouteId');
+      if (ascentResponse.statusCode != 200) throw Exception('Failed to delete ascent');
+      await deleteAscentBox.delete(deleteAscent.id);
+      MyNotifications.showPositiveNotification('Ascent was deleted: ${ascentResponse.data['name']}');
+    } catch (e) {
+      ErrorService.handleConnectionErrors(e);
+      if (e is DioError) {
+        // if the ascent can't be found on the server then we can safely remove it locally as well
+        if (e.error == "Http status error [404]"){
+          await deleteAscentBox.delete(deleteAscent.id);
+        }
       }
+    }
+  }
+
+  /// Upload an ascent to the server.
+  Future<Ascent?> uploadAscentForPitch(String pitchId, Map data) async {
+    try {
+      final Response response = await netWorkLocator.dio.post('$climbingApiHost/ascent/pitch/$pitchId', data: data);
+      if (response.statusCode != 201) throw Exception('Failed to create ascent');
+      MyNotifications.showPositiveNotification('Created new ascent: ${response.data['comment']}');
+      return Ascent.fromJson(response.data);
     } catch (e) {
       if (e is DioError) {
         final response = e.response;
@@ -285,28 +288,25 @@ class AscentService {
           switch (response.statusCode) {
             case 409:
               MyNotifications.showNegativeNotification('This ascent already exists!');
+              Box createAscentBox = Hive.box(CreateAscent.boxName);
+              await createAscentBox.delete(data['_id']);
               break;
             default:
               throw Exception('Failed to create ascent');
           }
         }
       }
-    } finally {
-      // TODO deleteAscentFromUploadQueue(data.hashCode);
     }
     return null;
   }
 
+  /// Upload an ascent to the server.
   Future<Ascent?> uploadAscentForSinglePitchRoute(String routeId, Map data) async {
     try {
-      final Response response = await netWorkLocator.dio
-          .post('$climbingApiHost/ascent/route/$routeId', data: data);
-      if (response.statusCode == 201) {
-        MyNotifications.showPositiveNotification('Created new ascent: ${response.data['comment']}');
-        return Ascent.fromJson(response.data);
-      } else {
-        throw Exception('Failed to create ascent');
-      }
+      final Response response = await netWorkLocator.dio.post('$climbingApiHost/ascent/route/$routeId', data: data);
+      if (response.statusCode != 201) throw Exception('Failed to create ascent');
+      MyNotifications.showPositiveNotification('Created new ascent: ${response.data['comment']}');
+      return Ascent.fromJson(response.data);
     } catch (e) {
       if (e is DioError) {
         final response = e.response;
@@ -314,14 +314,14 @@ class AscentService {
           switch (response.statusCode) {
             case 409:
               MyNotifications.showNegativeNotification('This ascent already exists!');
+              Box createAscentBox = Hive.box(CreateAscent.boxName);
+              await createAscentBox.delete(data['_id']);
               break;
             default:
               throw Exception('Failed to create ascent');
           }
         }
       }
-    } finally {
-      // TODO deleteAscentFromUploadQueue(data.hashCode);
     }
     return null;
   }

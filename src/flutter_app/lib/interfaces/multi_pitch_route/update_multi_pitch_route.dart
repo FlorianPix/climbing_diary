@@ -1,5 +1,7 @@
 import 'package:climbing_diary/interfaces/route/update_route.dart';
 
+import 'multi_pitch_route.dart';
+
 class UpdateMultiPitchRoute extends UpdateClimbingRoute {
   static const String boxName = 'edit_multi_pitch_routes';
   List<String>? pitchIds;
@@ -38,6 +40,20 @@ class UpdateMultiPitchRoute extends UpdateClimbingRoute {
       location: cache['location'],
       name: cache['name'],
       rating: cache['rating'],
+    );
+  }
+
+  MultiPitchRoute toMultiPitchRoute(MultiPitchRoute oldMultiPitchRoute){
+    return MultiPitchRoute(
+      updated: DateTime.now().toIso8601String(),
+      mediaIds: mediaIds != null ? mediaIds! : oldMultiPitchRoute.mediaIds,
+      id: id,
+      userId: userId != null ? userId! : oldMultiPitchRoute.userId,
+      comment: comment != null ? comment! : oldMultiPitchRoute.comment,
+      name: name != null ? name! : oldMultiPitchRoute.name,
+      rating: rating != null ? rating! : oldMultiPitchRoute.rating,
+      location: location != null ? location! : oldMultiPitchRoute.location,
+      pitchIds: pitchIds != null ? pitchIds! : oldMultiPitchRoute.pitchIds,
     );
   }
 

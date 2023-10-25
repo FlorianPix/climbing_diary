@@ -1,3 +1,4 @@
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
 import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
 
 class UpdateAscent extends UpdateMyBaseInterface{
@@ -42,6 +43,20 @@ class UpdateAscent extends UpdateMyBaseInterface{
     );
   }
 
+  Ascent toAscent(Ascent oldAscent){
+    return Ascent(
+      updated: DateTime.now().toIso8601String(),
+      mediaIds: mediaIds != null ? mediaIds! : oldAscent.mediaIds,
+      id: id,
+      userId: userId != null ? userId! : oldAscent.userId,
+      comment: comment != null ? comment! : oldAscent.comment,
+      date: date != null ? date! : oldAscent.date,
+      style: style != null ? style! : oldAscent.style,
+      type: type != null ? type! : oldAscent.type,
+    );
+  }
+
+  @override
   Map toJson() => {
     "media_ids": mediaIds,
     "_id": id,

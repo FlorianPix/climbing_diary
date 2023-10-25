@@ -1,4 +1,4 @@
-package com.example.climbing_diary;
+package de.florian_pix.climbing_diary;
 
 import io.flutter.embedding.android.FlutterActivity;
 

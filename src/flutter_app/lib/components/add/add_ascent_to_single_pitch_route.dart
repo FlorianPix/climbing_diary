@@ -1,13 +1,11 @@
-import 'package:climbing_diary/interfaces/ascent/ascent_style.dart';
-import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import '../../interfaces/ascent/ascent_type.dart';
-import '../../interfaces/ascent/create_ascent.dart';
-import '../../interfaces/ascent/ascent.dart';
-import '../../services/ascent_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent_style.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent_type.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
+import 'package:uuid/uuid.dart';
 
 class AddAscentToSinglePitchRoute extends StatefulWidget {
   const AddAscentToSinglePitchRoute({super.key, required this.singlePitchRoutes, this.onAdd});
@@ -110,17 +108,20 @@ class _AddAscentToSinglePitchRouteState extends State<AddAscentToSinglePitchRout
       actions: <Widget>[
         TextButton(
           onPressed: () async {
-            bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
-              CreateAscent ascent = CreateAscent(
+              Ascent ascent = Ascent(
                 comment: controllerComment.text,
                 date: controllerDate.text,
                 style: ascentStyleValue.index,
                 type: ascentTypeValue.index,
+                updated: DateTime.now().toIso8601String(),
+                mediaIds: [],
+                id: const Uuid().v4(),
+                userId: '',
               );
               final singlePitchRouteValue = this.singlePitchRouteValue;
               if (singlePitchRouteValue != null) {
-                Ascent? createdAscent = await ascentService.createAscentForSinglePitchRoute(singlePitchRouteValue.id, ascent, result);
+                Ascent? createdAscent = await ascentService.createAscentForSinglePitchRoute(ascent, singlePitchRouteValue.id);
                 widget.onAdd?.call(createdAscent!);
               }
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));

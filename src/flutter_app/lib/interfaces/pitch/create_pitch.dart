@@ -1,3 +1,6 @@
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:uuid/uuid.dart';
+
 import '../grade.dart';
 
 class CreatePitch {
@@ -38,6 +41,22 @@ class CreatePitch {
       name: cache['name'],
       num: cache['num'],
       rating: cache['rating'],
+    );
+  }
+
+  Pitch toPitch(){
+    return Pitch(
+      updated: DateTime.now().toIso8601String(),
+      mediaIds: [],
+      id: const Uuid().v4(),
+      userId: '',
+      comment: comment != null ? comment! : '',
+      name: name,
+      rating: rating,
+      ascentIds: [],
+      grade: grade,
+      length: length,
+      num: num,
     );
   }
 
