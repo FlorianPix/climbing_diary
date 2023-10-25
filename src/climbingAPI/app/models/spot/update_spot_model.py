@@ -1,6 +1,4 @@
-from datetime import date
 from pydantic import BaseModel
-from bson import ObjectId
 from typing import Optional, List
 
 
@@ -19,7 +17,6 @@ class UpdateSpotModel(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
                 "media_ids": [],

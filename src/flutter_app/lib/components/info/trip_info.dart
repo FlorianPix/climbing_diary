@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../interfaces/trip/trip.dart';
-import '../my_text_styles.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 
 class TripInfo extends StatelessWidget {
   const TripInfo({super.key, required this.trip});

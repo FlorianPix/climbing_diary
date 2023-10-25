@@ -1,12 +1,12 @@
-import 'package:climbing_diary/components/my_notifications.dart';
-import 'package:climbing_diary/components/my_text_styles.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../interfaces/grading_system.dart';
+import '../../../interfaces/grading_system.dart';
 
-import '../services/admin_service.dart';
-import '../services/archive_service.dart';
-import '../services/cache_service.dart';
+import '../../services/admin_service.dart';
+import '../../services/archive_service.dart';
+import '../../services/cache_service.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -72,40 +72,24 @@ class _SettingsState extends State<Settings>{
               child: Text("Import", style: MyTextStyles.title)
             ),
             ElevatedButton.icon(
-              onPressed: () {archiveService.readPicked();},
+              onPressed: () {archiveService.import();},
               icon: const Icon(
-                Icons.upload,
+                Icons.download_rounded,
                 color: Colors.black,
                 size: 30.0,
-                semanticLabel: 'load',
+                semanticLabel: 'import',
               ),
-              label: const Text("pick a .json file to import"),
-            )
-          ])),
-          Card(child: Column(children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 5),
-              child: Text("Backup", style: MyTextStyles.title)
+              label: const Text("import"),
             ),
             ElevatedButton.icon(
-              onPressed: () {archiveService.readBackup();},
+              onPressed: () {archiveService.export();},
               icon: const Icon(
-                Icons.upload,
+                Icons.upload_rounded,
                 color: Colors.black,
                 size: 30.0,
-                semanticLabel: 'load',
+                semanticLabel: 'export',
               ),
-              label: const Text("load climbing data\nfrom this device"),
-            ),
-            ElevatedButton.icon(
-              onPressed: () {archiveService.writeBackup();},
-              icon: const Icon(
-                Icons.download,
-                color: Colors.black,
-                size: 30.0,
-                semanticLabel: 'save',
-              ),
-              label: const Text("save your climbing data\nto this device"),
+              label: const Text("export"),
             )
           ])),
           Card(child: Column(children: [
@@ -125,6 +109,56 @@ class _SettingsState extends State<Settings>{
                 semanticLabel: 'clear cache',
               ),
               label: const Text("clear cache"),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                CacheService.printCache();
+              },
+              icon: const Icon(
+                Icons.print,
+                color: Colors.black,
+                size: 30.0,
+                semanticLabel: 'print cache',
+              ),
+              label: const Text("print cache"),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                CacheService.printCacheVerbose();
+              },
+              icon: const Icon(
+                Icons.print,
+                color: Colors.black,
+                size: 30.0,
+                semanticLabel: 'print cache verbose',
+              ),
+              label: const Text("print cache verbose"),
+            )
+          ])),
+          Card(child: Column(children: [
+            const Padding(
+                padding: EdgeInsets.only(top: 5),
+                child: Text("Migrate", style: MyTextStyles.title)
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {await adminService.migrateMedia();},
+              icon: const Icon(
+                Icons.update_rounded,
+                color: Colors.black,
+                size: 30.0,
+                semanticLabel: 'migrate images',
+              ),
+              label: const Text("migrate images"),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {await adminService.migrateObjectIdToStr();},
+              icon: const Icon(
+                Icons.update_rounded,
+                color: Colors.black,
+                size: 30.0,
+                semanticLabel: 'migrate objectId to str',
+              ),
+              label: const Text("migrate objectId to str"),
             )
           ])),
           Card(child: Column(children: [
@@ -133,14 +167,14 @@ class _SettingsState extends State<Settings>{
               child: Text("Delete", style: MyTextStyles.title)
             ),
             ElevatedButton.icon(
-              onPressed: () {adminService.deleteAll();},
+              onPressed: () async {await adminService.deleteAll();},
               icon: const Icon(
                 Icons.delete,
                 color: Colors.black,
                 size: 30.0,
-                semanticLabel: 'delete all data incl. images',
+                semanticLabel: 'delete all data',
               ),
-              label: const Text("delete all data incl. images"),
+              label: const Text("delete all data"),
             )
           ])),
         ],

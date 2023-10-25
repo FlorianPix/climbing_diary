@@ -3,6 +3,7 @@ import 'package:climbing_diary/interfaces/route/route.dart';
 
 class MultiPitchRoute extends ClimbingRoute{
   static const String boxName = 'multi_pitch_routes';
+  static const String createBoxName = 'create_multi_pitch_routes';
   static const String deleteBoxName = 'delete_multi_pitch_routes';
   final List<String> pitchIds;
 
@@ -70,5 +71,37 @@ class MultiPitchRoute extends ClimbingRoute{
       name: name,
       rating: rating,
     );
+  }
+
+  @override
+  int get hashCode {
+    int mediaIdsHashCode = 0;
+    for (String mediaId in mediaIds) {
+      if (mediaIdsHashCode == 0) {
+        mediaIdsHashCode = mediaId.hashCode;
+      } else {
+        mediaIdsHashCode = mediaIdsHashCode ^ mediaId.hashCode;
+      }
+    }
+    int pitchIdsHashCode = 0;
+    for (String pitchId in pitchIds) {
+      if (pitchIdsHashCode == 0) {
+        pitchIdsHashCode = pitchId.hashCode;
+      } else {
+        pitchIdsHashCode = pitchIdsHashCode ^ pitchId.hashCode;
+      }
+    }
+    return
+      mediaIdsHashCode ^
+      pitchIdsHashCode ^
+      comment.hashCode ^
+      location.hashCode ^
+      name.hashCode ^
+      rating.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
   }
 }

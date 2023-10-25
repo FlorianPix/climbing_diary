@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.db import connect_db, close_db
-from app.routers import admin, ascent, pitch, spot, trip, single_pitch_route, multi_pitch_route
+from app.routers import admin, ascent, pitch, spot, trip, single_pitch_route, multi_pitch_route, media
 
 
 def get_application():
@@ -38,6 +38,7 @@ def get_application():
     _app.include_router(multi_pitch_route.router, prefix="/multi_pitch_route", tags=["multi_pitch_route"])
     _app.include_router(spot.router, prefix="/spot", tags=["spot"])
     _app.include_router(trip.router, prefix="/trip", tags=["trip"])
+    _app.include_router(media.router, prefix="/media", tags=["media"])
     _app.add_event_handler("startup", connect_db)
     _app.add_event_handler("shutdown", close_db)
     return _app

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../interfaces/media/media.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/spot/update_spot.dart';
 import '../../interfaces/trip/trip.dart';
@@ -10,15 +12,15 @@ import '../../pages/diary_page/timeline/route_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/spot_service.dart';
 import '../add/add_image.dart';
-import '../comment.dart';
-import '../grade_distribution.dart';
-import '../image_list_view_add.dart';
-import '../my_button_styles.dart';
+import '../common/comment.dart';
+import '../common/grade_distribution.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
 import '../add/add_route.dart';
 import '../edit/edit_spot.dart';
-import '../my_text_styles.dart';
-import '../rating.dart';
-import '../transport.dart';
+import '../common/my_text_styles.dart';
+import 'package:climbing_diary/components/common/rating.dart';
+import 'package:climbing_diary/components/common/transport.dart';
 
 class SpotDetails extends StatefulWidget {
   const SpotDetails({super.key, this.trip, required this.spot, required this.onDelete, required this.onUpdate, required this.onNetworkChange });
@@ -36,10 +38,10 @@ class _SpotDetailsState extends State<SpotDetails>{
   final MediaService mediaService = MediaService();
   final SpotService spotService = SpotService();
 
-  Future<List<String>> fetchURLs() {
-    List<Future<String>> futures = [];
+  Future<List<Media>> fetchMedia() {
+    List<Future<Media>> futures = [];
     for (var mediaId in widget.spot.mediaIds) {
-      futures.add(mediaService.getMediumUrl(mediaId));
+      futures.add(mediaService.getMedium(mediaId));
     }
     return Future.wait(futures);
   }
@@ -48,20 +50,34 @@ class _SpotDetailsState extends State<SpotDetails>{
 
   Future<void> getImage(ImageSource media) async {
     if (media == ImageSource.camera) {
-      var img = await picker.pickImage(source: media);
-      if (img != null) {
-        var mediaId = await mediaService.uploadMedia(img);
+      XFile? file = await picker.pickImage(source: media);
+      if (file != null) {
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Spot spot = widget.spot;
         spot.mediaIds.add(mediaId);
-        spotService.editSpot(spot.toUpdateSpot());
+        await spotService.editSpot(spot.toUpdateSpot());
       }
     } else {
-      List<XFile> images = await picker.pickMultiImage();
-      for (XFile img in images){
-        var mediaId = await mediaService.uploadMedia(img);
+      List<XFile> files = await picker.pickMultiImage();
+      for (XFile file in files){
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Spot spot = widget.spot;
         spot.mediaIds.add(mediaId);
-        spotService.editSpot(spot.toUpdateSpot());
+        await spotService.editSpot(spot.toUpdateSpot());
       }
     }
     setState(() {});
@@ -119,9 +135,9 @@ class _SpotDetailsState extends State<SpotDetails>{
     }
     if (widget.spot.comment.isNotEmpty) elements.add(Comment(comment: widget.spot.comment));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.spot.mediaIds.remove(mediumId);
-      spotService.editSpot(UpdateSpot(
+      await spotService.editSpot(UpdateSpot(
         id: widget.spot.id,
         mediaIds: widget.spot.mediaIds
       ));
@@ -150,12 +166,16 @@ class _SpotDetailsState extends State<SpotDetails>{
           builder: (context) => AddRoute(
             spot: widget.spot,
             onAddMultiPitchRoute: (route) {
-              widget.spot.multiPitchRouteIds.add(route.id);
-              setState(() {});
+              if (!widget.spot.multiPitchRouteIds.contains(route.id)) {
+                widget.spot.multiPitchRouteIds.add(route.id);
+                setState(() {});
+              }
             },
             onAddSinglePitchRoute: (route) {
-              widget.spot.singlePitchRouteIds.add(route.id);
-              setState(() {});
+              if (!widget.spot.singlePitchRouteIds.contains(route.id)){
+                widget.spot.singlePitchRouteIds.add(route.id);
+                setState(() {});
+              }
             },
           ),
         )
@@ -166,9 +186,9 @@ class _SpotDetailsState extends State<SpotDetails>{
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
-            spotService.deleteSpot(widget.spot);
+            await spotService.deleteSpot(widget.spot);
             widget.onDelete.call(widget.spot);
           },
           icon: const Icon(Icons.delete),

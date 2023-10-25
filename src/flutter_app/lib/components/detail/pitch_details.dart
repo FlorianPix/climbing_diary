@@ -1,7 +1,9 @@
 import 'package:climbing_diary/interfaces/route/route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../interfaces/media/media.dart';
 import '../../interfaces/pitch/pitch.dart';
 import '../../interfaces/pitch/update_pitch.dart';
 import '../../interfaces/spot/spot.dart';
@@ -10,13 +12,13 @@ import '../../pages/diary_page/timeline/ascent_timeline.dart';
 import '../../services/media_service.dart';
 import '../../services/pitch_service.dart';
 import '../add/add_image.dart';
-import '../comment.dart';
-import '../image_list_view_add.dart';
-import '../my_button_styles.dart';
+import '../common/comment.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import '../common/my_button_styles.dart';
 import '../add/add_ascent.dart';
 import '../edit/edit_pitch.dart';
 import '../info/pitch_info.dart';
-import '../rating.dart';
+import 'package:climbing_diary/components/common/rating.dart';
 
 class PitchDetails extends StatefulWidget {
   const PitchDetails({super.key, this.trip, required this.spot, required this.route, required this.pitch, required this.onDelete, required this.onUpdate, required this.onNetworkChange });
@@ -37,10 +39,10 @@ class _PitchDetailsState extends State<PitchDetails>{
   final MediaService mediaService = MediaService();
   final PitchService pitchService = PitchService();
 
-  Future<List<String>> fetchURLs() {
-    List<Future<String>> futures = [];
+  Future<List<Media>> fetchMedia() {
+    List<Future<Media>> futures = [];
     for (var mediaId in widget.pitch.mediaIds) {
-      futures.add(mediaService.getMediumUrl(mediaId));
+      futures.add(mediaService.getMedium(mediaId));
     }
     return Future.wait(futures);
   }
@@ -49,20 +51,34 @@ class _PitchDetailsState extends State<PitchDetails>{
 
   Future<void> getImage(ImageSource media) async {
     if (media == ImageSource.camera) {
-      var img = await picker.pickImage(source: media);
-      if (img != null) {
-        var mediaId = await mediaService.uploadMedia(img);
+      XFile? file = await picker.pickImage(source: media);
+      if (file != null) {
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Pitch pitch = widget.pitch;
         pitch.mediaIds.add(mediaId);
-        pitchService.editPitch(pitch.toUpdatePitch());
+        await pitchService.editPitch(pitch.toUpdatePitch());
       }
     } else {
-      List<XFile> images = await picker.pickMultiImage();
-      for (XFile img in images){
-        var mediaId = await mediaService.uploadMedia(img);
+      List<XFile> files = await picker.pickMultiImage();
+      for (XFile file in files){
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Pitch pitch = widget.pitch;
         pitch.mediaIds.add(mediaId);
-        pitchService.editPitch(pitch.toUpdatePitch());
+        await pitchService.editPitch(pitch.toUpdatePitch());
       }
     }
     setState(() {});
@@ -95,9 +111,9 @@ class _PitchDetailsState extends State<PitchDetails>{
     elements.add(Rating(rating: pitch.rating));
     if (pitch.comment.isNotEmpty) elements.add(Comment(comment: pitch.comment));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.pitch.mediaIds.remove(mediumId);
-      pitchService.editPitch(UpdatePitch(
+      await pitchService.editPitch(UpdatePitch(
         id: widget.pitch.id,
         mediaIds: widget.pitch.mediaIds
       ));
@@ -125,8 +141,10 @@ class _PitchDetailsState extends State<PitchDetails>{
         builder: (context) => AddAscent(
           pitch: widget.pitch,
           onAdd: (ascent) {
-            widget.pitch.ascentIds.add(ascent.id);
-            setState(() {});
+            if (!widget.pitch.ascentIds.contains(ascent.id)){
+              widget.pitch.ascentIds.add(ascent.id);
+              setState(() {});
+            }
           },
         ),
       )),
@@ -136,9 +154,9 @@ class _PitchDetailsState extends State<PitchDetails>{
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
-            pitchService.deletePitch(widget.route.id, pitch);
+            await pitchService.deletePitch(pitch, widget.route.id);
             widget.onDelete.call(pitch);
           },
           icon: const Icon(Icons.delete),

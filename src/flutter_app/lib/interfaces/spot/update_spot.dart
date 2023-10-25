@@ -1,4 +1,5 @@
 import 'package:climbing_diary/interfaces/my_base_interface/update_my_base_interface.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
 
 class UpdateSpot extends UpdateMyBaseInterface{
   static const String boxName = 'edit_spots';
@@ -47,18 +48,36 @@ class UpdateSpot extends UpdateMyBaseInterface{
 
   factory UpdateSpot.fromCache(Map<dynamic, dynamic> cache) {
     return UpdateSpot(
-      mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : [],
-      singlePitchRouteIds: cache['single_pitch_route_ids'] != null ? List<String>.from(cache['single_pitch_route_ids']) : [],
-      multiPitchRouteIds: cache['multi_pitch_route_ids'] != null ? List<String>.from(cache['multi_pitch_route_ids']) : [],
+      mediaIds: cache['media_ids'] != null ? List<String>.from(cache['media_ids']) : null,
+      singlePitchRouteIds: cache['single_pitch_route_ids'] != null ? List<String>.from(cache['single_pitch_route_ids']) : null,
+      multiPitchRouteIds: cache['multi_pitch_route_ids'] != null ? List<String>.from(cache['multi_pitch_route_ids']) : null,
       id: cache['_id'],
       userId: cache['user_id'],
       comment: cache['comment'],
-      coordinates: List<double>.from(cache['coordinates']),
+      coordinates: cache['coordinates'] != null ? List<double>.from(cache['coordinates']) : null,
       distanceParking: cache['distance_parking'],
       distancePublicTransport: cache['distance_public_transport'],
       location: cache['location'],
       name: cache['name'],
       rating: cache['rating'],
+    );
+  }
+
+  Spot toSpot(Spot oldSpot){
+    return Spot(
+      updated: DateTime.now().toIso8601String(),
+      mediaIds: mediaIds != null ? mediaIds! : oldSpot.mediaIds,
+      id: id,
+      userId: userId != null ? userId! : oldSpot.userId,
+      comment: comment != null ? comment! : oldSpot.comment,
+      name: name != null ? name! : oldSpot.name,
+      rating: rating != null ? rating! : oldSpot.rating,
+      singlePitchRouteIds: singlePitchRouteIds != null ? singlePitchRouteIds! : oldSpot.singlePitchRouteIds,
+      multiPitchRouteIds: multiPitchRouteIds != null ? multiPitchRouteIds! : oldSpot.multiPitchRouteIds,
+      coordinates: coordinates != null ? coordinates! : oldSpot.coordinates,
+      distanceParking: distanceParking != null ? distanceParking! : oldSpot.distanceParking,
+      distancePublicTransport: distancePublicTransport != null ? distancePublicTransport! : oldSpot.distancePublicTransport,
+      location: location != null ? location! : oldSpot.location,
     );
   }
 

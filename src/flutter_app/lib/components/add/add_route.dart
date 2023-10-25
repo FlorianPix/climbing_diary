@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import '../../interfaces/grade.dart';
-import '../../interfaces/grading_system.dart';
-import '../../interfaces/multi_pitch_route/create_multi_pitch_route.dart';
-import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
-import '../../interfaces/single_pitch_route/create_single_pitch_route.dart';
-import '../../interfaces/single_pitch_route/single_pitch_route.dart';
-import '../../interfaces/spot/spot.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
-
-import '../../services/multi_pitch_route_service.dart';
-import '../../services/single_pitch_route_service.dart';
-import '../my_text_styles.dart';
+import 'package:climbing_diary/interfaces/grade.dart';
+import 'package:climbing_diary/interfaces/grading_system.dart';
+import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
+import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/services/multi_pitch_route_service.dart';
+import 'package:climbing_diary/services/single_pitch_route_service.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
+import 'package:uuid/uuid.dart';
 
 class AddRoute extends StatefulWidget {
   const AddRoute({super.key, required this.spot, this.onAddMultiPitchRoute, this.onAddSinglePitchRoute});
@@ -144,27 +140,36 @@ class _AddRouteState extends State<AddRoute>{
       actions: <Widget>[
         TextButton(
             onPressed: () async {
-              bool result = await InternetConnectionChecker().hasConnection;
               if (_formKey.currentState!.validate()) {
                 if (isMultiPitch){
-                  CreateMultiPitchRoute route = CreateMultiPitchRoute(
+                  MultiPitchRoute route = MultiPitchRoute(
                     name: controllerName.text,
                     location: controllerLocation.text,
                     rating: currentSliderValue.toInt(),
                     comment: controllerComment.text,
+                    updated: DateTime.now().toIso8601String(),
+                    mediaIds: [],
+                    pitchIds: [],
+                    id: const Uuid().v4(),
+                    userId: '',
                   );
-                  MultiPitchRoute? createdRoute = await multiPitchRouteService.createMultiPitchRoute(route, spot.id, result);
+                  MultiPitchRoute? createdRoute = await multiPitchRouteService.createMultiPitchRoute(route, spot.id);
                   widget.onAddMultiPitchRoute?.call(createdRoute!);
                 } else {
-                  CreateSinglePitchRoute route = CreateSinglePitchRoute(
+                  SinglePitchRoute route = SinglePitchRoute(
                     name: controllerName.text,
                     location: controllerLocation.text,
                     rating: currentSliderValue.toInt(),
                     comment: controllerComment.text,
                     grade: Grade(grade: grade, system: gradingSystem),
-                    length: int.parse(controllerLength.text)
+                    length: int.parse(controllerLength.text),
+                    updated: DateTime.now().toIso8601String(),
+                    ascentIds: [],
+                    mediaIds: [],
+                    id: const Uuid().v4(),
+                    userId: ''
                   );
-                  SinglePitchRoute? createdRoute = await singlePitchRouteService.createSinglePitchRoute(route, spot.id, result);
+                  SinglePitchRoute? createdRoute = await singlePitchRouteService.createSinglePitchRoute(route, spot.id);
                   widget.onAddSinglePitchRoute?.call(createdRoute!);
                 }
                 setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));

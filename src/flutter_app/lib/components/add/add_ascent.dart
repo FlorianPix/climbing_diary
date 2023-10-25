@@ -1,15 +1,12 @@
-import 'package:climbing_diary/interfaces/ascent/ascent_style.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import '../../interfaces/ascent/ascent_type.dart';
-import '../../interfaces/ascent/create_ascent.dart';
-import '../../interfaces/ascent/ascent.dart';
-import '../../interfaces/pitch/pitch.dart';
-import '../../services/ascent_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
-
-import '../my_text_styles.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent_style.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent_type.dart';
+import 'package:climbing_diary/interfaces/ascent/ascent.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
+import 'package:uuid/uuid.dart';
 
 class AddAscent extends StatefulWidget {
   const AddAscent({super.key, required this.pitch, this.onAdd});
@@ -101,15 +98,18 @@ class _AddAscentState extends State<AddAscent>{
       actions: <Widget>[
         TextButton(
           onPressed: () async {
-            bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
-              CreateAscent ascent = CreateAscent(
+              Ascent ascent = Ascent(
                 comment: controllerComment.text,
                 date: controllerDate.text,
                 style: ascentStyleValue.index,
                 type: ascentTypeValue.index,
+                updated: DateTime.now().toIso8601String(),
+                mediaIds: [],
+                id: const Uuid().v4(),
+                userId: '',
               );
-              Ascent? createdAscent = await ascentService.createAscent(widget.pitch.id, ascent, result);
+              Ascent? createdAscent = await ascentService.createAscentForPitch(ascent, widget.pitch.id);
               widget.onAdd?.call(createdAscent!);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }

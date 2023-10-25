@@ -1,8 +1,10 @@
-import 'package:climbing_diary/components/my_text_styles.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/update_multi_pitch_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../interfaces/media/media.dart';
 import '../../interfaces/multi_pitch_route/multi_pitch_route.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
@@ -11,13 +13,13 @@ import '../../services/media_service.dart';
 import '../../services/multi_pitch_route_service.dart';
 import '../../services/pitch_service.dart';
 import '../add/add_image.dart';
-import '../comment.dart';
-import '../image_list_view_add.dart';
-import '../my_button_styles.dart';
+import '../common/comment.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
 import '../add/add_pitch.dart';
 import '../edit/edit_multi_pitch_route.dart';
 import '../info/multi_pitch_route_info.dart';
-import '../rating.dart';
+import 'package:climbing_diary/components/common/rating.dart';
 
 class MultiPitchRouteDetails extends StatefulWidget {
   const MultiPitchRouteDetails({super.key, this.trip, required this.spot, required this.route, required this.onDelete, required this.onUpdate, required this.spotId, required this.onNetworkChange });
@@ -39,10 +41,10 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
   final MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
   final PitchService pitchService = PitchService();
 
-  Future<List<String>> fetchURLs() {
-    List<Future<String>> futures = [];
+  Future<List<Media>> fetchMedia() {
+    List<Future<Media>> futures = [];
     for (var mediaId in widget.route.mediaIds) {
-      futures.add(mediaService.getMediumUrl(mediaId));
+      futures.add(mediaService.getMedium(mediaId));
     }
     return Future.wait(futures);
   }
@@ -51,20 +53,34 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
 
   Future<void> getImage(ImageSource media) async {
     if (media == ImageSource.camera) {
-      var img = await picker.pickImage(source: media);
-      if (img != null) {
-        var mediaId = await mediaService.uploadMedia(img);
+      XFile? file = await picker.pickImage(source: media);
+      if (file != null) {
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         MultiPitchRoute multiPitchRoute = widget.route;
         multiPitchRoute.mediaIds.add(mediaId);
-        multiPitchRouteService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
+        await multiPitchRouteService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
       }
     } else {
-      List<XFile> images = await picker.pickMultiImage();
-      for (XFile img in images){
-        var mediaId = await mediaService.uploadMedia(img);
+      List<XFile> files = await picker.pickMultiImage();
+      for (XFile file in files){
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         MultiPitchRoute multiPitchRoute = widget.route;
         multiPitchRoute.mediaIds.add(mediaId);
-        multiPitchRouteService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
+        await multiPitchRouteService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
       }
     }
     setState(() {});
@@ -102,9 +118,9 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
     elements.add(Rating(rating: route.rating));
     if (route.comment.isNotEmpty) elements.add(Comment(comment: route.comment));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.route.mediaIds.remove(mediumId);
-      multiPitchRouteService.editMultiPitchRoute(UpdateMultiPitchRoute(
+      await multiPitchRouteService.editMultiPitchRoute(UpdateMultiPitchRoute(
         id: widget.route.id,
         mediaIds: widget.route.mediaIds
       ));
@@ -137,9 +153,9 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
-            multiPitchRouteService.deleteMultiPitchRoute(route, widget.spotId);
+            await multiPitchRouteService.deleteMultiPitchRoute(route, widget.spotId);
             widget.onDelete.call(route);
           },
           icon: const Icon(Icons.delete),

@@ -1,17 +1,17 @@
-import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/my_timeline_theme_data.dart';
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:timelines/timelines.dart';
-
-import '../../../interfaces/spot/spot.dart';
-import '../../../interfaces/trip/trip.dart';
-import '../../components/detail/multi_pitch_route_details.dart';
-import '../../components/info/multi_pitch_route_info.dart';
-import '../../components/info/route_info.dart';
-import '../../components/rating.dart';
-import '../../components/image_list_view.dart';
-import '../../services/multi_pitch_route_service.dart';
-import '../diary_page/timeline/pitch_timeline.dart';
+import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
+import 'package:climbing_diary/components/detail/multi_pitch_route_details.dart';
+import 'package:climbing_diary/components/info/multi_pitch_route_info.dart';
+import 'package:climbing_diary/components/info/route_info.dart';
+import 'package:climbing_diary/components/common/rating.dart';
+import 'package:climbing_diary/components/common/image_list_view.dart';
+import 'package:climbing_diary/services/multi_pitch_route_service.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/pitch_timeline.dart';
 
 class MultiPitchRouteList extends StatefulWidget {
   const MultiPitchRouteList({super.key, this.trip, required this.spot, required this.multiPitchRouteIds, required this.onNetworkChange});
@@ -48,14 +48,14 @@ class MultiPitchRouteListState extends State<MultiPitchRouteList> {
     List<String> multiPitchRouteIds = widget.multiPitchRouteIds;
 
     return FutureBuilder<List<MultiPitchRoute?>>(
-      future: multiPitchRouteService.getMultiPitchRoutesOfIds(online, multiPitchRouteIds),
+      future: multiPitchRouteService.getMultiPitchRoutesOfIds(multiPitchRouteIds),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<MultiPitchRoute> multiPitchRoutes = snapshot.data!.whereType<MultiPitchRoute>().toList();
         multiPitchRoutes.sort((a, b) => a.name.compareTo(b.name));
 
-        updateMultiPitchRouteCallback(MultiPitchRoute route) {
+        void updateMultiPitchRouteCallback(MultiPitchRoute route) {
           var index = -1;
           for (int i = 0; i < multiPitchRoutes.length; i++) {
             if (multiPitchRoutes[i].id == route.id) index = i;
@@ -65,19 +65,14 @@ class MultiPitchRouteListState extends State<MultiPitchRouteList> {
           setState(() {});
         }
 
-        deleteMultiPitchRouteCallback(MultiPitchRoute route) {
+        void deleteMultiPitchRouteCallback(MultiPitchRoute route) {
           multiPitchRoutes.remove(route);
           setState(() {});
         }
 
         if (multiPitchRoutes.isNotEmpty){
           return FixedTimeline.tileBuilder(
-            theme: TimelineThemeData(
-              nodePosition: 0,
-              color: const Color(0xff989898),
-              indicatorTheme: const IndicatorThemeData(position: 0, size: 20.0,),
-              connectorTheme: const ConnectorThemeData(thickness: 2.5,),
-            ),
+            theme: MyTimeLineThemeData.defaultTheme,
             builder: TimelineTileBuilder.connected(
               connectionDirection: ConnectionDirection.before,
               itemCount: multiPitchRoutes.length,

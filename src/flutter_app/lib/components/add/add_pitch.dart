@@ -1,14 +1,11 @@
-import 'package:climbing_diary/interfaces/grading_system.dart';
 import 'package:flutter/material.dart';
-
-import '../../interfaces/grade.dart';
-import '../../interfaces/pitch/create_pitch.dart';
-import '../../interfaces/pitch/pitch.dart';
-import '../../interfaces/route/route.dart';
-import '../../services/pitch_service.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
-
-import '../my_text_styles.dart';
+import 'package:climbing_diary/interfaces/grading_system.dart';
+import 'package:climbing_diary/interfaces/grade.dart';
+import 'package:climbing_diary/interfaces/pitch/pitch.dart';
+import 'package:climbing_diary/interfaces/route/route.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
+import 'package:uuid/uuid.dart';
 
 class AddPitch extends StatefulWidget {
   const AddPitch({super.key, required this.route});
@@ -126,17 +123,21 @@ class _AddPitchState extends State<AddPitch>{
       actions: <Widget>[
         TextButton(
           onPressed: () async {
-            bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
-              CreatePitch pitch = CreatePitch(
+              Pitch pitch = Pitch(
                 comment: controllerComment.text,
                 grade: Grade(grade: grade, system: gradingSystem),
                 length: int.parse(controllerLength.text),
                 name: controllerName.text,
                 num: int.parse(controllerNum.text),
                 rating: currentSliderValue.toInt(),
+                updated: DateTime.now().toIso8601String(),
+                ascentIds: [],
+                mediaIds: [],
+                id: const Uuid().v4(),
+                userId: '',
               );
-              Pitch? createdPitch = await pitchService.createPitch(pitch, widget.route.id, result);
+              await pitchService.createPitch(pitch, widget.route.id);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },

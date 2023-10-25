@@ -1,16 +1,17 @@
-import 'package:hive/hive.dart';
-
-import '../components/my_notifications.dart';
-import '../config/environment.dart';
-import '../interfaces/trip/create_trip.dart';
+import 'package:climbing_diary/services/error_service.dart';
 import 'package:dio/dio.dart';
+import 'package:hive/hive.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
+import 'package:climbing_diary/config/environment.dart';
+import 'package:climbing_diary/interfaces/trip/create_trip.dart';
+import 'package:climbing_diary/data/network/dio_client.dart';
+import 'package:climbing_diary/data/sharedprefs/shared_preference_helper.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
+import 'package:climbing_diary/interfaces/trip/update_trip.dart';
+import 'package:climbing_diary/services/cache_service.dart';
+import 'package:climbing_diary/services/locator.dart';
 
-import '../data/network/dio_client.dart';
-import '../data/sharedprefs/shared_preference_helper.dart';
-import '../interfaces/trip/trip.dart';
-import '../interfaces/trip/update_trip.dart';
-import 'cache_service.dart';
-import 'locator.dart';
+import '../interfaces/media/media.dart';
 
 class TripService {
   final netWorkLocator = getIt.get<DioClient>();
@@ -18,145 +19,127 @@ class TripService {
   final String climbingApiHost = Environment().config.climbingApiHost;
   final String mediaApiHost = Environment().config.mediaApiHost;
 
-  Future<Trip?> getTrip(String tripId, bool online) async {
+  /// Get a trip by its id from cache and optionally from the server.
+  /// If the parameter [online] is null or false the trip is searched in cache,
+  /// otherwise it is requested from the server.
+  Future<Trip?> getTrip(String tripId, {bool? online}) async {
+    Box box = Hive.box(Trip.boxName);
+    if (online == null || !online) return Trip.fromCache(box.get(tripId));
+    // request trip from server
     try {
-      Box box = Hive.box(Trip.boxName);
-      if (!online) return Trip.fromCache(box.get(tripId));
-      final Response tripIdUpdatedResponse = await netWorkLocator.dio.get('$climbingApiHost/tripUpdated/$tripId');
-      if (tripIdUpdatedResponse.statusCode != 200) throw Exception("Error during request of trip id updated");
-      String id = tripIdUpdatedResponse.data['_id'];
-      String serverUpdated = tripIdUpdatedResponse.data['updated'];
-      if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-        final Response missingTripResponse = await netWorkLocator.dio.post('$climbingApiHost/trip/$tripId');
-        if (missingTripResponse.statusCode != 200) throw Exception("Error during request of missing trip");
-      } else {
-        return Trip.fromCache(box.get(id));
-      }
+      final Response missingTripResponse = await netWorkLocator.dio.post('$climbingApiHost/trip/$tripId');
+      if (missingTripResponse.statusCode != 200) throw Exception("Error during request of trip");
+      return Trip.fromJson(missingTripResponse.data);
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
+      ErrorService.handleConnectionErrors(e);
     }
     return null;
   }
 
-  Future<List<Trip>> getTrips(bool online) async {
+  /// Get all trips from cache and optionally from the server.
+  /// If the parameter [online] is null or false the trips are searched in cache,
+  /// otherwise they are requested from the server.
+  Future<List<Trip>> getTrips({bool? online}) async {
+    if(online == null || !online) return CacheService.getTsFromCache<Trip>(Trip.boxName, Trip.fromCache);
+    // request trips from the server
     try {
-      if(online){
-        final Response tripIdsResponse = await netWorkLocator.dio.get('$climbingApiHost/tripUpdated');
-        if (tripIdsResponse.statusCode != 200) {
-          throw Exception("Error during request of trip ids");
+      final Response tripsResponse = await netWorkLocator.dio.get('$climbingApiHost/trip');
+      if (tripsResponse.statusCode != 200) throw Exception("Error during request of trips");
+      List<Trip> trips = [];
+      Box tripBox = Hive.box(Trip.boxName);
+      await Future.forEach(tripsResponse.data, (dynamic s) async {
+        Trip trip = Trip.fromJson(s);
+        await tripBox.put(trip.id, trip.toJson());
+        trips.add(trip);
+      });
+      // delete trips that were deleted on the server
+      List<Trip> cachedTrips = CacheService.getTsFromCache<Trip>(Trip.boxName, Trip.fromCache);
+      for (Trip cachedTrip in cachedTrips){
+        if (!trips.contains(cachedTrip)){
+          await tripBox.delete(cachedTrip.id);
         }
-        List<Trip> trips = [];
-        List<String> missingTripIds = [];
-        Box box = Hive.box(Trip.boxName);
-        tripIdsResponse.data.forEach((idWithDatetime) {
-          String id = idWithDatetime['_id'];
-          String serverUpdated = idWithDatetime['updated'];
-          if (!box.containsKey(id) || CacheService.isStale(box.get(id), serverUpdated)) {
-            missingTripIds.add(id);
-          } else {
-            trips.add(Trip.fromCache(box.get(id)));
-          }
-        });
-        if (missingTripIds.isEmpty){
-          return trips;
-        }
-        final Response missingTripsResponse = await netWorkLocator.dio.post('$climbingApiHost/trip/ids', data: missingTripIds);
-        if (missingTripsResponse.statusCode != 200) {
-          throw Exception("Error during request of missing trips");
-        }
-        missingTripsResponse.data.forEach((s) {
-          Trip trip = Trip.fromJson(s);
-          if (!box.containsKey(trip.id)) {
-            box.put(trip.id, trip.toJson());
-          }
-          trips.add(trip);
-        });
-        return trips;
-      } else {
-        // offline
-        return CacheService.getTsFromCache<Trip>('trips', Trip.fromCache);
       }
+      return trips;
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains("OS Error: Connection refused, errno = 111")){
-          MyNotifications.showNegativeNotification('Couldn\'t connect to API');
-        }
-      }
+      ErrorService.handleConnectionErrors(e);
     }
     return [];
   }
 
-  Future<Trip?> createTrip(CreateTrip createTrip, bool online) async {
-    CreateTrip trip = CreateTrip(
-      comment: (createTrip.comment != null) ? createTrip.comment! : "",
-      endDate: createTrip.endDate,
-      name: createTrip.name,
-      rating: createTrip.rating,
-      startDate: createTrip.startDate,
-    );
-    if (online) {
-      var data = trip.toJson();
-      return uploadTrip(data);
-    }
-    Box box = Hive.box(CreateTrip.boxName);
-    Map tripJson = trip.toJson();
-    if (!box.containsKey(trip.hashCode)) box.put(trip.hashCode, tripJson);
-    return null;
+  /// Create a trip in cache and optionally on the server.
+  /// If the parameter [online] is null or false the trip is added to the cache and uploaded later at the next sync.
+  /// Otherwise it is added to the cache and to the server.
+  Future<Trip> createTrip(Trip trip, {bool? online}) async {
+    // add to cache
+    Box tripBox = Hive.box(Trip.boxName);
+    Box createTripBox = Hive.box(CreateTrip.boxName);
+    await tripBox.put(trip.id, trip.toJson());
+    await createTripBox.put(trip.id, trip.toJson());
+    if (online == null || !online) return trip;
+    // try to upload and update cache if successful
+    Map data = trip.toJson();
+    Trip? uploadedTrip = await uploadTrip(data);
+    if (uploadedTrip == null) return trip;
+    await tripBox.put(trip.id, trip.toJson());
+    await createTripBox.delete(trip.id);
+    return uploadedTrip;
   }
 
-  Future<Trip?> editTrip(UpdateTrip trip, bool online) async {
+  /// Edit a trip in cache and optionally on the server.
+  /// If the parameter [online] is null or false the trips are edited only in the cache and later on the server at the next sync.
+  /// Otherwise they are edited in cache and on the server immediately.
+  Future<Trip> editTrip(UpdateTrip updateTrip, {bool? online}) async {
+    // add to cache
+    Box tripBox = Hive.box(Trip.boxName);
+    Box updateTripBox = Hive.box(UpdateTrip.boxName);
+    Trip oldTrip = Trip.fromCache(tripBox.get(updateTrip.id));
+    Trip tmpTrip = updateTrip.toTrip(oldTrip);
+    await tripBox.put(updateTrip.id, tmpTrip.toJson());
+    await updateTripBox.put(updateTrip.id, tmpTrip.toJson());
+    if (online == null || !online) return tmpTrip;
+    // try to upload and update cache if successful
     try {
-      if (online) {
-        final Response response = await netWorkLocator.dio.put('$climbingApiHost/trip/${trip.id}', data: trip.toJson());
-        if (response.statusCode != 200) throw Exception('Failed to edit trip');
-        return Trip.fromJson(response.data);
-      }
-      Box box = Hive.box(UpdateTrip.boxName);
-      Map tripJson = trip.toJson();
-      if (!box.containsKey(trip.hashCode)) box.put(trip.hashCode, tripJson);
+      final Response response = await netWorkLocator.dio.put('$climbingApiHost/trip/${updateTrip.id}', data: updateTrip.toJson());
+      if (response.statusCode != 200) throw Exception('Failed to edit trip');
+      Trip trip = Trip.fromJson(response.data);
+      await tripBox.put(updateTrip.id, trip.toJson());
+      await updateTripBox.delete(updateTrip.id);
+      return trip;
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // offline
-        }
-      }
+      ErrorService.handleConnectionErrors(e);
     }
-    return null;
+    return tmpTrip;
   }
 
-  Future<void> deleteTrip(Trip trip) async {
+  /// Delete a trip and its media in cache and optionally on the server.
+  /// If the parameter [online] is null or false the trips are deleted only from the cache and later from the server at the next sync.
+  /// Otherwise they are deleted from cache and from the server immediately.
+  Future<void> deleteTrip(Trip trip, {bool? online}) async {
+    Box tripBox = Hive.box(Trip.boxName);
+    Box deleteTripBox = Hive.box(Trip.deleteBoxName);
+    await tripBox.delete(trip.id);
+    await deleteTripBox.put(trip.id, trip.toJson());
+    // remove from create queue (if no sync since)
+    Box createTripBox = Hive.box(Trip.createBoxName);
+    await createTripBox.delete(trip.id);
+    // delete media of trip locally (deleted automatically on the server when trip is deleted)
+    Box mediaBox = Hive.box(Media.boxName);
+    for (String mediaId in trip.mediaIds){
+      await mediaBox.delete(mediaId);
+    }
+    if (online == null || !online) return;
     try {
-      for (var id in trip.mediaIds) {
-        final Response mediaResponse =
-        await netWorkLocator.dio.delete('$mediaApiHost/media/$id');
-        if (mediaResponse.statusCode != 204) {
-          throw Exception('Failed to delete medium');
-        }
-      }
-
-      final Response tripResponse =
-      await netWorkLocator.dio.delete('$climbingApiHost/trip/${trip.id}');
-      if (tripResponse.statusCode != 200) {
-        throw Exception('Failed to delete trip');
-      }
-      MyNotifications.showPositiveNotification('Trip was deleted: ${tripResponse.data['name']}');
-      // TODO deleteTripFromDeleteQueue(trip.toJson().hashCode);
-      return tripResponse.data;
+      // delete trip
+      final Response tripResponse = await netWorkLocator.dio.delete('$climbingApiHost/trip/${trip.id}');
+      if (tripResponse.statusCode != 200) throw Exception('Failed to delete trip');
+      await deleteTripBox.delete(trip.id);
+      MyNotifications.showPositiveNotification('Trip was deleted: ${trip.name}');
     } catch (e) {
-      if (e is DioError) {
-        if (e.error.toString().contains('OS Error: No address associated with hostname, errno = 7')){
-          // offline
-        }
-      }
-    } finally {
-      // TODO deleteTripFromCache(trip.id);
+      ErrorService.handleConnectionErrors(e);
     }
   }
 
+  /// Upload trip to the server.
   Future<Trip?> uploadTrip(Map data) async {
     try {
       final Response response = await netWorkLocator.dio.post('$climbingApiHost/trip', data: data);
@@ -170,6 +153,8 @@ class TripService {
           switch (response.statusCode) {
             case 409:
               MyNotifications.showNegativeNotification('This trip already exists!');
+              Box createTripBox = Hive.box(CreateTrip.boxName);
+              await createTripBox.delete(data['_id']);
               break;
             default:
               throw Exception('Failed to create trip');

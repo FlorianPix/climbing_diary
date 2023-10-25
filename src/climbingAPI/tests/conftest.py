@@ -49,37 +49,84 @@ def empty_db(headers):
 @pytest.fixture()
 def a_create_trip():
     yield {
-      "comment": "a comment",
-      "end_date": "2022-10-08",
-      "name": "a name",
-      "start_date": "2022-10-06",
-      "rating": 5
+        "_id": "410bb603-ef0c-41cc-a1af-000000000001",
+        "updated": "2022-10-06T20:13:16.816000",
+        "user_id": "",
+        "comment": "a comment",
+        "end_date": "2022-10-08",
+        "name": "a name",
+        "start_date": "2022-10-06",
+        "rating": 5
     }
 
 
 @pytest.fixture()
 def a_update_trip():
     yield {
-      "media_ids": [],
-      "spot_ids": [],
-      "comment": "a comment",
-      "end_date": "2022-10-08",
-      "name": "a name",
-      "start_date": "2022-10-06",
-      "rating": 5
+        "media_ids": [],
+        "spot_ids": [],
+        "comment": "a comment",
+        "end_date": "2022-10-08",
+        "name": "a name",
+        "start_date": "2022-10-06",
+        "rating": 5
     }
 
 
 @pytest.fixture()
 def a_create_spot():
     yield {
-      "comment": "a comment",
-      "coordinates": [50.746036, 10.642666],
-      "distance_parking": 120,
-      "distance_public_transport": 120,
-      "location": "a location",
-      "name": "a name",
-      "rating": 5
+        "_id": "410bb603-ef0c-41cc-a1af-100000000001",
+        "updated": "2022-10-06T20:13:16.816000",
+        "media_ids": [],
+        "single_pitch_route_ids": [],
+        "multi_pitch_route_ids": [],
+        "user_id": "",
+        "comment": "a comment",
+        "coordinates": [50.746036, 10.642666],
+        "distance_parking": 120,
+        "distance_public_transport": 120,
+        "location": "a location",
+        "name": "a name",
+        "rating": 5
+    }
+
+
+@pytest.fixture()
+def a_create_spot2():
+    yield {
+        "_id": "410bb603-ef0c-41cc-a1af-100000000002",
+        "updated": "2022-10-06T20:13:16.816000",
+        "media_ids": [],
+        "single_pitch_route_ids": [],
+        "multi_pitch_route_ids": [],
+        "user_id": "",
+        "comment": "a comment",
+        "coordinates": [50.746036, 10.642666],
+        "distance_parking": 120,
+        "distance_public_transport": 120,
+        "location": "a location",
+        "name": "a name",
+        "rating": 5
+    }
+
+
+@pytest.fixture()
+def a_create_spot3():
+    yield {
+        "_id": "410bb603-ef0c-41cc-a1af-100000000003",
+        "updated": "2022-10-06T20:13:16.816000",
+        "media_ids": [],
+        "single_pitch_route_ids": [],
+        "multi_pitch_route_ids": [],
+        "user_id": "",
+        "comment": "a comment",
+        "coordinates": [51.746036, 11.642666],
+        "distance_parking": 120,
+        "distance_public_transport": 120,
+        "location": "a location",
+        "name": "a name",
+        "rating": 5
     }
 
 
@@ -99,10 +146,13 @@ def a_update_spot():
 @pytest.fixture()
 def a_create_multi_pitch_route():
     yield {
-      "comment": "a comment",
-      "location": "a location",
-      "name": "a name",
-      "rating": 5
+        "_id": "410bb603-ef0c-41cc-a1af-200000000001",
+        "updated": "2022-10-06T20:13:16.816000",
+        "user_id": "",
+        "comment": "a comment",
+        "location": "a location",
+        "name": "a name",
+        "rating": 5
     }
 
 
@@ -119,12 +169,15 @@ def a_update_multi_pitch_route():
 @pytest.fixture()
 def a_create_single_pitch_route():
     yield {
-      "comment": "a comment",
-      "location": "a location",
-      "name": "a name",
-      "rating": 5,
-      "grade": {"grade": "5a", "system": 3},
-      "length": 40
+        "_id": "410bb603-ef0c-41cc-a1af-300000000001",
+        "updated": "2022-10-06T20:13:16.816000",
+        "user_id": "",
+        "comment": "a comment",
+        "location": "a location",
+        "name": "a name",
+        "rating": 5,
+        "grade": {"grade": "5a", "system": 3},
+        "length": 40
     }
 
 
@@ -141,26 +194,32 @@ def a_update_single_pitch_route():
 
 
 @pytest.fixture()
-def a_create_pitch_1():
+def a_create_pitch():
     yield {
-      "comment": "Top Pitch",
-      "grade": {"grade": "6a", "system": 3},
-      "length": 35,
-      "name": "Pitch 1",
-      "num": 1,
-      "rating": 5
+        "_id": "410bb603-ef0c-41cc-a1af-400000000001",
+        "updated": "2022-10-06T20:13:16.816000",
+        "user_id": "",
+        "comment": "Top Pitch",
+        "grade": {"grade": "6a", "system": 3},
+        "length": 35,
+        "name": "Pitch 1",
+        "num": 1,
+        "rating": 5
     }
 
 
 @pytest.fixture()
 def a_create_pitch_2():
     yield {
-      "comment": "Great Pitch",
-      "grade": {"grade": "5a", "system": 3},
-      "length": 21,
-      "name": "Pitch 2",
-      "num": 2,
-      "rating": 4
+        "_id": "410bb603-ef0c-41cc-a1af-400000000002",
+        "updated": "2022-10-06T20:13:16.816000",
+        "user_id": "",
+        "comment": "Great Pitch",
+        "grade": {"grade": "5a", "system": 3},
+        "length": 21,
+        "name": "Pitch 2",
+        "num": 2,
+        "rating": 4
     }
 
 
@@ -179,10 +238,26 @@ def a_update_pitch():
 @pytest.fixture()
 def a_create_ascent():
     yield {
-      "comment": "a comment",
-      "date": "2022-10-06",
-      "style": 0,
-      "type": 3
+        "_id": "410bb603-ef0c-41cc-a1af-500000000001",
+        "updated": "2022-10-06T20:13:16.816000",
+        "user_id": "",
+        "comment": "a comment",
+        "date": "2022-10-06",
+        "style": 0,
+        "type": 3
+    }
+
+
+@pytest.fixture()
+def a_create_ascent2():
+    yield {
+        "_id": "410bb603-ef0c-41cc-a1af-500000000002",
+        "updated": "2022-10-06T20:13:16.816000",
+        "user_id": "",
+        "comment": "a comment",
+        "date": "2022-10-06",
+        "style": 0,
+        "type": 3
     }
 
 

@@ -18,13 +18,19 @@ def test_create_single_pitch_route(headers, a_create_spot, a_create_single_pitch
     single_pitch_route_id = data['_id']
     # Then the response contains the created single pitch route
     data = json.loads(response.text)
-    for key in a_create_single_pitch_route.keys():
+    keys = list(a_create_single_pitch_route.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
         assert data[key] == a_create_single_pitch_route[key]
     # Then the created single pitch route can be retrieved with a get request
     response = requests.get(single_pitch_route_url + f"/{single_pitch_route_id}", headers=headers)
     assert response.status_code == 200
     data = json.loads(response.text)
-    for key in a_create_single_pitch_route.keys():
+    keys = list(a_create_single_pitch_route.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
         assert data[key] == a_create_single_pitch_route[key]
 
 
@@ -40,7 +46,10 @@ def test_retrieve_single_pitch_route(headers, a_create_spot, a_create_single_pit
     data = json.loads(response.text)
     single_pitch_route_id = data['_id']
     data = json.loads(response.text)
-    for key in a_create_single_pitch_route.keys():
+    keys = list(a_create_single_pitch_route.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
         assert data[key] == a_create_single_pitch_route[key]
     # Given a db with a spot, authentication and a 'CreateSinglePitchRoute'
     # When a get request is sent to /single_pitch_route/{single_pitch_route_id}
@@ -50,7 +59,10 @@ def test_retrieve_single_pitch_route(headers, a_create_spot, a_create_single_pit
     data = json.loads(response.text)
     # Then the response is the single pitch route with the specified id
     assert single_pitch_route_id == data['_id']
-    for key in a_create_single_pitch_route.keys():
+    keys = list(a_create_single_pitch_route.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
         assert data[key] == a_create_single_pitch_route[key]
 
 
@@ -94,7 +106,10 @@ def test_retrieve_single_pitch_routes(headers, a_create_spot, a_create_single_pi
     # Then the response is a list with one single pitch route
     assert len(data) == 1
     assert single_pitch_route_id == data[0]['_id']
-    for key in a_create_single_pitch_route.keys():
+    keys = list(a_create_single_pitch_route.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
         assert data[0][key] == a_create_single_pitch_route[key]
 
 

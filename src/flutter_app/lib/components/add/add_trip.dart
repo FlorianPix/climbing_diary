@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../interfaces/trip/create_trip.dart';
 import '../../interfaces/trip/trip.dart';
@@ -107,15 +108,20 @@ class _AddTripState extends State<AddTrip>{
           onPressed: () async {
             bool result = await InternetConnectionChecker().hasConnection;
             if (_formKey.currentState!.validate()) {
-              CreateTrip trip = CreateTrip(
+              Trip trip = Trip(
                 name: controllerName.text,
                 endDate: controllerEndDate.text,
                 rating: currentSliderValue.toInt(),
                 comment: controllerComment.text,
                 startDate: controllerStartDate.text,
+                id: const Uuid().v4(),
+                updated: DateTime.now().toIso8601String(),
+                mediaIds: [],
+                spotIds: [],
+                userId: '',
               );
-              Trip? createdTrip = await tripService.createTrip(trip, result);
-              if (createdTrip != null) widget.onAdd.call(createdTrip);
+              Trip createdTrip = await tripService.createTrip(trip);
+              widget.onAdd.call(createdTrip);
               setState(() => Navigator.popUntil(context, ModalRoute.withName('/')));
             }
           },

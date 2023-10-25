@@ -7,11 +7,23 @@ from app.core.db import get_db
 from app.core.auth import auth
 
 router = APIRouter()
-collection_names = ["trip", "spot", "single_pitch_route", "multi_pitch_route", "pitch", "ascent"]
+collection_names = ["trip", "spot", "single_pitch_route", "multi_pitch_route", "pitch", "ascent", "medium"]
 
 
-@router.delete('/migrate', description="Migrate db from v0.0.4-alpha to v0.1.0-alpha", dependencies=[Depends(auth.implicit_scheme)])
-async def migrate_all(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+@router.delete('/migrate-object-id-to-str', description="Convert all object ids to str", dependencies=[Depends(auth.implicit_scheme)])
+async def migrate_objectId_to_str(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    db = await get_db()
+    for collection_name in collection_names:
+        things = await db[collection_name].find({"user_id": user.id}).to_list(None)
+        for thing in things:
+            oldId = thing['_id']
+            thing['_id'] = str(oldId)
+            await db[collection_name].delete_one({"_id": oldId})
+            await db[collection_name].insert_one(thing)
+
+
+@router.delete('/migrate-add-updated', description="Add updated field to all entries", dependencies=[Depends(auth.implicit_scheme)])
+async def migrate_add_updated(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     for collection_name in collection_names:
         await db[collection_name].update_many({"user_id": user.id}, {"$set": {"updated": datetime.datetime.now()}})
@@ -53,3 +65,9 @@ async def delete_pitches(user: Auth0User = Security(auth.get_user, scopes=["writ
 async def delete_ascents(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     delete_result = await db["ascent"].delete_many({"user_id": user.id})
+
+
+@router.delete('/media', description="Delete all media from all users", dependencies=[Depends(auth.implicit_scheme)])
+async def delete_media(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    db = await get_db()
+    delete_result = await db["medium"].delete_many({"user_id": user.id})

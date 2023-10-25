@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../components/add/add_spot.dart';
-import 'spot_details.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-
-import '../../interfaces/spot/spot.dart';
-import '../../services/spot_service.dart';
+import 'package:climbing_diary/components/common/my_colors.dart';
+import 'package:climbing_diary/components/add/add_spot.dart';
+import 'package:climbing_diary/pages/map_page/spot_details.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/services/spot_service.dart';
 
 class MapPageOnline extends StatefulWidget {
   const MapPageOnline({super.key, required this.onNetworkChange});
@@ -29,10 +29,10 @@ class _MapPageOnlineState extends State<MapPageOnline> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Spot>>(
-      future: spotService.getSpotsByName(controllerSearch.text, true),
+      future: spotService.getSpotsByName(controllerSearch.text),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<Spot> spots = snapshot.data!;
 
         void addSpotCallback(Spot spot) {
@@ -50,7 +50,7 @@ class _MapPageOnlineState extends State<MapPageOnline> {
           setState(() {});
         }
 
-        deleteSpotCallback(Spot spot) {
+        void deleteSpotCallback(Spot spot) {
           spots.remove(spot);
           setState(() {});
         }
@@ -81,7 +81,7 @@ class _MapPageOnlineState extends State<MapPageOnline> {
 
         List<Widget> flutterMapLayers = [TileLayer(
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.climbing_diary',
+          userAgentPackageName: 'de.florian_pix.climbing_diary',
         )];
 
         if (spots.isNotEmpty) {
@@ -114,9 +114,9 @@ class _MapPageOnlineState extends State<MapPageOnline> {
                 onNetworkChange: widget.onNetworkChange
               ),
             )),
-            backgroundColor: Colors.green,
+            backgroundColor: MyColors.inverse[900],
             elevation: 5,
-            child: const Icon(Icons.add, size: 50.0, color: Colors.white),
+            child: const Icon(Icons.add_rounded, size: 50.0, color: Colors.white),
           )
         );
       }

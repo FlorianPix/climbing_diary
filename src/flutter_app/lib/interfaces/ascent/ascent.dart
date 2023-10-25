@@ -3,6 +3,7 @@ import 'package:climbing_diary/interfaces/my_base_interface/my_base_interface.da
 
 class Ascent extends MyBaseInterface {
   static const String boxName = 'ascents';
+  static const String createBoxName = 'create_ascents';
   static const String deleteBoxName = 'delete_ascents';
 
   final String comment;
@@ -69,5 +70,28 @@ class Ascent extends MyBaseInterface {
       style: style,
       type: type,
     );
+  }
+
+  @override
+  int get hashCode {
+    int mediaIdsHashCode = 0;
+    for (String mediaId in mediaIds) {
+      if (mediaIdsHashCode == 0) {
+        mediaIdsHashCode = mediaId.hashCode;
+      } else {
+        mediaIdsHashCode = mediaIdsHashCode ^ mediaId.hashCode;
+      }
+    }
+    return
+      mediaIdsHashCode ^
+      comment.hashCode ^
+      date.hashCode ^
+      style.hashCode ^
+      type.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
   }
 }

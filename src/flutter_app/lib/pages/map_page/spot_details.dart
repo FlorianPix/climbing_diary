@@ -1,19 +1,21 @@
-import 'package:climbing_diary/components/grade_distribution.dart';
-import 'package:climbing_diary/components/my_text_styles.dart';
-import 'package:climbing_diary/components/transport.dart';
+import 'package:climbing_diary/components/common/grade_distribution.dart';
+import 'package:climbing_diary/components/common/my_text_styles.dart';
+import 'package:climbing_diary/components/common/transport.dart';
 import 'package:climbing_diary/interfaces/spot/update_spot.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../components/add/add_image.dart';
-import '../../components/comment.dart';
-import '../../components/image_list_view_add.dart';
-import '../../components/my_button_styles.dart';
-import '../../components/add/add_route.dart';
-import '../../components/edit/edit_spot.dart';
-import '../../components/rating.dart';
+import 'package:climbing_diary/components/add/add_image.dart';
+import 'package:climbing_diary/components/common/comment.dart';
+import 'package:climbing_diary/components/common/image_list_view_add.dart';
+import 'package:climbing_diary/components/common/my_button_styles.dart';
+import 'package:climbing_diary/components/add/add_route.dart';
+import 'package:climbing_diary/components/edit/edit_spot.dart';
+import 'package:climbing_diary/components/common/rating.dart';
+import 'package:uuid/uuid.dart';
+import '../../interfaces/media/media.dart';
 import '../../interfaces/spot/spot.dart';
 import '../../interfaces/trip/trip.dart';
 import '../../services/media_service.dart';
@@ -40,20 +42,34 @@ class _SpotDetailsState extends State<SpotDetails>{
 
   Future<void> getImage(ImageSource media) async {
     if (media == ImageSource.camera) {
-      var img = await picker.pickImage(source: media);
-      if (img != null) {
-        var mediaId = await mediaService.uploadMedia(img);
+      XFile? file = await picker.pickImage(source: media);
+      if (file != null) {
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Spot spot = widget.spot;
         spot.mediaIds.add(mediaId);
-        spotService.editSpot(spot.toUpdateSpot());
+        await spotService.editSpot(spot.toUpdateSpot());
       }
     } else {
-      List<XFile> images = await picker.pickMultiImage();
-      for (XFile img in images){
-        var mediaId = await mediaService.uploadMedia(img);
+      List<XFile> files = await picker.pickMultiImage();
+      for (XFile file in files){
+        Media medium = Media(
+          id: const Uuid().v4(),
+          userId: '',
+          title: file.name,
+          createdAt: DateTime.now().toIso8601String(),
+          image: await file.readAsBytes(),
+        );
+        var mediaId = await mediaService.createMedium(medium);
         Spot spot = widget.spot;
         spot.mediaIds.add(mediaId);
-        spotService.editSpot(spot.toUpdateSpot());
+        await spotService.editSpot(spot.toUpdateSpot());
       }
     }
     setState(() {});
@@ -104,9 +120,9 @@ class _SpotDetailsState extends State<SpotDetails>{
     }
     if (widget.spot.comment.isNotEmpty) elements.add(Comment(comment: widget.spot.comment));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.spot.mediaIds.remove(mediumId);
-      spotService.editSpot(UpdateSpot(
+      await spotService.editSpot(UpdateSpot(
         id: widget.spot.id,
         mediaIds: widget.spot.mediaIds
       ));
@@ -139,12 +155,16 @@ class _SpotDetailsState extends State<SpotDetails>{
           builder: (context) => AddRoute(
             spot: widget.spot,
             onAddMultiPitchRoute: (route) {
-              widget.spot.multiPitchRouteIds.add(route.id);
-              setState(() {});
+              if (!widget.spot.multiPitchRouteIds.contains(route.id)){
+                widget.spot.multiPitchRouteIds.add(route.id);
+                setState(() {});
+              }
             },
             onAddSinglePitchRoute: (route) {
-              widget.spot.singlePitchRouteIds.add(route.id);
-              setState(() {});
+              if (!widget.spot.singlePitchRouteIds.contains(route.id)){
+                widget.spot.singlePitchRouteIds.add(route.id);
+                setState(() {});
+              }
             },
           ),
         )
@@ -155,9 +175,9 @@ class _SpotDetailsState extends State<SpotDetails>{
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
-            spotService.deleteSpot(widget.spot);
+            await spotService.deleteSpot(widget.spot);
             widget.onDelete.call(widget.spot);
           },
           icon: const Icon(Icons.delete),

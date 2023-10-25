@@ -2,7 +2,7 @@ import json
 import requests
 
 
-def test_create_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch_1):
+def test_create_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch):
     # create a spot
     spot_url = 'http://localhost:8000/spot'
     response = requests.post(spot_url, json=a_create_spot, headers=headers)
@@ -16,18 +16,21 @@ def test_create_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_crea
     # Given a db with a spot and its multi_pitch_route, authentication and a 'CreatePitch'
     # When a post request with a 'CreatePitch' is sent to /pitch/route/{route_id}
     pitch_url = 'http://localhost:8000/pitch'
-    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch_1, headers=headers)
+    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch, headers=headers)
     data = json.loads(response.text)
     pitch_id = data['_id']
     # Then the response status code is '201 Created'
     assert response.status_code == 201
     # Then the response contains the created pitch
     data = json.loads(response.text)
-    for key in a_create_pitch_1.keys():
-        assert data[key] == a_create_pitch_1[key]
+    keys = list(a_create_pitch.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
+        assert data[key] == a_create_pitch[key]
 
 
-def test_retrieve_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch_1):
+def test_retrieve_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch):
     # create a spot
     spot_url = 'http://localhost:8000/spot'
     response = requests.post(spot_url, json=a_create_spot, headers=headers)
@@ -40,7 +43,7 @@ def test_retrieve_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_cr
     multi_pitch_route_id = data['_id']
     # create a pitch
     pitch_url = 'http://localhost:8000/pitch'
-    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch_1, headers=headers)
+    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch, headers=headers)
     data = json.loads(response.text)
     pitch_id = data['_id']
     # Given a db with a spot and its multi_pitch_route + pitch and authentication
@@ -51,8 +54,11 @@ def test_retrieve_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_cr
     # Then the response is the pitch with that id
     data = json.loads(response.text)
     assert data['_id'] == pitch_id
-    for key in a_create_pitch_1.keys():
-        assert data[key] == a_create_pitch_1[key]
+    keys = list(a_create_pitch.keys())
+    keys.remove("updated")
+    keys.remove("user_id")
+    for key in keys:
+        assert data[key] == a_create_pitch[key]
 
 
 def test_retrieve_pitch_non_existent_id(headers):
@@ -76,7 +82,7 @@ def test_retrieve_pitches_empty(headers):
     assert data == []
 
 
-def test_retrieve_pitches(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch_1):
+def test_retrieve_pitches(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch):
     # create a spot
     spot_url = 'http://localhost:8000/spot'
     response = requests.post(spot_url, json=a_create_spot, headers=headers)
@@ -90,12 +96,12 @@ def test_retrieve_pitches(headers, a_create_spot, a_create_multi_pitch_route, a_
     multi_pitch_route_id = data['_id']
     # create a pitch
     pitch_url = 'http://localhost:8000/pitch'
-    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch_1, headers=headers)
+    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch, headers=headers)
     data = json.loads(response.text)
     pitch_id = data['_id']
 
 
-def test_update_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch_1, a_update_pitch):
+def test_update_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch, a_update_pitch):
     # create a spot
     spot_url = 'http://localhost:8000/spot'
     response = requests.post(spot_url, json=a_create_spot, headers=headers)
@@ -108,7 +114,7 @@ def test_update_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_crea
     multi_pitch_route_id = data['_id']
     # create a pitch
     pitch_url = 'http://localhost:8000/pitch'
-    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch_1, headers=headers)
+    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch, headers=headers)
     data = json.loads(response.text)
     pitch_id = data['_id']
     # Given a db with a spot and its multi_pitch_route + pitch and authentication
@@ -121,7 +127,7 @@ def test_update_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_crea
         assert data[key] == a_update_pitch[key]
 
 
-def test_delete_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch_1, a_create_ascent):
+def test_delete_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch, a_create_ascent):
     # create a spot
     spot_url = 'http://localhost:8000/spot'
     response = requests.post(spot_url, json=a_create_spot, headers=headers)
@@ -134,7 +140,7 @@ def test_delete_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_crea
     multi_pitch_route_id = data['_id']
     # create a pitch
     pitch_url = 'http://localhost:8000/pitch'
-    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch_1, headers=headers)
+    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch, headers=headers)
     data = json.loads(response.text)
     pitch_id = data['_id']
     # Given a db with a spot and its multi_pitch_route + pitch and authentication
@@ -147,7 +153,7 @@ def test_delete_pitch(headers, a_create_spot, a_create_multi_pitch_route, a_crea
     assert response.status_code == 404
 
 
-def test_delete_pitch_and_id_from_multi_pitch_route(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch_1):
+def test_delete_pitch_and_id_from_multi_pitch_route(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch):
     # create a spot
     spot_url = 'http://localhost:8000/spot'
     response = requests.post(spot_url, json=a_create_spot, headers=headers)
@@ -160,7 +166,7 @@ def test_delete_pitch_and_id_from_multi_pitch_route(headers, a_create_spot, a_cr
     multi_pitch_route_id = data['_id']
     # create a pitch
     pitch_url = 'http://localhost:8000/pitch'
-    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch_1, headers=headers)
+    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch, headers=headers)
     data = json.loads(response.text)
     pitch_id = data['_id']
     # Given a db with a spot and its multi_pitch_route + pitch and authentication
@@ -177,7 +183,7 @@ def test_delete_pitch_and_id_from_multi_pitch_route(headers, a_create_spot, a_cr
     assert data['pitch_ids'] == []
 
 
-def test_delete_pitch_and_its_ascents(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch_1, a_create_ascent):
+def test_delete_pitch_and_its_ascents(headers, a_create_spot, a_create_multi_pitch_route, a_create_pitch, a_create_ascent):
     # create a spot
     spot_url = 'http://localhost:8000/spot'
     response = requests.post(spot_url, json=a_create_spot, headers=headers)
@@ -190,7 +196,7 @@ def test_delete_pitch_and_its_ascents(headers, a_create_spot, a_create_multi_pit
     multi_pitch_route_id = data['_id']
     # create a pitch
     pitch_url = 'http://localhost:8000/pitch'
-    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch_1, headers=headers)
+    response = requests.post(pitch_url + f"/route/{multi_pitch_route_id}", json=a_create_pitch, headers=headers)
     data = json.loads(response.text)
     pitch_id = data['_id']
     # create an ascent

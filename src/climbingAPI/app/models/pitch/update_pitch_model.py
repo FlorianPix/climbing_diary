@@ -1,15 +1,11 @@
-from datetime import date
 from pydantic import BaseModel
-from bson import ObjectId
 from typing import Optional
-
 from ..grade import Grade
 
 
 class UpdatePitchModel(BaseModel):
     ascent_ids: Optional[tuple]
     media_ids: Optional[tuple]
-
     comment: Optional[str]
     grade: Optional[Grade]
     length: Optional[int]
@@ -19,7 +15,6 @@ class UpdatePitchModel(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
                 "ascent_ids": [],

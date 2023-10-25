@@ -1,24 +1,23 @@
+import 'package:flutter/material.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:timelines/timelines.dart';
 import 'package:climbing_diary/interfaces/multi_pitch_route/multi_pitch_route.dart';
 import 'package:climbing_diary/interfaces/single_pitch_route/single_pitch_route.dart';
 import 'package:climbing_diary/pages/diary_page/timeline/my_timeline_theme_data.dart';
 import 'package:climbing_diary/pages/diary_page/timeline/pitch_timeline.dart';
-import 'package:flutter/material.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
-import 'package:timelines/timelines.dart';
-
-import '../../../components/detail/multi_pitch_route_details.dart';
-import '../../../components/detail/single_pitch_route_details.dart';
-import '../../../components/image_list_view.dart';
-import '../../../components/info/multi_pitch_route_info.dart';
-import '../../../components/info/route_info.dart';
-import '../../../components/info/single_pitch_route_info.dart';
-import '../../../components/rating.dart';
-import '../../../interfaces/spot/spot.dart';
-import '../../../interfaces/trip/trip.dart';
-import '../../../services/multi_pitch_route_service.dart';
-import '../../../services/pitch_service.dart';
-import '../../../services/single_pitch_route_service.dart';
-import 'ascent_timeline.dart';
+import 'package:climbing_diary/components/detail/multi_pitch_route_details.dart';
+import 'package:climbing_diary/components/detail/single_pitch_route_details.dart';
+import 'package:climbing_diary/components/common/image_list_view.dart';
+import 'package:climbing_diary/components/info/multi_pitch_route_info.dart';
+import 'package:climbing_diary/components/info/route_info.dart';
+import 'package:climbing_diary/components/info/single_pitch_route_info.dart';
+import 'package:climbing_diary/components/common/rating.dart';
+import 'package:climbing_diary/interfaces/spot/spot.dart';
+import 'package:climbing_diary/interfaces/trip/trip.dart';
+import 'package:climbing_diary/services/multi_pitch_route_service.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
+import 'package:climbing_diary/services/single_pitch_route_service.dart';
+import 'package:climbing_diary/pages/diary_page/timeline/ascent_timeline.dart';
 
 class RouteTimeline extends StatefulWidget {
   const RouteTimeline({super.key, this.trip, required this.spot, required this.singlePitchRouteIds, required this.multiPitchRouteIds, required this.startDate, required this.endDate, required this.onNetworkChange});
@@ -58,16 +57,16 @@ class RouteTimelineState extends State<RouteTimeline> {
     List<String> singlePitchRouteIds = widget.singlePitchRouteIds;
     List<String> multiPitchRouteIds = widget.multiPitchRouteIds;
     return FutureBuilder<List<MultiPitchRoute?>>(
-      future: Future.wait(multiPitchRouteIds.map((routeId) => multiPitchRouteService.getMultiPitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate, online))),
+      future: Future.wait(multiPitchRouteIds.map((routeId) => multiPitchRouteService.getMultiPitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate))),
       builder: (context, snapshot) {
         if (snapshot.hasError) return Text(snapshot.error.toString());
-        if (!snapshot.hasData) return const CircularProgressIndicator();
+        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         List<MultiPitchRoute> multiPitchRoutes = snapshot.data!.whereType<MultiPitchRoute>().toList();
         return FutureBuilder<List<SinglePitchRoute?>>(
-          future: Future.wait(singlePitchRouteIds.map((routeId) => singlePitchRouteService.getSinglePitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate, online))),
+          future: Future.wait(singlePitchRouteIds.map((routeId) => singlePitchRouteService.getSinglePitchRouteIfWithinDateRange(routeId, widget.startDate, widget.endDate))),
           builder: (context, snapshot) {
             if (snapshot.hasError) return Text(snapshot.error.toString());
-            if (!snapshot.hasData) return const CircularProgressIndicator();
+            if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
             List<SinglePitchRoute> singlePitchRoutes = snapshot.data!.whereType<SinglePitchRoute>().toList();
 
             void updateMultiPitchRouteCallback(MultiPitchRoute route) {

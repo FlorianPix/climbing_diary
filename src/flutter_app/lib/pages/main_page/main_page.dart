@@ -1,0 +1,112 @@
+import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:flutter/material.dart';
+import 'package:climbing_diary/services/ascent_service.dart';
+import 'package:climbing_diary/services/cache_service.dart';
+import 'package:climbing_diary/services/media_service.dart';
+import 'package:climbing_diary/services/multi_pitch_route_service.dart';
+import 'package:climbing_diary/services/pitch_service.dart';
+import 'package:climbing_diary/services/single_pitch_route_service.dart';
+import 'package:climbing_diary/services/spot_service.dart';
+import 'package:climbing_diary/services/trip_service.dart';
+import 'package:climbing_diary/components/common/settings.dart';
+import 'package:climbing_diary/components/common/my_notifications.dart';
+
+
+class MainPage extends StatefulWidget {
+  const MainPage({super.key, required this.title, required this.logout, required this.pages, required this.online, required this.user, required this.login});
+
+  final String title;
+  final List<Widget> pages;
+  final bool online;
+  final UserProfile? user;
+  final VoidCallback login;
+  final VoidCallback logout;
+
+  @override
+  State<StatefulWidget> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage>{
+  int pageIndex = 0;
+  bool syncing = false;
+
+  CacheService cacheService = CacheService();
+  TripService tripService = TripService();
+  SpotService spotService = SpotService();
+  MultiPitchRouteService multiPitchRouteService = MultiPitchRouteService();
+  SinglePitchRouteService singlePitchRouteService = SinglePitchRouteService();
+  PitchService pitchService = PitchService();
+  AscentService ascentService = AscentService();
+  MediaService mediaService = MediaService();
+
+  Future<void> sync() async {
+    setState(() => syncing = true);
+    await cacheService.applyChanges();
+    MyNotifications.showPositiveNotification("applied your changes");
+    await tripService.getTrips(online: widget.online);
+    MyNotifications.showPositiveNotification("synced trips");
+    await spotService.getSpots(online: widget.online);
+    MyNotifications.showPositiveNotification("synced spots");
+    await multiPitchRouteService.getMultiPitchRoutes(online: widget.online);
+    MyNotifications.showPositiveNotification("synced multi pitch routes");
+    await singlePitchRouteService.getSinglePitchRoutes(online: widget.online);
+    MyNotifications.showPositiveNotification("synced single pitch routes");
+    await pitchService.getPitches(online: widget.online);
+    MyNotifications.showPositiveNotification("synced pitches");
+    await ascentService.getAscents(online: widget.online);
+    MyNotifications.showPositiveNotification("synced ascents");
+    await mediaService.getMedia(online: widget.online);
+    MyNotifications.showPositiveNotification("synced");
+    setState(() => syncing = false);
+  }
+
+  @override
+  void initState(){
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: [
+          (widget.online && widget.user != null) ? IconButton(
+            onPressed: () async {
+              await sync();
+            },
+            icon: const Icon(Icons.refresh, color: Colors.black, size: 30.0, semanticLabel: 'sync'),
+          ) : Container(),
+          IconButton(
+            onPressed: () => showDialog(
+                context: context,
+                builder: (BuildContext context) => const Settings()
+            ),
+            icon: const Icon(Icons.settings_rounded, color: Colors.black, size: 30.0, semanticLabel: 'settings'),
+          ),
+          widget.user != null ? IconButton(
+            onPressed: () => widget.logout.call(),
+            icon: const Icon(Icons.logout_rounded, color: Colors.black, size: 30.0, semanticLabel: 'logout'),
+          ) : IconButton(
+            onPressed: () => widget.login.call(),
+            icon: const Icon(Icons.login_rounded, color: Colors.black, size: 30.0, semanticLabel: 'login'),
+          ),
+        ],
+      ),
+      body: !syncing ? widget.pages[pageIndex] : const Center(child: CircularProgressIndicator()),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: pageIndex,
+        onTap: (index) {
+          setState(() => pageIndex = index);
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Diary'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'List'),
+          BottomNavigationBarItem(icon: Icon(Icons.graphic_eq), label: 'Statistic')
+        ],
+      ),
+    );
+  }
+}
