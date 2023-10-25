@@ -18,6 +18,48 @@ async def migrate_objectId_to_str(user: Auth0User = Security(auth.get_user, scop
         for thing in things:
             oldId = thing['_id']
             thing['_id'] = str(oldId)
+            try:
+                spot_ids = []
+                for old_spot_id in thing['spot_ids']:
+                    spot_ids.append(str(old_spot_id))
+                thing['spot_ids'] = spot_ids
+            except Exception:
+                pass
+            try:
+                single_pitch_route_ids = []
+                for old_single_pitch_route_id in thing['single_pitch_route_ids']:
+                    single_pitch_route_ids.append(str(old_single_pitch_route_id))
+                thing['single_pitch_route_ids'] = single_pitch_route_ids
+            except Exception:
+                pass
+            try:
+                multi_pitch_route_ids = []
+                for old_multi_pitch_route_id in thing['multi_pitch_route_ids']:
+                    multi_pitch_route_ids.append(str(old_multi_pitch_route_id))
+                thing['multi_pitch_route_ids'] = multi_pitch_route_ids
+            except Exception:
+                pass
+            try:
+                pitch_ids = []
+                for old_pitch_id in thing['pitch_ids']:
+                    pitch_ids.append(str(old_pitch_id))
+                thing['pitch_ids'] = pitch_ids
+            except Exception:
+                pass
+            try:
+                ascent_ids = []
+                for old_ascent_id in thing['ascent_ids']:
+                    ascent_ids.append(str(old_ascent_id))
+                thing['ascent_ids'] = ascent_ids
+            except Exception:
+                pass
+            try:
+                media_ids = []
+                for old_medium_id in thing['media_ids']:
+                    media_ids.append(str(old_medium_id))
+                thing['media_ids'] = media_ids
+            except Exception:
+                pass
             await db[collection_name].delete_one({"_id": oldId})
             await db[collection_name].insert_one(thing)
 
