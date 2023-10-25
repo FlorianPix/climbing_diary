@@ -141,7 +141,7 @@ class _SettingsState extends State<Settings>{
                 child: Text("Migrate", style: MyTextStyles.title)
             ),
             ElevatedButton.icon(
-              onPressed: () {adminService.migrateMedia();},
+              onPressed: () async {await adminService.migrateMedia();},
               icon: const Icon(
                 Icons.update_rounded,
                 color: Colors.black,
@@ -149,6 +149,16 @@ class _SettingsState extends State<Settings>{
                 semanticLabel: 'migrate images',
               ),
               label: const Text("migrate images"),
+            ),
+            ElevatedButton.icon(
+              onPressed: () async {await adminService.migrateObjectIdToStr();},
+              icon: const Icon(
+                Icons.update_rounded,
+                color: Colors.black,
+                size: 30.0,
+                semanticLabel: 'migrate objectId to str',
+              ),
+              label: const Text("migrate objectId to str"),
             )
           ])),
           Card(child: Column(children: [
@@ -157,7 +167,7 @@ class _SettingsState extends State<Settings>{
               child: Text("Delete", style: MyTextStyles.title)
             ),
             ElevatedButton.icon(
-              onPressed: () {adminService.deleteAll();},
+              onPressed: () async {await adminService.deleteAll();},
               icon: const Icon(
                 Icons.delete,
                 color: Colors.black,

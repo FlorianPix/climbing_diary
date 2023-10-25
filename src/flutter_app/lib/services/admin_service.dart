@@ -31,6 +31,16 @@ class AdminService {
     }
   }
 
+  Future<void> migrateObjectIdToStr() async {
+    try {
+      final Response mediaResponse = await netWorkLocator.dio.delete('$climbingApiHost/admin/migrate-object-id-to-str');
+      if (mediaResponse.statusCode != 200) throw Exception('Failed to migrate object ids');
+      MyNotifications.showPositiveNotification('Migrated object ids to str');
+    } catch (e) {
+      ErrorService.handleConnectionErrors(e);
+    }
+  }
+
   Future<void> migrateMedia() async {
     try {
       final Response mediaResponse = await netWorkLocator.dio.get('$mediaApiHost/media');
