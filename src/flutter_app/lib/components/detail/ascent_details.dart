@@ -86,9 +86,9 @@ class _AscentDetailsState extends State<AscentDetails>{
     elements.add(AscentInfo(ascent: ascent));
     if (ascent.comment.isNotEmpty) elements.add(Comment(comment: ascent.comment));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.ascent.mediaIds.remove(mediumId);
-      ascentService.editAscent(UpdateAscent(
+      await ascentService.editAscent(UpdateAscent(
         id: widget.ascent.id,
         mediaIds: widget.ascent.mediaIds
       ));

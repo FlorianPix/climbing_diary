@@ -55,7 +55,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         var mediaId = await mediaService.createMedium(medium);
         MultiPitchRoute multiPitchRoute = widget.route;
         multiPitchRoute.mediaIds.add(mediaId);
-        multiPitchRouteService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
+        await multiPitchRouteService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
       }
     } else {
       List<XFile> files = await picker.pickMultiImage();
@@ -70,7 +70,7 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
         var mediaId = await mediaService.createMedium(medium);
         MultiPitchRoute multiPitchRoute = widget.route;
         multiPitchRoute.mediaIds.add(mediaId);
-        multiPitchRouteService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
+        await multiPitchRouteService.editMultiPitchRoute(multiPitchRoute.toUpdateMultiPitchRoute());
       }
     }
     setState(() {});
@@ -104,9 +104,9 @@ class _MultiPitchRouteDetailsState extends State<MultiPitchRouteDetails>{
     ]);
     if (route.comment.isNotEmpty) Comment(comment: route.comment);
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.route.mediaIds.remove(mediumId);
-      multiPitchRouteService.editMultiPitchRoute(UpdateMultiPitchRoute(
+      await multiPitchRouteService.editMultiPitchRoute(UpdateMultiPitchRoute(
         id: widget.route.id,
         mediaIds: widget.route.mediaIds
       ));

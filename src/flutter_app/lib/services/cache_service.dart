@@ -102,22 +102,22 @@ class CacheService{
   Future<void> applyTripChanges() async {
     // apply trip creations
     Box createTripBox = Hive.box(CreateTrip.boxName);
-    for (int i = 0; i < createTripBox.length; i++){
-      Map el = createTripBox.getAt(i);
+    while (createTripBox.length > 0){
+      Map el = createTripBox.getAt(0);
       Trip trip = Trip.fromCache(el);
       await tripService.createTrip(trip, online: true);
     }
     // apply trip edits
     Box updateTripBox = Hive.box(UpdateTrip.boxName);
-    for (int i = 0; i < updateTripBox.length; i++) {
-      Map el = updateTripBox.getAt(i);
+    while (updateTripBox.length > 0) {
+      Map el = updateTripBox.getAt(0);
       UpdateTrip trip = UpdateTrip.fromCache(el);
       await tripService.editTrip(trip, online: true);
     }
     // apply trip deletions
     Box deleteTripBox = Hive.box(Trip.deleteBoxName);
-    for (int i = 0; i < deleteTripBox.length; i++) {
-      Map el = deleteTripBox.getAt(i);
+    while(deleteTripBox.length > 0) {
+      Map el = deleteTripBox.getAt(0);
       Trip trip = Trip.fromCache(el);
       await tripService.deleteTrip(trip, online: true);
     }
@@ -126,22 +126,22 @@ class CacheService{
   Future<void> applySpotChanges() async {
     // apply spot creations
     Box createSpotBox = Hive.box(CreateSpot.boxName);
-    for (int i = 0; i < createSpotBox.length; i++){
-      Map el = createSpotBox.getAt(i);
+    while (createSpotBox.length > 0){
+      Map el = createSpotBox.getAt(0);
       Spot spot = Spot.fromCache(el);
       await spotService.createSpot(spot, online: true);
     }
     // apply spot edits
     Box updateSpotBox = Hive.box(UpdateSpot.boxName);
-    for (int i = 0; i < updateSpotBox.length; i++) {
-      Map el = updateSpotBox.getAt(i);
+    while (updateSpotBox.length > 0) {
+      Map el = updateSpotBox.getAt(0);
       UpdateSpot spot = UpdateSpot.fromCache(el);
       await spotService.editSpot(spot, online: true);
     }
     // apply spot deletions
     Box deleteSpotBox = Hive.box(Spot.deleteBoxName);
-    for (int i = 0; i < deleteSpotBox.length; i++) {
-      Map el = deleteSpotBox.getAt(i);
+    while (deleteSpotBox.length > 0) {
+      Map el = deleteSpotBox.getAt(0);
       Spot spot = Spot.fromCache(el);
       await spotService.deleteSpot(spot, online: true);
     }
@@ -150,22 +150,22 @@ class CacheService{
   Future<void> applySinglePitchRouteChanges() async {
     // apply spot creations
     Box createSinglePitchRouteBox = Hive.box(SinglePitchRoute.createBoxName);
-    for (int i = 0; i < createSinglePitchRouteBox.length; i++){
-      Map el = createSinglePitchRouteBox.getAt(i);
+    while (createSinglePitchRouteBox.length > 0){
+      Map el = createSinglePitchRouteBox.getAt(0);
       SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromCache(el);
       await singlePitchRouteService.createSinglePitchRoute(singlePitchRoute, el['spotId'], online: true);
     }
     // apply singlePitchRoute edits
     Box updateSinglePitchRouteBox = Hive.box(UpdateSinglePitchRoute.boxName);
-    for (int i = 0; i < updateSinglePitchRouteBox.length; i++) {
-      Map el = updateSinglePitchRouteBox.getAt(i);
+    while (updateSinglePitchRouteBox.length > 0) {
+      Map el = updateSinglePitchRouteBox.getAt(0);
       UpdateSinglePitchRoute singlePitchRoute = UpdateSinglePitchRoute.fromCache(el);
       await singlePitchRouteService.editSinglePitchRoute(singlePitchRoute, online: true);
     }
     // apply singlePitchRoute deletions
     Box deleteSinglePitchRouteBox = Hive.box(SinglePitchRoute.deleteBoxName);
-    for (int i = 0; i < deleteSinglePitchRouteBox.length; i++) {
-      Map el = deleteSinglePitchRouteBox.getAt(i);
+    while (deleteSinglePitchRouteBox.length > 0) {
+      Map el = deleteSinglePitchRouteBox.getAt(0);
       SinglePitchRoute singlePitchRoute = SinglePitchRoute.fromCache(el);
       await singlePitchRouteService.deleteSinglePitchRoute(singlePitchRoute, el['spotId'], online: true);
     }
@@ -174,22 +174,22 @@ class CacheService{
   Future<void> applyMultiPitchRouteChanges() async {
     // apply multiPitchRoute creations
     Box createMultiPitchRouteBox = Hive.box(CreateMultiPitchRoute.boxName);
-    for (int i = 0; i < createMultiPitchRouteBox.length; i++){
-      Map el = createMultiPitchRouteBox.getAt(i);
+    while (createMultiPitchRouteBox.length > 0){
+      Map el = createMultiPitchRouteBox.getAt(0);
       MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromCache(el);
       await multiPitchRouteService.createMultiPitchRoute(multiPitchRoute, el['spotId'], online: true);
     }
     // apply multiPitchRoute edits
     Box updateMultiPitchRouteBox = Hive.box(UpdateMultiPitchRoute.boxName);
-    for (int i = 0; i < updateMultiPitchRouteBox.length; i++) {
-      Map el = updateMultiPitchRouteBox.getAt(i);
+    while (updateMultiPitchRouteBox.length > 0) {
+      Map el = updateMultiPitchRouteBox.getAt(0);
       UpdateMultiPitchRoute multiPitchRoute = UpdateMultiPitchRoute.fromCache(el);
       await multiPitchRouteService.editMultiPitchRoute(multiPitchRoute, online: true);
     }
     // apply multiPitchRoute deletions
     Box deleteMultiPitchRouteBox = Hive.box(MultiPitchRoute.deleteBoxName);
-    for (int i = 0; i < deleteMultiPitchRouteBox.length; i++) {
-      Map el = deleteMultiPitchRouteBox.getAt(i);
+    while (deleteMultiPitchRouteBox.length > 0) {
+      Map el = deleteMultiPitchRouteBox.getAt(0);
       MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromCache(el);
       await multiPitchRouteService.deleteMultiPitchRoute(multiPitchRoute, el['spotId'], online: true);
     }
@@ -198,22 +198,22 @@ class CacheService{
   Future<void> applyPitchChanges() async {
     // apply pitch creations
     Box createPitchBox = Hive.box(CreatePitch.boxName);
-    for (int i = 0; i < createPitchBox.length; i++){
-      Map el = createPitchBox.getAt(i);
+    while (createPitchBox.length > 0){
+      Map el = createPitchBox.getAt(0);
       Pitch pitch = Pitch.fromCache(el);
       await pitchService.createPitch(pitch, el['routeId'], online: true);
     }
     // apply pitch edits
     Box updatePitchBox = Hive.box(UpdatePitch.boxName);
-    for (int i = 0; i < updatePitchBox.length; i++) {
-      Map el = updatePitchBox.getAt(i);
+    while (updatePitchBox.length > 0) {
+      Map el = updatePitchBox.getAt(0);
       UpdatePitch pitch = UpdatePitch.fromCache(el);
       await pitchService.editPitch(pitch, online: true);
     }
     // apply pitch deletions
     Box deletePitchBox = Hive.box(Pitch.deleteBoxName);
-    for (int i = 0; i < deletePitchBox.length; i++) {
-      Map el = deletePitchBox.getAt(i);
+    while (deletePitchBox.length > 0) {
+      Map el = deletePitchBox.getAt(0);
       Pitch pitch = Pitch.fromCache(el);
       await pitchService.deletePitch(pitch, el['routeId'], online: true);
     }
@@ -222,8 +222,8 @@ class CacheService{
   Future<void> applyAscentChanges() async {
     // apply ascent creations
     Box createAscentBox = Hive.box(CreateAscent.boxName);
-    for (int i = 0; i < createAscentBox.length; i++){
-      Map el = createAscentBox.getAt(i);
+    while (createAscentBox.length > 0){
+      Map el = createAscentBox.getAt(0);
       Ascent ascent = Ascent.fromCache(el);
       if (el['ofPitch']) {
         await ascentService.createAscentForPitch(ascent, el['parentId'], online: true);
@@ -233,15 +233,15 @@ class CacheService{
     }
     // apply ascent edits
     Box updateAscentBox = Hive.box(UpdateAscent.boxName);
-    for (int i = 0; i < updateAscentBox.length; i++) {
-      Map el = updateAscentBox.getAt(i);
+    while (updateAscentBox.length > 0) {
+      Map el = updateAscentBox.getAt(0);
       UpdateAscent ascent = UpdateAscent.fromCache(el);
       await ascentService.editAscent(ascent, online: true);
     }
     // apply ascent deletions
     Box deleteAscentBox = Hive.box(Ascent.deleteBoxName);
-    for (int i = 0; i < deleteAscentBox.length; i++) {
-      Map el = deleteAscentBox.getAt(i);
+    while (deleteAscentBox.length > 0) {
+      Map el = deleteAscentBox.getAt(0);
       Ascent ascent = Ascent.fromCache(el);
       if (el['ofPitch']) {
         await ascentService.deleteAscentOfPitch(ascent, el['parentId'], online: true);
@@ -254,15 +254,15 @@ class CacheService{
   Future<void> applyMediaChanges() async {
     // apply media creations
     Box createMediaBox = Hive.box(Media.createBoxName);
-    for (int i = 0; i < createMediaBox.length; i++){
-      Map el = createMediaBox.getAt(i);
+    while (createMediaBox.length > 0){
+      Map el = createMediaBox.getAt(0);
       Media medium = Media.fromCache(el);
       await mediaService.createMedium(medium, online: true);
     }
     // apply media deletions
     Box deleteMediaBox = Hive.box(Media.deleteBoxName);
-    for (int i = 0; i < deleteMediaBox.length; i++) {
-      Map el = deleteMediaBox.getAt(i);
+    while (deleteMediaBox.length > 0) {
+      Map el = deleteMediaBox.getAt(0);
       Media media = Media.fromCache(el);
       await mediaService.deleteMedium(media, online: true);
     }

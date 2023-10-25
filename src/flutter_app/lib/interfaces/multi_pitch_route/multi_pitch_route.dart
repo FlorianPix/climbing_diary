@@ -72,4 +72,36 @@ class MultiPitchRoute extends ClimbingRoute{
       rating: rating,
     );
   }
+
+  @override
+  int get hashCode {
+    int mediaIdsHashCode = 0;
+    for (String mediaId in mediaIds) {
+      if (mediaIdsHashCode == 0) {
+        mediaIdsHashCode = mediaId.hashCode;
+      } else {
+        mediaIdsHashCode = mediaIdsHashCode ^ mediaId.hashCode;
+      }
+    }
+    int pitchIdsHashCode = 0;
+    for (String pitchId in pitchIds) {
+      if (pitchIdsHashCode == 0) {
+        pitchIdsHashCode = pitchId.hashCode;
+      } else {
+        pitchIdsHashCode = pitchIdsHashCode ^ pitchId.hashCode;
+      }
+    }
+    return
+      mediaIdsHashCode ^
+      pitchIdsHashCode ^
+      comment.hashCode ^
+      location.hashCode ^
+      name.hashCode ^
+      rating.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
+  }
 }

@@ -128,9 +128,9 @@ class _TripDetailsState extends State<TripDetails>{
     if (trip.comment.isNotEmpty) elements.add(Comment(comment: trip.comment));
     elements.add(Rating(rating: trip.rating));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.trip.mediaIds.remove(mediumId);
-      tripService.editTrip(
+      await tripService.editTrip(
         UpdateTrip(
           id: widget.trip.id,
           mediaIds: widget.trip.mediaIds
@@ -188,9 +188,9 @@ class _TripDetailsState extends State<TripDetails>{
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
-            tripService.deleteTrip(trip);
+            await tripService.deleteTrip(trip);
             widget.onTripDelete.call(trip);
           },
           icon: const Icon(Icons.delete),

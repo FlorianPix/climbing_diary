@@ -71,4 +71,27 @@ class Ascent extends MyBaseInterface {
       type: type,
     );
   }
+
+  @override
+  int get hashCode {
+    int mediaIdsHashCode = 0;
+    for (String mediaId in mediaIds) {
+      if (mediaIdsHashCode == 0) {
+        mediaIdsHashCode = mediaId.hashCode;
+      } else {
+        mediaIdsHashCode = mediaIdsHashCode ^ mediaId.hashCode;
+      }
+    }
+    return
+      mediaIdsHashCode ^
+      comment.hashCode ^
+      date.hashCode ^
+      style.hashCode ^
+      type.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
+  }
 }

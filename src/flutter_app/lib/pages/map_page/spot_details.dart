@@ -120,9 +120,9 @@ class _SpotDetailsState extends State<SpotDetails>{
     }
     if (widget.spot.comment.isNotEmpty) elements.add(Comment(comment: widget.spot.comment));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.spot.mediaIds.remove(mediumId);
-      spotService.editSpot(UpdateSpot(
+      await spotService.editSpot(UpdateSpot(
         id: widget.spot.id,
         mediaIds: widget.spot.mediaIds
       ));
@@ -155,12 +155,16 @@ class _SpotDetailsState extends State<SpotDetails>{
           builder: (context) => AddRoute(
             spot: widget.spot,
             onAddMultiPitchRoute: (route) {
-              widget.spot.multiPitchRouteIds.add(route.id);
-              setState(() {});
+              if (!widget.spot.multiPitchRouteIds.contains(route.id)){
+                widget.spot.multiPitchRouteIds.add(route.id);
+                setState(() {});
+              }
             },
             onAddSinglePitchRoute: (route) {
-              widget.spot.singlePitchRouteIds.add(route.id);
-              setState(() {});
+              if (!widget.spot.singlePitchRouteIds.contains(route.id)){
+                widget.spot.singlePitchRouteIds.add(route.id);
+                setState(() {});
+              }
             },
           ),
         )

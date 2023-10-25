@@ -91,4 +91,37 @@ class Pitch extends MyBaseInterface{
       rating: rating,
     );
   }
+
+  @override
+  int get hashCode {
+    int mediaIdsHashCode = 0;
+    for (String mediaId in mediaIds) {
+      if (mediaIdsHashCode == 0) {
+        mediaIdsHashCode = mediaId.hashCode;
+      } else {
+        mediaIdsHashCode = mediaIdsHashCode ^ mediaId.hashCode;
+      }
+    }
+    int ascentIdsHashCode = 0;
+    for (String ascentId in ascentIds) {
+      if (ascentIdsHashCode == 0) {
+        ascentIdsHashCode = ascentId.hashCode;
+      } else {
+        ascentIdsHashCode = ascentIdsHashCode ^ ascentId.hashCode;
+      }
+    }
+    return
+      mediaIdsHashCode ^
+      ascentIdsHashCode ^
+      comment.hashCode ^
+      name.hashCode ^
+      num.hashCode ^
+      rating.hashCode ^
+      length.hashCode;
+  }
+
+  @override
+  bool operator ==(Object other){
+    return hashCode == other.hashCode;
+  }
 }

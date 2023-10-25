@@ -63,7 +63,7 @@ class _PitchDetailsState extends State<PitchDetails>{
         var mediaId = await mediaService.createMedium(medium);
         Pitch pitch = widget.pitch;
         pitch.mediaIds.add(mediaId);
-        pitchService.editPitch(pitch.toUpdatePitch());
+        await pitchService.editPitch(pitch.toUpdatePitch());
       }
     } else {
       List<XFile> files = await picker.pickMultiImage();
@@ -78,7 +78,7 @@ class _PitchDetailsState extends State<PitchDetails>{
         var mediaId = await mediaService.createMedium(medium);
         Pitch pitch = widget.pitch;
         pitch.mediaIds.add(mediaId);
-        pitchService.editPitch(pitch.toUpdatePitch());
+        await pitchService.editPitch(pitch.toUpdatePitch());
       }
     }
     setState(() {});
@@ -111,9 +111,9 @@ class _PitchDetailsState extends State<PitchDetails>{
     elements.add(Rating(rating: pitch.rating));
     if (pitch.comment.isNotEmpty) elements.add(Comment(comment: pitch.comment));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.pitch.mediaIds.remove(mediumId);
-      pitchService.editPitch(UpdatePitch(
+      await pitchService.editPitch(UpdatePitch(
         id: widget.pitch.id,
         mediaIds: widget.pitch.mediaIds
       ));
@@ -141,8 +141,10 @@ class _PitchDetailsState extends State<PitchDetails>{
         builder: (context) => AddAscent(
           pitch: widget.pitch,
           onAdd: (ascent) {
-            widget.pitch.ascentIds.add(ascent.id);
-            setState(() {});
+            if (!widget.pitch.ascentIds.contains(ascent.id)){
+              widget.pitch.ascentIds.add(ascent.id);
+              setState(() {});
+            }
           },
         ),
       )),
@@ -152,9 +154,9 @@ class _PitchDetailsState extends State<PitchDetails>{
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
-            pitchService.deletePitch(pitch, widget.route.id);
+            await pitchService.deletePitch(pitch, widget.route.id);
             widget.onDelete.call(pitch);
           },
           icon: const Icon(Icons.delete),

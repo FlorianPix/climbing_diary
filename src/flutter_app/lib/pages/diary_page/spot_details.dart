@@ -61,7 +61,7 @@ class _SpotDetailsState extends State<SpotDetails>{
         var mediaId = await mediaService.createMedium(medium);
         Spot spot = widget.spot;
         spot.mediaIds.add(mediaId);
-        spotService.editSpot(spot.toUpdateSpot());
+        await spotService.editSpot(spot.toUpdateSpot());
       }
     } else {
       List<XFile> files = await picker.pickMultiImage();
@@ -76,7 +76,7 @@ class _SpotDetailsState extends State<SpotDetails>{
         var mediaId = await mediaService.createMedium(medium);
         Spot spot = widget.spot;
         spot.mediaIds.add(mediaId);
-        spotService.editSpot(spot.toUpdateSpot());
+        await spotService.editSpot(spot.toUpdateSpot());
       }
     }
     setState(() {});
@@ -134,9 +134,9 @@ class _SpotDetailsState extends State<SpotDetails>{
     }
     if (widget.spot.comment.isNotEmpty) elements.add(Comment(comment: widget.spot.comment));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.spot.mediaIds.remove(mediumId);
-      spotService.editSpot(UpdateSpot(
+      await spotService.editSpot(UpdateSpot(
         id: widget.spot.id,
         mediaIds: widget.spot.mediaIds
       ));
@@ -161,9 +161,9 @@ class _SpotDetailsState extends State<SpotDetails>{
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
-            spotService.deleteSpot(widget.spot);
+            await spotService.deleteSpot(widget.spot);
             widget.onDelete.call(widget.spot);
           },
           icon: const Icon(Icons.delete),

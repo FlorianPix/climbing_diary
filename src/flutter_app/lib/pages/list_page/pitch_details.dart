@@ -52,7 +52,7 @@ class _PitchDetailsState extends State<PitchDetails>{
         var mediaId = await mediaService.createMedium(medium);
         Pitch pitch = widget.pitch;
         pitch.mediaIds.add(mediaId);
-        pitchService.editPitch(pitch.toUpdatePitch());
+        await pitchService.editPitch(pitch.toUpdatePitch());
       }
     } else {
       List<XFile> files = await picker.pickMultiImage();
@@ -67,7 +67,7 @@ class _PitchDetailsState extends State<PitchDetails>{
         var mediaId = await mediaService.createMedium(medium);
         Pitch pitch = widget.pitch;
         pitch.mediaIds.add(mediaId);
-        pitchService.editPitch(pitch.toUpdatePitch());
+        await pitchService.editPitch(pitch.toUpdatePitch());
       }
     }
     setState(() {});
@@ -97,9 +97,9 @@ class _PitchDetailsState extends State<PitchDetails>{
 
     if (pitch.comment.isNotEmpty) elements.add(Comment(comment: pitch.comment));
 
-    void deleteImageCallback(String mediumId) {
+    void deleteImageCallback(String mediumId) async {
       widget.pitch.mediaIds.remove(mediumId);
-      pitchService.editPitch(UpdatePitch(
+      await pitchService.editPitch(UpdatePitch(
         id: widget.pitch.id,
         mediaIds: widget.pitch.mediaIds
       ));

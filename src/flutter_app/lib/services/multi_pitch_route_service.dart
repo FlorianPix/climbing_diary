@@ -76,9 +76,9 @@ class MultiPitchRouteService {
     try {
       List<MultiPitchRoute> multiPitchRoutes = [];
       Box multiPitchRouteBox = Hive.box(MultiPitchRoute.boxName);
-      final Response missingMultiPitchRoutesResponse = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route');
-      if (missingMultiPitchRoutesResponse.statusCode != 200) throw Exception("Error during request of missing multiPitchRoutes");
-      await Future.forEach(missingMultiPitchRoutesResponse.data, (dynamic s) async {
+      final Response multiPitchRoutesResponse = await netWorkLocator.dio.get('$climbingApiHost/multi_pitch_route');
+      if (multiPitchRoutesResponse.statusCode != 200) throw Exception("Error during request of missing multiPitchRoutes");
+      await Future.forEach(multiPitchRoutesResponse.data, (dynamic s) async {
         MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromJson(s);
         await multiPitchRouteBox.put(multiPitchRoute.id, multiPitchRoute.toJson());
         multiPitchRoutes.add(multiPitchRoute);
