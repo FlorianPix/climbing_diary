@@ -63,6 +63,7 @@ dependencies:
   photo_view: ^0.14.0
   flutter_launcher_icons: ^0.13.1
   uuid: ^3.0.7
+  flutter_image_compress: ^2.1.0
 
 dev_dependencies:
   flutter_test:

@@ -8,6 +8,7 @@ import 'package:climbing_diary/data/sharedprefs/shared_preference_helper.dart';
 import 'package:climbing_diary/interfaces/media/media.dart';
 import 'package:climbing_diary/services/cache_service.dart';
 import 'package:climbing_diary/services/locator.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 
 class MediaService {
@@ -20,10 +21,12 @@ class MediaService {
     // add to cache
     Box mediaBox = Hive.box(Media.boxName);
     Box createMediaBox = Hive.box(Media.createBoxName);
-    await mediaBox.put(medium.id, medium.toJson());
-    await createMediaBox.put(medium.id, medium.toJson());
+    Map data = medium.toJson();
+    data['image'] = await FlutterImageCompress.compressWithList(data['image'], quality: 50);
+    await mediaBox.put(medium.id, data);
+    await createMediaBox.put(medium.id, data);
     if (online == null || !online) return medium.id;
-    Media? createdMedium = await uploadMedium(medium.toJson());
+    Media? createdMedium = await uploadMedium(data);
     if (createdMedium == null) return medium.id;
     await mediaBox.put(createdMedium.id, createdMedium.toJson());
     await createMediaBox.delete(medium.id);
@@ -47,12 +50,12 @@ class MediaService {
         media.add(medium);
       });
       // delete media that were deleted on the server
-      List<Media> cachedMedia = CacheService.getTsFromCache<Media>(Media.boxName, Media.fromCache);
-      for (Media cachedMedium in cachedMedia){
-        if (!media.contains(cachedMedium)){
-          await mediaBox.delete(cachedMedium.id);
-        }
-      }
+      // List<Media> cachedMedia = CacheService.getTsFromCache<Media>(Media.boxName, Media.fromCache);
+      // for (Media cachedMedium in cachedMedia){
+      //  if (!media.contains(cachedMedium)){
+      //    await mediaBox.delete(cachedMedium.id);
+      //  }
+      //}
       return media;
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
@@ -112,13 +115,16 @@ class MediaService {
     try {
       final Response response = await netWorkLocator.dio.post('$climbingApiHost/media', data: data);
       if (response.statusCode != 201) throw Exception('Failed to create medium');
-      MyNotifications.showPositiveNotification('Added a new image');
+      MyNotifications.showPositiveNotification('Added new image ${data['title']}');
       return Media.fromJson(response.data);
     } catch (e) {
       if (e is DioError) {
         final response = e.response;
         if (response != null) {
           switch (response.statusCode) {
+            case 500:
+              print(response);
+              break;
             case 409:
               MyNotifications.showNegativeNotification('This medium already exists!');
               Box createMediaBox = Hive.box(Media.createBoxName);
