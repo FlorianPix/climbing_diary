@@ -1,10 +1,13 @@
 import datetime
 
+import bson
 from fastapi import APIRouter, Depends, Security
 from fastapi_auth0 import Auth0User
 
-from app.core.db import get_db
+from app.core.db import get_db, get_db_client
 from app.core.auth import auth
+
+from motor.motor_asyncio import AsyncIOMotorGridFSBucket
 
 router = APIRouter()
 collection_names = ["trip", "spot", "single_pitch_route", "multi_pitch_route", "pitch", "ascent", "medium"]
@@ -71,45 +74,57 @@ async def migrate_add_updated(user: Auth0User = Security(auth.get_user, scopes=[
         await db[collection_name].update_many({"user_id": user.id}, {"$set": {"updated": datetime.datetime.now()}})
 
 
-@router.delete('/', description="Delete everything from this user", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/', description="Delete everything of this user", dependencies=[Depends(auth.implicit_scheme)])
 async def delete_all(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
+    # delete all data
     db = await get_db()
     for collection_name in collection_names:
         await db[collection_name].delete_many({"user_id": user.id})
+    # delete all media
+    client = await get_db_client()  # AsyncIOMotorClient
+    bucket = AsyncIOMotorGridFSBucket(client.get_database('fs'))  # AsyncIOMotorGridFSBucket
+    meta_media = await bucket.find().to_list(None)
+    for meta_medium in meta_media:
+        gridOut = await bucket.open_download_stream(meta_medium['_id'])  # AsyncIOMotorGridOut
+        medium = bson.decode(await gridOut.read())
+        if medium['user_id'] == user.id: await bucket.delete(medium['_id'])
 
 
-@router.delete('/trips', description="Delete all trips from all users", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/trips', description="Delete all trips of this user", dependencies=[Depends(auth.implicit_scheme)])
 async def delete_trips(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     delete_result = await db["trip"].delete_many({"user_id": user.id})
 
 
-@router.delete('/spots', description="Delete all spots from all users", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/spots', description="Delete all spots of this user", dependencies=[Depends(auth.implicit_scheme)])
 async def delete_spots(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     delete_result = await db["spot"].delete_many({"user_id": user.id})
 
 
-@router.delete('/routes', description="Delete all routes from all users", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/routes', description="Delete all routes of this user", dependencies=[Depends(auth.implicit_scheme)])
 async def delete_routes(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     delete_result = await db["single_pitch_route"].delete_many({"user_id": user.id})
     delete_result = await db["multi_pitch_route"].delete_many({"user_id": user.id})
 
 
-@router.delete('/pitches', description="Delete all pitches from all users", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/pitches', description="Delete all pitches of this user", dependencies=[Depends(auth.implicit_scheme)])
 async def delete_pitches(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     delete_result = await db["pitch"].delete_many({"user_id": user.id})
 
 
-@router.delete('/ascents', description="Delete all ascents from all users", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/ascents', description="Delete all ascents of this user", dependencies=[Depends(auth.implicit_scheme)])
 async def delete_ascents(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     db = await get_db()
     delete_result = await db["ascent"].delete_many({"user_id": user.id})
 
 
-@router.delete('/media', description="Delete all media from all users", dependencies=[Depends(auth.implicit_scheme)])
+@router.delete('/media', description="Delete all media of this user", dependencies=[Depends(auth.implicit_scheme)])
 async def delete_media(user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
-    db = await get_db()
-    delete_result = await db["medium"].delete_many({"user_id": user.id})
+    client = await get_db_client()  # AsyncIOMotorClient
+    bucket = AsyncIOMotorGridFSBucket(client.get_database('fs'))  # AsyncIOMotorGridFSBucket
+    media = await bucket.find({"user_id": user.id}).to_list(None)
+    for medium in media:
+        await bucket.delete(medium['_id'])
