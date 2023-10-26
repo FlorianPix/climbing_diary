@@ -134,6 +134,15 @@ class TripService {
       if (tripResponse.statusCode != 200) throw Exception('Failed to delete trip');
       await deleteTripBox.delete(trip.id);
       MyNotifications.showPositiveNotification('Trip was deleted: ${trip.name}');
+    } on DioError catch (e) {
+      final response = e.response;
+      if (response != null) {
+        switch (response.statusCode) {
+          case 404:
+            // trip was already deleted on the server
+            await deleteTripBox.delete(trip.id);
+        }
+      }
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
     }
