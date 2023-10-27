@@ -26,11 +26,14 @@ class MediaService {
     await mediaBox.put(medium.id, data);
     await createMediaBox.put(medium.id, data);
     if (online == null || !online) return medium.id;
-    Media? createdMedium = await uploadMedium(data);
-    if (createdMedium == null) return medium.id;
-    await mediaBox.put(createdMedium.id, createdMedium.toJson());
+    // check if medium already exists
+    if (!await existsMedium(medium.id)) {
+      Media? createdMedium = await uploadMedium(data);
+      if (createdMedium == null) return medium.id;
+      await mediaBox.put(createdMedium.id, createdMedium.toJson());
+    }
     await createMediaBox.delete(medium.id);
-    return createdMedium.id;
+    return medium.id;
   }
 
   /// Get all media from cache and optionally from the server.
@@ -45,8 +48,14 @@ class MediaService {
       List<Media> media = [];
       Box mediaBox = Hive.box(Media.boxName);
       await Future.forEach(response.data, (dynamic s) async {
-        Media medium = await getMedium(s['_id'], online: online);
-        await mediaBox.put(medium.id, medium.toJson());
+        Media medium;
+        var mediumMap = mediaBox.get(s['_id']);
+        if (mediumMap == null) {
+          medium = await getMedium(s['_id'], online: online);
+          await mediaBox.put(medium.id, medium.toJson());
+        } else {
+          medium = Media.fromCache(mediumMap);
+        }
         media.add(medium);
       });
       // delete media that were deleted on the server
@@ -137,5 +146,16 @@ class MediaService {
       }
     }
     return null;
+  }
+
+  Future<bool> existsMedium(String mediaId) async {
+    try {
+      final Response response = await netWorkLocator.dio.get('$climbingApiHost/media-exists/$mediaId');
+      if (response.statusCode != 200) throw Exception('Failed to check if medium exists');
+      return response.data!;
+    } catch (e) {
+      ErrorService.handleConnectionErrors(e);
+    }
+    throw Exception('Failed to check if medium exists');
   }
 }

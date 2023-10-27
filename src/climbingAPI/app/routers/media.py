@@ -19,12 +19,6 @@ import gridfs
 router = APIRouter()
 
 
-@router.post('test', description="test", dependencies=[Depends(auth.implicit_scheme)])
-async def test():
-    client = await get_db_client()  # AsyncIOMotorClient
-    await client.drop_database('fs')  # MotorDatabase
-
-
 @router.post('', description="Add a new medium", response_model=MediumModel, dependencies=[Depends(auth.implicit_scheme)])
 async def create_medium(medium: MediumModel = Body(...), user: Auth0User = Security(auth.get_user, scopes=["write:diary"])):
     medium = jsonable_encoder(medium)
@@ -48,6 +42,17 @@ async def retrieve_medium_of_id(medium_id: str, user: Auth0User = Security(auth.
     bucket = AsyncIOMotorGridFSBucket(client.get_database('fs'))  # AsyncIOMotorGridFSBucket
     gridOut = await bucket.open_download_stream(medium_id)  # AsyncIOMotorGridOut
     return MediumModel(**bson.decode(await gridOut.read()))
+
+
+@router.get('-exists/{medium_id}', description="Check if a medium exists", response_model=bool, dependencies=[Depends(auth.implicit_scheme)])
+async def exists_medium_of_id(medium_id: str, user: Auth0User = Security(auth.get_user, scopes=["read:diary"])):
+    client = await get_db_client()  # AsyncIOMotorClient
+    bucket = AsyncIOMotorGridFSBucket(client.get_database('fs'))  # AsyncIOMotorGridFSBucket
+    try:
+        await bucket.open_download_stream(medium_id)  # AsyncIOMotorGridOut
+    except gridfs.errors.NoFile:
+        return False
+    return True
 
 
 @router.post('/ids', description="Get media of ids", response_model=List[MediumModel], dependencies=[Depends(auth.implicit_scheme)])

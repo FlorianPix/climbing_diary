@@ -37,12 +37,13 @@ class ArchiveService {
         return true;
       }
     }
+    MyNotifications.showNegativeNotification("$permission permission was denied");
     return false;
   }
 
   /// save all data to a user picked directory
   Future<void> export() async {
-    if (! await _requestPermission(Permission.storage)) return;
+    if (! await _requestPermission(Permission.manageExternalStorage)) return;
     // pick a directory to export to
     String? directoryPath = await FilePicker.platform.getDirectoryPath();
     if (directoryPath == null) return;
@@ -79,7 +80,7 @@ class ArchiveService {
 
   /// import data from a user picked directory
   Future<void> import() async{
-    if (! await _requestPermission(Permission.storage)) return;
+    if (! await _requestPermission(Permission.manageExternalStorage)) return;
     // pick a directory to export to
     String? directoryPath = await FilePicker.platform.getDirectoryPath();
     if (directoryPath == null) return;

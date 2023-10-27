@@ -72,7 +72,7 @@ class _SettingsState extends State<Settings>{
               child: Text("Import", style: MyTextStyles.title)
             ),
             ElevatedButton.icon(
-              onPressed: () {archiveService.import();},
+              onPressed: () async {await archiveService.import();},
               icon: const Icon(
                 Icons.download_rounded,
                 color: Colors.black,
@@ -82,7 +82,7 @@ class _SettingsState extends State<Settings>{
               label: const Text("import"),
             ),
             ElevatedButton.icon(
-              onPressed: () {archiveService.export();},
+              onPressed: () async {await archiveService.export();},
               icon: const Icon(
                 Icons.upload_rounded,
                 color: Colors.black,
