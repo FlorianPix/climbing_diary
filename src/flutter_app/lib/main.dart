@@ -36,10 +36,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Climbing diary',
+      title: 'CD',
       theme: ThemeData(primarySwatch: const MaterialColor(0xffff7f50, MyColors.main)),
       initialRoute: '/',
-      routes: {'/': (context) => const MyHomePage(title: 'Climbing diary')},
+      routes: {'/': (context) => const MyHomePage(title: 'CD')},
       debugShowCheckedModeBanner: false,
     );
   }

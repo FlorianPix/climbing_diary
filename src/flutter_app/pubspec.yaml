@@ -64,6 +64,7 @@ dependencies:
   flutter_launcher_icons: ^0.13.1
   uuid: ^3.0.7
   flutter_image_compress: ^2.1.0
+  pdf: ^3.11.1
 
 dev_dependencies:
   flutter_test:

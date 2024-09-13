@@ -69,32 +69,6 @@ class _SettingsState extends State<Settings>{
           Card(child: Column(children: [
             const Padding(
               padding: EdgeInsets.only(top: 5),
-              child: Text("Import", style: MyTextStyles.title)
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {await archiveService.import();},
-              icon: const Icon(
-                Icons.download_rounded,
-                color: Colors.black,
-                size: 30.0,
-                semanticLabel: 'import',
-              ),
-              label: const Text("import"),
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {await archiveService.export();},
-              icon: const Icon(
-                Icons.upload_rounded,
-                color: Colors.black,
-                size: 30.0,
-                semanticLabel: 'export',
-              ),
-              label: const Text("export"),
-            )
-          ])),
-          Card(child: Column(children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 5),
               child: Text("Cache", style: MyTextStyles.title)
             ),
             ElevatedButton.icon(
@@ -133,32 +107,6 @@ class _SettingsState extends State<Settings>{
                 semanticLabel: 'print cache verbose',
               ),
               label: const Text("print cache verbose"),
-            )
-          ])),
-          Card(child: Column(children: [
-            const Padding(
-                padding: EdgeInsets.only(top: 5),
-                child: Text("Migrate", style: MyTextStyles.title)
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {await adminService.migrateMedia();},
-              icon: const Icon(
-                Icons.update_rounded,
-                color: Colors.black,
-                size: 30.0,
-                semanticLabel: 'migrate images',
-              ),
-              label: const Text("migrate images"),
-            ),
-            ElevatedButton.icon(
-              onPressed: () async {await adminService.migrateObjectIdToStr();},
-              icon: const Icon(
-                Icons.update_rounded,
-                color: Colors.black,
-                size: 30.0,
-                semanticLabel: 'migrate objectId to str',
-              ),
-              label: const Text("migrate objectId to str"),
             )
           ])),
           Card(child: Column(children: [

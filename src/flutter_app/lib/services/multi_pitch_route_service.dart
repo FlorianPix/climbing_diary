@@ -15,6 +15,8 @@ import 'package:climbing_diary/services/ascent_service.dart';
 import 'package:climbing_diary/services/cache_service.dart';
 import 'package:climbing_diary/services/locator.dart';
 
+import '../interfaces/grade.dart';
+import '../interfaces/grading_system.dart';
 import '../interfaces/media/media.dart';
 import '../interfaces/spot/spot.dart';
 
@@ -315,5 +317,24 @@ class MultiPitchRouteService {
       }
     }
     return bestRouteAscent;
+  }
+
+  Future<int> getLength(MultiPitchRoute route, {bool? online}) async {
+    List<Pitch> pitches = await pitchService.getPitchesOfIds(route.pitchIds, online: online);
+    int length = 0;
+    for (Pitch pitch in pitches){
+      length += pitch.length;
+    }
+    return length;
+  }
+
+  Future<Grade> getGrade(MultiPitchRoute route, {bool? online}) async {
+    List<Pitch> pitches = await pitchService.getPitchesOfIds(route.pitchIds, online: online);
+    Grade grade = const Grade(grade: "1", system: GradingSystem.french);
+    for (var pitch in pitches) {
+      Grade otherGrade = pitch.grade;
+      if(otherGrade > grade) grade = otherGrade;
+    }
+    return grade;
   }
 }
