@@ -116,8 +116,7 @@ class PitchService {
     await createPitchBox.put(createPitch.id, pitch);
     // add to pitchIds of multi pitch route locally
     Box multiPitchRouteBox = Hive.box(MultiPitchRoute.boxName);
-    Map multiPitchRouteMap = multiPitchRouteBox.get(routeId);
-    MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromCache(multiPitchRouteMap);
+    MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromCache(multiPitchRouteBox.get(routeId));
     if (!multiPitchRoute.pitchIds.contains(createPitch.id)) {
       multiPitchRoute.pitchIds.add(createPitch.id);
       await multiPitchRouteBox.put(multiPitchRoute.id, multiPitchRoute.toJson());

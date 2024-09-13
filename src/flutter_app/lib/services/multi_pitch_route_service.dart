@@ -173,8 +173,8 @@ class MultiPitchRouteService {
       final Response response = await netWorkLocator.dio.put('$climbingApiHost/multi_pitch_route/${updateMultiPitchRoute.id}', data: updateMultiPitchRoute.toJson());
       if (response.statusCode != 200) throw Exception('Failed to edit route');
       MultiPitchRoute multiPitchRoute = MultiPitchRoute.fromJson(response.data);
-      await multiPitchRouteBox.put(updateMultiPitchRoute.id, updateMultiPitchRoute.toJson());
-      await updateMultiPitchRouteBox.delete(updateMultiPitchRoute.id);
+      await multiPitchRouteBox.put(multiPitchRoute.id, multiPitchRoute.toJson());
+      await updateMultiPitchRouteBox.delete(multiPitchRoute.id);
       return multiPitchRoute;
     } catch (e) {
       ErrorService.handleConnectionErrors(e);
